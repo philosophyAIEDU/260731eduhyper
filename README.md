@@ -123,6 +123,10 @@ HyperFrames 는 한글 경로에서 **에러 메시지도 없이 그냥 죽습�
 | PART 2. 씬별 지시서 | 각 구간에 뭐가 나오는지 |
 | PART 3. 제작 프롬프트 | 색·움직임 세부 |
 
+> 💡 **빈 양식이 막막하면** [`docs/tutorial-script/`](docs/tutorial-script/) 를 보세요.
+> 이 키트를 소개하는 영상의 기획서 3장이 실제 예시로 들어 있습니다.
+> 그대로 읽어서 녹화하면 강의 영상 하나가 나옵니다.
+
 ### ② OBS 로 낭독 녹화
 
 - **화질·해상도는 신경 쓰지 마세요.** 화면은 안 쓰고 목소리만 씁니다.
@@ -255,7 +259,9 @@ compositions/
   scene-skeleton.html  새 씬 만들 때 복사할 골격
 assets/fonts/          Pretendard 가변 폰트 + 라이선스
 templates/             기획서 양식 3장 + 붙여넣을 프롬프트
-docs/                  원리 설명 다이어그램
+docs/
+  how-it-works.svg     원리 설명 다이어그램
+  tutorial-script/     기획서 작성 실제 예시 (이 키트 소개 영상 대본)
 scripts/               터미널에서 쓰는 경우용 (데스크탑 앱에서는 불필요)
 ```
 
