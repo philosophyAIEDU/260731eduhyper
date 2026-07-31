@@ -4,6 +4,9 @@
 코딩을 할 줄 몰라도 됩니다. Claude Code 에게 말로 시키면 됩니다.
 
 > 필로소피 AI 교육 · Claude Code + HyperFrames 강의용
+>
+> 비공식 커뮤니티 자료입니다. Anthropic(Claude) 및 HeyGen(HyperFrames)과
+> 공식적인 제휴·후원 관계가 없습니다. 각 이름은 해당 소유자의 상표입니다.
 
 <img src="docs/how-it-works.svg" width="100%" alt="Claude Code + HyperFrames 가 영상을 만드는 원리">
 
@@ -384,7 +387,10 @@ Claude 데스크탑 앱이 아니라 터미널에서 `claude` 를 쓴다면
 
 ## 라이선스
 
-- **이 키트** : 자유롭게 쓰고 고치세요.
+- **이 키트** : MIT — [`LICENSE`](LICENSE). 자유롭게 쓰고 고치고 배포하세요.
 - **Pretendard** : SIL Open Font License 1.1 — `assets/fonts/OFL.txt`
   © 2021 Kil Hyung-jin · https://github.com/orioncactus/pretendard
-- **HyperFrames** : Apache-2.0 · https://github.com/heygen-com/hyperframes
+- **HyperFrames** (별도 설치, 이 저장소에 미포함) : Apache-2.0 ·
+  https://github.com/heygen-com/hyperframes
+- **GSAP** (CDN 참조, 이 저장소에 미포함) : GSAP Standard License ·
+  https://gsap.com/community/standard-license/
