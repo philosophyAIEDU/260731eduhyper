@@ -42,35 +42,106 @@ Whisper 가 "말 → 초" 대응표를 만들어 주니까, *"'사실이 아닙�
 
 ## 준비물 (처음 한 번만)
 
-### 1. HyperFrames 스킬 설치 ← 이것부터
+**전부 미리 설치해 두세요.** Claude 에게 맡겨도 되지만, 설치 도중 권한 창이
+여러 번 뜨고 중간에 막히는 경우가 많습니다. 아래 순서대로 먼저 깔아 두시면
+전체 과정이 훨씬 매끄럽습니다. 다 합쳐서 10~15분 정도 걸립니다.
 
-터미널(PowerShell)에서:
+**순서가 중요합니다** — 2번(스킬 설치)은 1번(Node.js)이 있어야 실행됩니다.
 
-```bash
+### 1. Node.js — 필수, 제일 먼저
+
+다른 모든 도구가 이 위에서 돌아갑니다.
+
+1. https://nodejs.org 접속
+2. **"LTS"** 라고 적힌 큰 버튼을 클릭해서 내려받습니다 (숫자 버전은 신경 쓰지 마세요)
+3. 내려받은 설치 파일을 실행하고 **Next 를 계속 눌러** 설치합니다 (전부 기본값으로 두면 됩니다)
+4. 설치가 끝나면 **열려 있던 PowerShell 창을 전부 닫고 새로 엽니다**
+   (새 창부터 인식됩니다)
+5. 확인:
+   ```
+   node -v
+   ```
+   `v22` 이상 숫자가 나오면 성공입니다.
+
+### 2. HyperFrames 스킬 설치
+
+PowerShell(1번에서 새로 연 창)에서:
+
+```
 npx skills add heygen-com/hyperframes
 ```
 
-Claude Code 가 HyperFrames 를 다룰 줄 알게 만드는 단계입니다. **이게 없으면 나머지가 안 됩니다.**
+Claude Code 가 HyperFrames 를 다룰 줄 알게 만드는 단계입니다.
+**이게 없으면 나머지가 안 됩니다.** 실행 중 설치 여부를 묻는 문구가 나오면
+그냥 Enter 를 누르거나 `y` 를 입력하세요.
 
-### 2. 나머지 도구
+### 3. ffmpeg — 필수 (오디오 추출용)
 
-| 필요한 것 | 설치 방법 | 필수? |
-| --- | --- | --- |
-| Node.js (22 이상) | https://nodejs.org — LTS 버전 | 필수 |
-| ffmpeg | `winget install Gyan.FFmpeg.Shared` | 필수 |
-| Claude Code | https://claude.com/claude-code | 필수 |
-| 음성 전사 (Whisper) | `pip install -U openai-whisper` | 강력 권장 |
+1. 시작 메뉴에서 **"PowerShell"** 을 검색합니다
+2. 검색 결과를 **마우스 오른쪽 클릭** → **"관리자 권한으로 실행"** 선택
+   (관리자 권한이 아니면 설치가 안 될 수 있습니다)
+3. 아래 명령을 입력합니다:
+   ```
+   winget install Gyan.FFmpeg.Shared
+   ```
+4. 설치가 끝나면 **열려 있는 PowerShell 창을 전부 닫고 새로 엽니다**
+   (이번엔 관리자 권한 아니어도 됩니다)
+5. 확인:
+   ```
+   ffmpeg -version
+   ```
+   버전 정보가 길게 나오면 성공입니다.
+   `찾을 수 없습니다` 라고 나오면 컴퓨터를 한 번 재시작한 뒤 다시 확인해 보세요.
 
-**전사는 선택이지만 강력히 권합니다.** 이게 있어야 화면이 목소리에 정확히 붙습니다.
-없으면 타이밍을 손으로 맞춰야 하는데, 그게 제일 오래 걸립니다.
+### 4. Claude 데스크탑 앱 — 필수
 
-렌더용 Chrome 은 Claude 가 알아서 받습니다. 신경 쓰지 마세요.
+1. https://claude.ai/download 접속
+2. Windows 용 설치 파일을 내려받아 실행합니다
+3. 설치 후 기존에 쓰던 계정으로 로그인합니다
+4. 앱 안에서 **"Code"** 기능을 찾습니다 (버전에 따라 위치가 조금 다를 수
+   있습니다 — 안 보이면 앱을 최신 버전으로 업데이트해 보세요)
 
-### 3. 이 저장소 받기
+### 5. 음성 전사(Whisper) — 선택이지만 강력 권장
+
+**이게 없으면 화면 타이밍을 손으로 맞춰야 해서 시간이 훨씬 오래 걸립니다.**
+Whisper 는 Python 위에서 돌아가므로 Python 부터 설치합니다.
+
+1. https://www.python.org/downloads/ 접속 → **"Download Python"** 버튼 클릭
+2. 설치 시작 화면 맨 아래 **"Add python.exe to PATH"** 체크박스를
+   **반드시 체크**합니다 (이걸 놓치면 나중에 `python` 명령이 안 먹힙니다)
+3. **"Install Now"** 클릭
+4. 설치 후 PowerShell 을 새로 열고 확인:
+   ```
+   python --version
+   ```
+5. Whisper 설치 (1~2분 걸립니다):
+   ```
+   pip install -U openai-whisper
+   ```
+6. 확인:
+   ```
+   python -c "import whisper; print('OK')"
+   ```
+   `OK` 가 나오면 성공입니다.
+
+렌더용 Chrome 은 별도로 설치할 필요가 없습니다. 처음 렌더할 때 Claude 가
+자동으로 받습니다.
+
+### 6. 이 저장소 받기
 
 ```bash
 git clone https://github.com/philosophyAIEDU/260731eduhyper.git
 ```
+
+### 다 설치했는지 한 번에 확인하기
+
+저장소를 받은 뒤, 그 폴더에서:
+
+```
+.\scripts\0-환경점검.ps1
+```
+
+빠진 게 있으면 무엇이 빠졌는지, 어떻게 설치하는지 다시 알려 줍니다.
 
 > ⚠️ **받는 위치의 경로에 한글이 있으면 안 됩니다.** 아래 "가장 중요한 주의사항" 참고.
 

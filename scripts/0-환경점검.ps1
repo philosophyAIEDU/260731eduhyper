@@ -42,13 +42,12 @@ if ($kit -match '[^\x00-\x7F]') {
 # ------------------------------------------------------------
 # 2. Node.js
 # ------------------------------------------------------------
-Write-Host "       ※ HyperFrames 스킬을 아직 설치하지 않았다면:" -ForegroundColor Gray
-Write-Host "         npx skills add heygen-com/hyperframes" -ForegroundColor White
 Write-Host "[2/5] Node.js..." -NoNewline
 $node = Get-Command node -ErrorAction SilentlyContinue
 if ($null -eq $node) {
     Write-Host " 없음" -ForegroundColor Red
-    Write-Host "       https://nodejs.org 에서 LTS 버전을 설치하세요." -ForegroundColor Yellow
+    Write-Host "       https://nodejs.org 에서 'LTS' 버튼을 눌러 설치하세요." -ForegroundColor Yellow
+    Write-Host "       설치 후 이 창을 닫고 새로 열어야 인식됩니다." -ForegroundColor Yellow
     $problems += "Node.js"
 } else {
     $nv = (& node -v)
@@ -62,6 +61,12 @@ if ($null -eq $node) {
     }
 }
 
+# HyperFrames 스킬은 여기서 자동 확인하기 어려워서 (Claude Code 쪽 설정) 안내만.
+if ($node -ne $null) {
+    Write-Host "       ※ HyperFrames 스킬을 아직 설치 안 했다면:" -ForegroundColor Gray
+    Write-Host "         npx skills add heygen-com/hyperframes" -ForegroundColor White
+}
+
 # ------------------------------------------------------------
 # 3. ffmpeg  (오디오 추출용)
 # ------------------------------------------------------------
@@ -69,9 +74,9 @@ Write-Host "[3/5] ffmpeg..." -NoNewline
 $ff = Get-Command ffmpeg -ErrorAction SilentlyContinue
 if ($null -eq $ff) {
     Write-Host " 없음" -ForegroundColor Red
-    Write-Host "       PowerShell 에서 아래를 실행하세요:" -ForegroundColor Yellow
+    Write-Host "       PowerShell 을 '관리자 권한으로 실행' 한 뒤 아래를 실행하세요:" -ForegroundColor Yellow
     Write-Host "         winget install Gyan.FFmpeg.Shared" -ForegroundColor White
-    Write-Host "       설치 후 PowerShell 창을 새로 여세요." -ForegroundColor Yellow
+    Write-Host "       설치 후 PowerShell 창을 전부 닫고 새로 여세요." -ForegroundColor Yellow
     $problems += "ffmpeg"
 } else {
     Write-Host " OK" -ForegroundColor Green
@@ -109,6 +114,12 @@ if ($null -ne $py) {
 }
 if ($whisperOk) {
     Write-Host " OK" -ForegroundColor Green
+} elseif ($null -eq $py) {
+    Write-Host " 없음 (선택 사항)" -ForegroundColor Yellow
+    Write-Host "       Python 이 먼저 필요합니다: https://www.python.org/downloads/" -ForegroundColor Gray
+    Write-Host "       설치 화면에서 'Add python.exe to PATH' 를 꼭 체크하세요." -ForegroundColor Gray
+    Write-Host "       그다음: pip install -U openai-whisper" -ForegroundColor White
+    $warnings += "whisper"
 } else {
     Write-Host " 없음 (선택 사항)" -ForegroundColor Yellow
     Write-Host "       내레이션에 화면을 정확히 맞추려면 있는 게 좋습니다." -ForegroundColor Gray

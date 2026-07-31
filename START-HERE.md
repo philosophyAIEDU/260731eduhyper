@@ -42,29 +42,79 @@ Claude 가 작업하는 폴더     →  영어. Claude 가 알아서 만듭니�
 
 ---
 
-## 준비물 (처음 한 번만)
+## 준비물 (처음 한 번만, 순서대로)
 
-**먼저 HyperFrames 스킬을 설치하세요.** 이게 없으면 나머지가 안 됩니다.
+**전부 미리 설치해 두세요.** Claude 에게 맡길 수도 있지만, 설치 도중 권한 창이
+여러 번 뜨고 중간에 막히는 경우가 많습니다. 아래 순서대로 먼저 깔아 두시면
+전체 과정이 훨씬 매끄럽습니다. 다 합쳐서 10~15분 정도입니다.
 
-```bash
+**순서가 중요합니다** — 2번은 1번(Node.js)이 있어야 실행됩니다.
+
+### 1. Node.js — 필수, 제일 먼저
+
+1. https://nodejs.org 접속
+2. **"LTS"** 라고 적힌 큰 버튼을 클릭해서 내려받습니다
+3. 설치 파일 실행 → **Next 를 계속 눌러** 설치 (전부 기본값이면 됩니다)
+4. 설치 후 **열려 있던 PowerShell 창을 전부 닫고 새로 엽니다**
+5. 확인:
+   ```
+   node -v
+   ```
+   `v22` 이상이 나오면 성공.
+
+### 2. HyperFrames 스킬 설치
+
+새로 연 PowerShell 에서:
+
+```
 npx skills add heygen-com/hyperframes
 ```
 
-그다음 나머지:
+**이게 없으면 나머지가 안 됩니다.** 설치 여부를 묻는 문구가 나오면
+Enter 또는 `y`.
 
-| 필요한 것 | 설치 |
-| --- | --- |
-| Node.js (22 이상) | https://nodejs.org — LTS 버전 |
-| ffmpeg | PowerShell 에서 `winget install Gyan.FFmpeg.Shared` |
-| (선택) 음성 전사 | PowerShell 에서 `pip install -U openai-whisper` |
+### 3. ffmpeg — 필수
 
-**전사는 선택이지만 강력히 권합니다.** 이게 있어야 화면이 목소리에 정확히 붙습니다.
-없으면 타이밍을 손으로 맞춰야 하는데, 이게 제일 오래 걸립니다.
+1. 시작 메뉴에서 "PowerShell" 검색 → **마우스 오른쪽 클릭** →
+   **"관리자 권한으로 실행"**
+2. 입력:
+   ```
+   winget install Gyan.FFmpeg.Shared
+   ```
+3. 끝나면 **PowerShell 창을 전부 닫고 새로 엽니다**
+4. 확인:
+   ```
+   ffmpeg -version
+   ```
+   버전 정보가 나오면 성공. 안 나오면 컴퓨터를 재시작해 보세요.
 
-렌더용 Chrome 은 Claude 가 알아서 받습니다. 신경 쓰지 마세요.
+### 4. Claude 데스크탑 앱 — 필수
 
-> 뭘 설치했는지 모르겠으면 그냥 시작하세요.
-> 빠진 게 있으면 Claude 가 먼저 알려 줍니다.
+1. https://claude.ai/download 에서 설치
+2. 로그인 후 **"Code"** 기능 찾기 (안 보이면 앱을 최신 버전으로 업데이트)
+
+### 5. 음성 전사(Whisper) — 선택이지만 강력 권장
+
+**없으면 화면 타이밍을 손으로 맞춰야 해서 훨씬 오래 걸립니다.**
+
+1. https://www.python.org/downloads/ → "Download Python" 클릭
+2. 설치 화면에서 **"Add python.exe to PATH" 체크 필수** (놓치면 나중에 안 먹힙니다)
+3. "Install Now"
+4. 확인: `python --version`
+5. 설치: `pip install -U openai-whisper`
+6. 확인: `python -c "import whisper; print('OK')"`
+
+렌더용 Chrome 은 별도 설치 불필요 — 처음 렌더할 때 Claude 가 자동으로 받습니다.
+
+### 다 설치했는지 한 번에 확인하기
+
+이 폴더에서:
+
+```
+.\scripts\0-환경점검.ps1
+```
+
+빠진 게 있으면 무엇인지, 어떻게 설치하는지 알려 줍니다.
 
 ---
 
