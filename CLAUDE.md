@@ -8,12 +8,12 @@
 ## 🚨 1. 경로에 한글이 있으면 안 됩니다 (가장 중요)
 
 **HyperFrames CLI는 비ASCII(한글) 경로에서 네이티브 크래시합니다.**
-에러 메시지 없이 exit 127 / Windows 0xC0000409 로 조용히 죽기 때문에,
+에러 메시지 없이 exit 127 / Windows 0xC0000409 로 조용히 멈추기 때문에,
 모르면 원인 파악에만 한 시간 이상 걸립니다.
 
 ```
-❌ C:\Users\user\바탕화면\양자컴퓨터\      → init·render 전부 조용히 실패
-✅ C:\Users\user\hyperframes-work\quantum\ → 정상
+❌ C:\Users\user\바탕화면\양자컴퓨터\  → init·render 전부 조용히 실패
+✅ C:\Users\user\hyper\quantum\        → 정상
 ```
 
 **작업 시작 전에 항상 현재 경로를 확인하세요.**
@@ -31,7 +31,7 @@ pwd   # 한글이 보이면 여기서 멈춘다
 사용자가 Claude 데스크탑 앱의 Code 를 쓰고 있고 자료가 한글 폴더에 있다면,
 **사용자에게 폴더를 옮기라고 시키지 말고 직접 처리하세요:**
 
-1. `C:\Users\<사용자>\hyperframes-work\<영어이름>` 에 작업 폴더를 만든다
+1. `C:\Users\<사용자>\hyper\<영어이름>` 에 작업 폴더를 만든다
 2. `hyperframes-starter-kit` 을 그리로 복사한다
 3. 원본 자료 폴더는 접근 권한만 받아서 읽는다 (옮기지 않는다)
 4. 완성된 MP4 만 원본 폴더로 복사한다

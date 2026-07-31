@@ -24,12 +24,12 @@ if ($kit -match '[^\x00-\x7F]') {
     Write-Host ""
     Write-Host "  ┌──────────────────────────────────────────────────────┐" -ForegroundColor Red
     Write-Host "  │  경로에 한글이 들어 있습니다.                          │" -ForegroundColor Red
-    Write-Host "  │  HyperFrames 는 한글 경로에서 아무 메시지 없이         │" -ForegroundColor Red
-    Write-Host "  │  그냥 죽습니다. 반드시 옮기세요.                       │" -ForegroundColor Red
+    Write-Host "  │  HyperFrames 는 한글 경로에서 에러 메시지 없이         │" -ForegroundColor Red
+    Write-Host "  │  조용히 멈춰버립니다. 반드시 옮기세요.                 │" -ForegroundColor Red
     Write-Host "  └──────────────────────────────────────────────────────┘" -ForegroundColor Red
     Write-Host ""
     Write-Host "  현재 : $kit" -ForegroundColor Yellow
-    Write-Host "  권장 : C:\Users\$env:USERNAME\hyperframes-work\hyperframes-starter-kit" -ForegroundColor Green
+    Write-Host "  권장 : C:\Users\$env:USERNAME\hyper\hyperframes-starter-kit" -ForegroundColor Green
     Write-Host ""
     Write-Host "  ※ 원본 영상·대본은 한글 폴더에 있어도 괜찮습니다." -ForegroundColor Gray
     Write-Host "     이 키트 폴더만 영어 경로면 됩니다." -ForegroundColor Gray
