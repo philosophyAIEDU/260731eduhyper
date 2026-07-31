@@ -186,7 +186,17 @@ HyperFrames 는 한글 경로에서 **에러 메시지도 없이 그냥 죽습�
 
 ### ① 기획서 3장
 
-`templates/` 에 양식이 있습니다. 각 파일 위쪽에 쓰는 법이 적혀 있습니다.
+두 가지 방법이 있습니다.
+
+**방법 A — Claude 프로젝트로 자동 생성 (권장)**
+
+[`docs/claude-project/`](docs/claude-project/) 에 준비된 지침을 Claude 프로젝트에
+붙여넣으면, 주제 하나만 던져도 PART 1~3(대학 강의용은 PART 4까지)이 자동으로
+나옵니다. 설정 방법은 [`docs/claude-project/사용법.md`](docs/claude-project/사용법.md) 를 보세요.
+
+**방법 B — 직접 쓰기**
+
+`templates/` 에 빈 양식이 있습니다. 각 파일 위쪽에 쓰는 법이 적혀 있습니다.
 
 | 파일 | 한 줄 요약 |
 | --- | --- |
@@ -333,6 +343,7 @@ templates/             기획서 양식 3장 + 붙여넣을 프롬프트
 docs/
   how-it-works.svg     원리 설명 다이어그램
   tutorial-script/     기획서 작성 실제 예시 (이 키트 소개 영상 대본)
+  claude-project/       기획서 3장을 자동으로 써 주는 Claude 프로젝트 지침 + 사용법
 scripts/               터미널에서 쓰는 경우용 (데스크탑 앱에서는 불필요)
 ```
 

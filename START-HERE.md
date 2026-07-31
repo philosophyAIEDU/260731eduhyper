@@ -122,7 +122,10 @@ Enter 또는 `y`.
 
 ### ① 기획서 3장 쓰기
 
-`templates\` 안에 양식이 있습니다. 각 파일 위쪽에 쓰는 법이 적혀 있습니다.
+**Claude 프로젝트로 자동 생성하고 싶다면** `docs\claude-project\사용법.md` 를
+보세요. 주제 하나만 던지면 PART 1~3 이 자동으로 나옵니다.
+
+직접 쓰신다면 `templates\` 안에 양식이 있습니다. 각 파일 위쪽에 쓰는 법이 적혀 있습니다.
 
 | 파일 | 한 줄 요약 |
 | --- | --- |
@@ -223,6 +226,7 @@ compositions\
   scene-skeleton.html  새 씬 만들 때 복사할 골격
 assets\fonts\          Pretendard 가변 폰트 + 라이선스
 templates\             기획서 양식 3장 + 붙여넣을 프롬프트
+docs\claude-project\   기획서 3장 자동 생성용 Claude 프로젝트 지침 + 사용법
 scripts\               터미널에서 쓰는 경우용 (데스크탑 앱에서는 불필요)
 ```
 
