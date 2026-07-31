@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        /* ┌──────────────────────────────────────────────────────────┐
+           │ 새 씬 만들기 — 3단계                                      │
+           │                                                          │
+           │ 1. 이 파일을 compositions/scene-02.html 처럼 복사         │
+           │ 2. 아래 SCENEID 를 전부 새 이름으로 바꾼다 (3군데)         │
+           │      - data-composition-id="SCENEID"                     │
+           │      - window.__timelines["SCENEID"]                     │
+           │      - index.html 슬롯의 data-composition-id              │
+           │    셋이 다르면 렌더가 45초 멈췄다가 정지 화면만 나옵니다    │
+           │ 3. index.html 에 슬롯 블록을 추가하고 start/duration 지정  │
+           │                                                          │
+           │ 주의: template 을 열면 곧바로 style 이 나와야 합니다.      │
+           │ 그 사이에 주석이나 글을 넣으면 검사에서 오류가 납니다.      │
+           └──────────────────────────────────────────────────────────┘ */
+
+        /* 폰트 선언 — 씬마다 필요합니다. 지우지 마세요. */
+        @font-face {
+          font-family: "Pretendard";
+          src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations");
+          font-weight: 45 920;
+          font-style: normal;
+        }
+        /* 루트는 #root 로만 스타일 (클래스로 하면 무시됨) */
+        #root {
+          position: absolute;
+          inset: 0;
+          font-family: "Pretendard", sans-serif;
+          color: #eaf0ff;
+        }
+        #body {
+          position: absolute;
+          inset: 0;
+        }
+
+        /* ── 여기부터 이 씬의 요소들 ──
+           · 움직일 요소는 display:block + 크기가 있어야 transform 이 먹습니다
+           · 처음에 안 보여야 하면 CSS 에서 opacity: 0 으로 시작
+           · 팔레트: 배경 #0B1026 / 시안 #4CE0D2 / 골드 #D4AF37 /
+                     마젠타 #FF4FD8 / 글자 #EAF0FF / 보조 #8FA0C4        */
+
+        #caption {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 820px;
+          display: block;
+          text-align: center;
+          font-size: 92px;
+          font-weight: 900;
+          letter-spacing: -0.03em;
+          color: #4ce0d2;
+          opacity: 0;
+          will-change: transform;
+        }
+      </style>
+
+      <div id="root" data-composition-id="SCENEID" data-width="1920" data-height="1080">
+        <div id="body">
+          <!-- 화면 요소를 여기에 -->
+
+          <div id="caption">온스크린 텍스트</div>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          window.__timelines = window.__timelines || {};
+          const tl = gsap.timeline({ paused: true });
+
+          /* ────────────────────────────────────────────────────────
+             시간은 전부 "씬 안에서의 초" 입니다 (영상 전체 초가 아님).
+             예) 씬이 20초에 시작하고 전사에서 어떤 단어가 25.4초에
+                 나온다면 → 여기서는 5.4 로 씁니다.
+             ──────────────────────────────────────────────────────── */
+
+          tl.fromTo(
+            "#caption",
+            { opacity: 0, y: 30 },
+            { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.5)" },
+            1.0, // ← 이 씬 시작 후 1.0초
+          );
+
+          /* 나중에 등장해야 하는데 fromTo 시작값이 opacity:1 인 경우
+             (예: 이동하는 펄스) → 0초에 바닥을 깔고 immediateRender:false
+
+             tl.set("#pulse", { opacity: 0 }, 0);
+             tl.fromTo("#pulse",
+               { opacity: 1, x: 0 },
+               { opacity: 1, x: 600, duration: 0.4, immediateRender: false },
+               3.0);
+          */
+
+          /* 씬 끝 정리 — 마지막 씬이면 빼세요
+             tl.to("#body", { opacity: 0, duration: 0.5, ease: "power2.in" }, 9.5);
+          */
+
+          window.__timelines["SCENEID"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

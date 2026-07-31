@@ -1,0 +1,21 @@
+# 작업하면서 생기는 것들 — 저장소에는 올리지 않습니다
+node_modules/
+.hyperframes/
+
+# 렌더 결과물
+*.mp4
+*.webm
+out.mp4
+snapshots/
+
+# 각자의 영상 자료 (사람마다 다름)
+source/
+assets/narration.mp3
+assets/narration.wav
+transcript.json
+transcript.txt
+
+# 시스템
+.DS_Store
+Thumbs.db
+desktop.ini

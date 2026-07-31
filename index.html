@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      /* ============================================================
+         Pretendard — 가변 폰트 한 파일로 45~920 전 웨이트를 커버한다.
+         SIL Open Font License 1.1 (assets/fonts/OFL.txt)
+         건드리지 마세요.
+         ============================================================ */
+      @font-face {
+        font-family: "Pretendard";
+        src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations");
+        font-weight: 45 920;
+        font-style: normal;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0b1026;
+      }
+      body {
+        font-family: "Pretendard", sans-serif;
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+      }
+
+      /* ============================================================
+         배경 레이어 — 전 씬 공통. 루트에 한 번만 깐다.
+         씬 서브컴포지션에서 배경을 다시 그리면 컷에서 배경이 튄다.
+         ============================================================ */
+      #bg {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        background: #0b1026;
+      }
+      #glow-a,
+      #glow-b {
+        position: absolute;
+        border-radius: 50%;
+        will-change: transform;
+      }
+      #glow-a {
+        left: -260px;
+        top: -300px;
+        width: 1280px;
+        height: 1280px;
+        background: radial-gradient(circle, rgba(76, 224, 210, 0.09) 0%, rgba(76, 224, 210, 0) 68%);
+      }
+      #glow-b {
+        right: -320px;
+        bottom: -380px;
+        width: 1420px;
+        height: 1420px;
+        background: radial-gradient(circle, rgba(76, 224, 210, 0.055) 0%, rgba(76, 224, 210, 0) 66%);
+      }
+      #vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(11, 16, 38, 0) 45%,
+          rgba(5, 7, 15, 0.55) 100%
+        );
+      }
+      #stars {
+        position: absolute;
+        inset: 0;
+      }
+      .star {
+        position: absolute;
+        display: block;
+        border-radius: 50%;
+        background: #cfe6ff;
+        will-change: transform, opacity;
+      }
+
+      /* 씬 슬롯 — 전부 화면을 꽉 채운다 */
+      #root > div[data-composition-src] {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+      }
+
+      /* 마무리 암전 */
+      #fade-out {
+        position: absolute;
+        inset: 0;
+        z-index: 5;
+        background: #05070f;
+        opacity: 0;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ============================================================
+         data-duration = 영상 전체 길이(초).
+         내레이션 오디오를 쓴다면 오디오 길이에 맞추세요.
+         ============================================================ -->
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="12"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div id="bg">
+        <div id="glow-a"></div>
+        <div id="glow-b"></div>
+        <div id="stars"></div>
+        <div id="vignette"></div>
+      </div>
+
+      <!-- ============================================================
+           씬 슬롯. 씬을 추가할 때마다 이 블록을 복사하고
+             - id             : el-s2, el-s3 …
+             - data-composition-id : 씬 파일 안의 id 와 정확히 같게
+             - data-composition-src: 씬 파일 경로
+             - data-start / data-duration : 시작 초 / 길이 초
+           만 바꾸면 됩니다. data-track-index 는 1로 두세요.
+           ============================================================ -->
+      <div
+        id="el-s1"
+        data-composition-id="scene-01"
+        data-composition-src="compositions/scene-01.html"
+        data-start="0"
+        data-duration="12"
+        data-track-index="1"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+
+      <!-- 씬을 더 넣을 때 아래 주석을 풀고 값을 채우세요.
+      <div
+        id="el-s2"
+        data-composition-id="scene-02"
+        data-composition-src="compositions/scene-02.html"
+        data-start="12"
+        data-duration="10"
+        data-track-index="1"
+        data-width="1920"
+        data-height="1080"
+      ></div>
+      -->
+
+      <div id="fade-out"></div>
+
+      <!-- 내레이션 오디오가 들어갈 자리.
+           scripts/2-오디오추출-전사.ps1 을 실행하면 여기에 자동으로 채워집니다.
+           이 줄을 지우지 마세요. -->
+      <!--AUDIO-SLOT-->
+    </div>
+
+    <script>
+      (function () {
+        // 영상 전체 길이. 위 data-duration 과 같은 값으로 유지하세요.
+        const TOTAL = 12;
+
+        // 시드 고정 난수 — 렌더할 때마다 별 위치가 달라지면 안 되므로
+        // Math.random() 대신 이걸 씁니다. (HyperFrames 결정성 규칙)
+        let seed = 20260731;
+        const rand = () => {
+          seed = (seed * 1664525 + 1013904223) % 4294967296;
+          return seed / 4294967296;
+        };
+
+        const starLayer = document.getElementById("stars");
+        const stars = [];
+        for (let i = 0; i < 44; i++) {
+          const el = document.createElement("span");
+          el.className = "star";
+          const size = 1 + rand() * 2.2;
+          el.style.width = size.toFixed(2) + "px";
+          el.style.height = size.toFixed(2) + "px";
+          el.style.left = (rand() * 1920).toFixed(1) + "px";
+          el.style.top = (rand() * 1080).toFixed(1) + "px";
+          starLayer.appendChild(el);
+          stars.push({ el, phase: rand() });
+        }
+
+        window.__timelines = window.__timelines || {};
+        const tl = gsap.timeline({ paused: true });
+
+        // 배경 호흡 — 루트가 담당하는 유일한 모션.
+        // repeat 은 반드시 floor 로 유한하게 (repeat:-1 금지).
+        const glowDur = 6;
+        tl.to(
+          "#glow-a",
+          {
+            scale: 1.12,
+            duration: glowDur,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: Math.max(0, Math.floor(TOTAL / glowDur) - 1),
+          },
+          0,
+        );
+        tl.to(
+          "#glow-b",
+          {
+            scale: 1.16,
+            duration: glowDur * 1.35,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: Math.max(0, Math.floor(TOTAL / (glowDur * 1.35)) - 1),
+          },
+          glowDur * 0.5,
+        );
+
+        // 별빛 반짝임 — 드라이버 하나로 전부 처리 (각 별은 시간의 순수 함수).
+        const twinkle = { t: 0 };
+        tl.to(
+          twinkle,
+          {
+            t: TOTAL,
+            duration: TOTAL,
+            ease: "none",
+            onUpdate: () => {
+              const time = twinkle.t;
+              for (let i = 0; i < stars.length; i++) {
+                const s = stars[i];
+                const v = 0.5 + 0.5 * Math.sin((time / 3.4 + s.phase) * Math.PI * 2);
+                s.el.style.opacity = (0.12 + v * 0.42).toFixed(3);
+              }
+            },
+          },
+          0,
+        );
+
+        // 마지막 2초 암전으로 영상을 닫는다.
+        tl.fromTo(
+          "#fade-out",
+          { opacity: 0 },
+          { opacity: 1, duration: 2.0, ease: "power2.in" },
+          Math.max(0, TOTAL - 2),
+        );
+
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 940" width="1200" height="940" font-family="Pretendard, 'Malgun Gothic', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B1026"/>
+      <stop offset="100%" stop-color="#070B1B"/>
+    </linearGradient>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#4CE0D2"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="940" fill="url(#bg)"/>
+
+  <text x="600" y="62" text-anchor="middle" fill="#EAF0FF" font-size="38" font-weight="900" letter-spacing="-1">
+    Claude Code + HyperFrames 는 어떻게 영상을 만드나
+  </text>
+  <text x="600" y="98" text-anchor="middle" fill="#8FA0C4" font-size="20" font-weight="300">
+    핵심 : 웹페이지를 한 프레임씩 스크린샷 찍어 영상으로 잇는다
+  </text>
+
+  <!-- ① 입력 -->
+  <g>
+    <rect x="150" y="140" width="380" height="96" rx="14" fill="#141C38" stroke="#2E3C66" stroke-width="2"/>
+    <text x="340" y="176" text-anchor="middle" fill="#EAF0FF" font-size="21" font-weight="700">기획서 3장</text>
+    <text x="340" y="207" text-anchor="middle" fill="#8FA0C4" font-size="16" font-weight="300">대본 · 씬별 지시서 · 제작 사양</text>
+
+    <rect x="670" y="140" width="380" height="96" rx="14" fill="#141C38" stroke="#2E3C66" stroke-width="2"/>
+    <text x="860" y="176" text-anchor="middle" fill="#EAF0FF" font-size="21" font-weight="700">OBS 녹화본</text>
+    <text x="860" y="207" text-anchor="middle" fill="#8FA0C4" font-size="16" font-weight="300">화면은 안 씀 · 목소리만 사용</text>
+  </g>
+
+  <path d="M340 240 L340 286" stroke="#4CE0D2" stroke-width="2.5" marker-end="url(#ar)"/>
+  <path d="M860 240 L860 286" stroke="#4CE0D2" stroke-width="2.5" marker-end="url(#ar)"/>
+
+  <!-- ② Claude Code -->
+  <g>
+    <rect x="150" y="292" width="900" height="164" rx="16" fill="#101736" stroke="#4CE0D2" stroke-width="2.5"/>
+    <text x="182" y="330" fill="#4CE0D2" font-size="23" font-weight="900">① Claude Code — 코드를 쓴다</text>
+
+    <text x="182" y="368" fill="#EAF0FF" font-size="17" font-weight="400">· 녹화본에서 오디오만 추출 (ffmpeg)</text>
+    <text x="182" y="398" fill="#EAF0FF" font-size="17" font-weight="400">· 음성 전사 → 어느 단어가 몇 초에 나오는지 표를 얻는다</text>
+    <text x="182" y="428" fill="#EAF0FF" font-size="17" font-weight="400">· 그 초에 맞춰 HTML / CSS / GSAP 타임라인을 작성한다</text>
+
+    <rect x="640" y="348" width="386" height="90" rx="10" fill="#0B1026" stroke="#2E3C66" stroke-width="1.5"/>
+    <text x="660" y="374" fill="#8FA0C4" font-size="13" font-weight="300" font-family="JetBrains Mono, monospace">"사실이 아닙니다" = 10.72초</text>
+    <text x="660" y="400" fill="#4CE0D2" font-size="13" font-family="JetBrains Mono, monospace">tl.to("#x-mark",</text>
+    <text x="660" y="422" fill="#4CE0D2" font-size="13" font-family="JetBrains Mono, monospace">   { scale: 1 }, 10.72);</text>
+  </g>
+
+  <path d="M600 460 L600 508" stroke="#4CE0D2" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="618" y="492" fill="#8FA0C4" font-size="15" font-weight="300">index.html + 씬 파일들</text>
+
+  <!-- ③ HyperFrames -->
+  <g>
+    <rect x="150" y="514" width="900" height="216" rx="16" fill="#101736" stroke="#4CE0D2" stroke-width="2.5"/>
+    <text x="182" y="552" fill="#4CE0D2" font-size="23" font-weight="900">② HyperFrames — 프레임을 찍는다</text>
+    <text x="182" y="586" fill="#EAF0FF" font-size="17" font-weight="400">타임라인을 특정 시각으로 "점프"시키고 Chrome 이 스크린샷</text>
+
+    <g>
+      <rect x="196" y="612" width="118" height="74" rx="8" fill="#0B1026" stroke="#4CE0D2" stroke-width="1.5"/>
+      <text x="255" y="646" text-anchor="middle" fill="#EAF0FF" font-size="26">📷</text>
+      <text x="255" y="674" text-anchor="middle" fill="#8FA0C4" font-size="13" font-family="JetBrains Mono, monospace">0.00s</text>
+
+      <rect x="330" y="612" width="118" height="74" rx="8" fill="#0B1026" stroke="#4CE0D2" stroke-width="1.5"/>
+      <text x="389" y="646" text-anchor="middle" fill="#EAF0FF" font-size="26">📷</text>
+      <text x="389" y="674" text-anchor="middle" fill="#8FA0C4" font-size="13" font-family="JetBrains Mono, monospace">0.03s</text>
+
+      <rect x="464" y="612" width="118" height="74" rx="8" fill="#0B1026" stroke="#4CE0D2" stroke-width="1.5"/>
+      <text x="523" y="646" text-anchor="middle" fill="#EAF0FF" font-size="26">📷</text>
+      <text x="523" y="674" text-anchor="middle" fill="#8FA0C4" font-size="13" font-family="JetBrains Mono, monospace">0.07s</text>
+
+      <text x="620" y="658" fill="#8FA0C4" font-size="26" font-weight="300">· · ·</text>
+
+      <rect x="672" y="612" width="146" height="74" rx="8" fill="#0B1026" stroke="#D4AF37" stroke-width="1.5"/>
+      <text x="745" y="646" text-anchor="middle" fill="#EAF0FF" font-size="26">📷</text>
+      <text x="745" y="674" text-anchor="middle" fill="#D4AF37" font-size="13" font-family="JetBrains Mono, monospace">83.47s</text>
+    </g>
+
+    <rect x="848" y="612" width="170" height="74" rx="8" fill="#0B1026" stroke="#2E3C66" stroke-width="1.5"/>
+    <text x="933" y="644" text-anchor="middle" fill="#4CE0D2" font-size="27" font-weight="900">2,505 장</text>
+    <text x="933" y="670" text-anchor="middle" fill="#8FA0C4" font-size="14" font-weight="300">30 fps × 83.5초</text>
+
+    <text x="182" y="712" fill="#FF4FD8" font-size="15" font-weight="400">
+      ※ "재생"이 아니라 매번 새로 점프 — 같은 시각이면 항상 같은 그림이어야 한다 (랜덤·현재시각 금지)
+    </text>
+  </g>
+
+  <path d="M600 734 L600 782" stroke="#4CE0D2" stroke-width="2.5" marker-end="url(#ar)"/>
+
+  <!-- ④ ffmpeg -->
+  <g>
+    <rect x="290" y="788" width="620" height="72" rx="14" fill="#141C38" stroke="#2E3C66" stroke-width="2"/>
+    <text x="600" y="833" text-anchor="middle" fill="#EAF0FF" font-size="19" font-weight="700">
+      ffmpeg — 프레임을 이어붙이고 내레이션을 얹는다
+    </text>
+  </g>
+
+  <path d="M600 864 L600 896" stroke="#4CE0D2" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="600" y="926" text-anchor="middle" fill="#4CE0D2" font-size="27" font-weight="900">완성 MP4</text>
+</svg>

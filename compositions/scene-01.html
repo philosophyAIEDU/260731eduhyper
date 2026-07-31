@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+  </head>
+  <body>
+    <template>
+      <style>
+        /* 주의 1 — 이 파일의 head 는 렌더할 때 통째로 버려집니다.
+           스타일 / 마크업 / 스크립트는 전부 template 안에 있어야 합니다.
+           또 template 을 열자마자 style 이 나와야 합니다. 그 사이에 주석이든
+           글이든 끼워 넣으면 head_leaked_text 오류가 납니다.
+           설명은 이렇게 style 안의 CSS 주석으로 쓰세요. */
+
+        /* 주의 2 — 폰트 선언은 씬마다 다시 해야 합니다.
+           index.html 의 head 선언만으로는 린트 오류가 납니다. */
+        @font-face {
+          font-family: "Pretendard";
+          src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations");
+          font-weight: 45 920;
+          font-style: normal;
+        }
+        /* ⚠ 루트는 반드시 #root 로 스타일하세요.
+           클래스로 스타일하면 렌더 시 규칙이 통째로 무시됩니다. */
+        #root {
+          position: absolute;
+          inset: 0;
+          font-family: "Pretendard", sans-serif;
+          color: #eaf0ff;
+        }
+
+        /* 씬 전체를 한 번에 페이드아웃하기 위한 래퍼 */
+        #s1-body {
+          position: absolute;
+          inset: 0;
+        }
+
+        #s1-label {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 372px;
+          display: block;
+          text-align: center;
+          font-size: 44px;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          color: #4ce0d2;
+          opacity: 0;
+          will-change: transform;
+        }
+
+        #s1-title {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 452px;
+          display: block;
+          text-align: center;
+          font-size: 148px;
+          font-weight: 900;
+          line-height: 1.15;
+          letter-spacing: -0.03em;
+          opacity: 0;
+          will-change: transform;
+        }
+
+        #s1-sub {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 656px;
+          display: block;
+          text-align: center;
+          font-size: 40px;
+          font-weight: 300;
+          color: #8fa0c4;
+          opacity: 0;
+          will-change: transform;
+        }
+      </style>
+
+      <!-- ⚠ data-composition-id 는 index.html 의 슬롯,
+           그리고 아래 window.__timelines 키와 정확히 같아야 합니다. -->
+      <div id="root" data-composition-id="scene-01" data-width="1920" data-height="1080">
+        <div id="s1-body">
+          <div id="s1-label">HYPERFRAMES</div>
+          <div id="s1-title">첫 번째 씬</div>
+          <div id="s1-sub">이 파일을 복사해서 씬을 늘려 가세요</div>
+        </div>
+      </div>
+
+      <script>
+        (function () {
+          window.__timelines = window.__timelines || {};
+
+          // 컴포지션당 타임라인은 하나, 반드시 paused, 반드시 동기적으로 생성.
+          const tl = gsap.timeline({ paused: true });
+
+          // 등장은 fromTo 로. (from 만 쓰면 되감기에서 어긋납니다)
+          tl.fromTo(
+            "#s1-label",
+            { opacity: 0, y: 18 },
+            { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+            0.4,
+          );
+          tl.fromTo(
+            "#s1-title",
+            { opacity: 0, y: 40, scale: 0.94 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.8, ease: "back.out(1.4)" },
+            0.7,
+          );
+          tl.fromTo(
+            "#s1-sub",
+            { opacity: 0, y: 20 },
+            { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
+            1.4,
+          );
+
+          // 씬 끝 — 다음 씬으로 넘기기 전에 정리.
+          // (마지막 씬이면 이 줄은 빼세요. 루트의 암전이 마무리합니다)
+          tl.to("#s1-body", { opacity: 0, duration: 0.5, ease: "power2.in" }, 11.0);
+
+          window.__timelines["scene-01"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
