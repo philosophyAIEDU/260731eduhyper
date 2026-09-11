@@ -1,0 +1,402 @@
+{
+  "schemaVersion": 3,
+  "composition": {
+    "fps": 30,
+    "width": 1920,
+    "height": 1080,
+    "durationSeconds": 430.677333,
+    "layout": "landscape",
+    "themeId": "pastel-soft",
+    "seed": 263
+  },
+  "audioTrack": {
+    "sourcePath": "public/narration.m4a",
+    "startSec": 0,
+    "endSec": 430.677333
+  },
+  "subtitles": {
+    "enabled": true,
+    "source": "public/captions.srt",
+    "note": "원본 화면 녹화(데스크탑 노출)를 쓰지 않기로 하여, 오디오만 사용하고 전체 자막을 하단 안전 영역에 표시함"
+  },
+  "scenes": [
+    {
+      "id": "card-01",
+      "intent": "AI 구독료 관리",
+      "startSec": 0,
+      "endSec": 13.9,
+      "accentIndex": 0,
+      "contentHints": {
+        "kicker": "AI 시대의 새로운 능력",
+        "title": "AI 구독료 관리",
+        "detail": "비싼 Max와 부족한 Pro 사이, 현명하게 쓰는 방법",
+        "image": null
+      },
+      "archetype": "hero"
+    },
+    {
+      "id": "card-02",
+      "intent": "월 $110",
+      "startSec": 13.9,
+      "endSec": 25.92,
+      "accentIndex": 1,
+      "contentHints": {
+        "kicker": "CLAUDE MAX",
+        "title": "월 $110",
+        "detail": "약 13만 5천 원 · 충분히 활용하지 못하면 부담",
+        "image": null
+      },
+      "archetype": "stat"
+    },
+    {
+      "id": "card-03",
+      "intent": "월 $19",
+      "startSec": 25.92,
+      "endSec": 40.92,
+      "accentIndex": 2,
+      "contentHints": {
+        "kicker": "CLAUDE PRO",
+        "title": "월 $19",
+        "detail": "약 2만 5천 원 · 요금 차이는 거의 5배",
+        "image": null
+      },
+      "archetype": "stat"
+    },
+    {
+      "id": "card-04",
+      "intent": "7가지 절약 팁",
+      "startSec": 40.92,
+      "endSec": 52.67,
+      "accentIndex": 3,
+      "contentHints": {
+        "kicker": "직접 써보고 정리한",
+        "title": "7가지 절약 팁",
+        "detail": "Pro 요금제를 알뜰하게 쓰는 실전 노하우",
+        "image": null
+      },
+      "archetype": "hero"
+    },
+    {
+      "id": "card-05",
+      "intent": "3개 AI를 모두 써보세요",
+      "startSec": 52.67,
+      "endSec": 61.95,
+      "accentIndex": 0,
+      "contentHints": {
+        "kicker": "TIP 01",
+        "title": "3개 AI를 모두 써보세요",
+        "detail": "ChatGPT · Claude · Gemini는 강점이 다릅니다",
+        "image": null
+      },
+      "archetype": "tip"
+    },
+    {
+      "id": "card-06",
+      "intent": "글쓰기와 코드 작성",
+      "startSec": 61.95,
+      "endSec": 68.25,
+      "accentIndex": 2,
+      "contentHints": {
+        "kicker": "CLAUDE",
+        "title": "글쓰기와 코드 작성",
+        "detail": "특히 Claude Code가 유용합니다",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-07",
+      "intent": "이미지 · 영상 · 음악",
+      "startSec": 68.25,
+      "endSec": 77.59,
+      "accentIndex": 3,
+      "contentHints": {
+        "kicker": "GEMINI",
+        "title": "이미지 · 영상 · 음악",
+        "detail": "다양한 생성 작업과 구글 생태계에 강점",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-08",
+      "intent": "두 장점을 두루두루",
+      "startSec": 77.59,
+      "endSec": 87.01,
+      "accentIndex": 1,
+      "contentHints": {
+        "kicker": "CHATGPT",
+        "title": "두 장점을 두루두루",
+        "detail": "코드 작성과 이미지 생성을 함께 활용",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-09",
+      "intent": "유료는 1~2개만",
+      "startSec": 87.01,
+      "endSec": 96.28,
+      "accentIndex": 1,
+      "contentHints": {
+        "kicker": "TIP 02",
+        "title": "유료는 1~2개만",
+        "detail": "주력 AI만 결제하고 나머지는 무료로 활용하세요",
+        "image": null
+      },
+      "archetype": "tip"
+    },
+    {
+      "id": "card-10",
+      "intent": "유료 1 + 무료 2",
+      "startSec": 96.28,
+      "endSec": 116.87,
+      "accentIndex": 0,
+      "contentHints": {
+        "kicker": "추천 조합",
+        "title": "유료 1 + 무료 2",
+        "detail": "사용량과 작업 종류에 맞춰 섞는 것이 핵심",
+        "image": null
+      },
+      "archetype": "compare"
+    },
+    {
+      "id": "card-11",
+      "intent": "Claude 유료",
+      "startSec": 116.87,
+      "endSec": 138.27,
+      "accentIndex": 2,
+      "contentHints": {
+        "kicker": "코드 작업이 많다면",
+        "title": "Claude 유료",
+        "detail": "ChatGPT와 Gemini는 무료 역할로 분배",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-12",
+      "intent": "월 약 7,500원",
+      "startSec": 138.27,
+      "endSec": 143.66,
+      "accentIndex": 3,
+      "contentHints": {
+        "kicker": "GEMINI 선택지",
+        "title": "월 약 7,500원",
+        "detail": "20달러 요금제보다 저렴한 요금제도 있습니다",
+        "image": null
+      },
+      "archetype": "stat"
+    },
+    {
+      "id": "card-13",
+      "intent": "모바일 앱을 활용하세요",
+      "startSec": 143.66,
+      "endSec": 159.86,
+      "accentIndex": 2,
+      "contentHints": {
+        "kicker": "TIP 03",
+        "title": "모바일 앱을 활용하세요",
+        "detail": "토큰이 다시 열리는 시간을 생활 속에서 활용",
+        "image": null
+      },
+      "archetype": "tip"
+    },
+    {
+      "id": "card-14",
+      "intent": "몇 시간 후 다시 사용",
+      "startSec": 159.86,
+      "endSec": 179.86,
+      "accentIndex": 0,
+      "contentHints": {
+        "kicker": "핵심 포인트",
+        "title": "몇 시간 후 다시 사용",
+        "detail": "한 번 끊겨도 사용 가능 시간이 다시 돌아옵니다",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-15",
+      "intent": "출근길에 작업 이어가기",
+      "startSec": 179.86,
+      "endSec": 215.98,
+      "accentIndex": 1,
+      "contentHints": {
+        "kicker": "모바일 루틴",
+        "title": "출근길에 작업 이어가기",
+        "detail": "\"전에 요청한 작업을 마무리해 주세요\"",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-16",
+      "intent": "Pro + 모바일",
+      "startSec": 215.98,
+      "endSec": 249.49,
+      "accentIndex": 3,
+      "contentHints": {
+        "kicker": "Max가 부담스럽다면",
+        "title": "Pro + 모바일",
+        "detail": "틈틈이 이어 쓰면 토큰 부족을 보완할 수 있습니다",
+        "image": null
+      },
+      "archetype": "compare"
+    },
+    {
+      "id": "card-17",
+      "intent": "모델을 바꿔 쓰세요",
+      "startSec": 249.49,
+      "endSec": 259.27,
+      "accentIndex": 3,
+      "contentHints": {
+        "kicker": "TIP 04",
+        "title": "모델을 바꿔 쓰세요",
+        "detail": "어려운 시작은 Opus, 보통 작업은 Sonnet",
+        "image": null
+      },
+      "archetype": "tip"
+    },
+    {
+      "id": "card-18",
+      "intent": "Opus → 뼈대",
+      "startSec": 259.27,
+      "endSec": 282.92,
+      "accentIndex": 1,
+      "contentHints": {
+        "kicker": "모델 분배",
+        "title": "Opus → 뼈대",
+        "detail": "Sonnet → 대부분의 일반 작업",
+        "image": null
+      },
+      "archetype": "compare"
+    },
+    {
+      "id": "card-19",
+      "intent": "대부분은 Sonnet",
+      "startSec": 282.92,
+      "endSec": 292.95,
+      "accentIndex": 2,
+      "contentHints": {
+        "kicker": "PRO 요금제 추천",
+        "title": "대부분은 Sonnet",
+        "detail": "토큰을 아끼면서도 웬만한 코드를 작성합니다",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-20",
+      "intent": "작업을 분배하세요",
+      "startSec": 292.95,
+      "endSec": 306.15,
+      "accentIndex": 0,
+      "contentHints": {
+        "kicker": "TIP 05",
+        "title": "작업을 분배하세요",
+        "detail": "일주일 단위로 계획하면 몰아서 쓰는 일을 줄입니다",
+        "image": null
+      },
+      "archetype": "tip"
+    },
+    {
+      "id": "card-21",
+      "intent": "하루에 한 작업",
+      "startSec": 306.15,
+      "endSec": 323.35,
+      "accentIndex": 1,
+      "contentHints": {
+        "kicker": "실행 방법",
+        "title": "하루에 한 작업",
+        "detail": "또는 이틀에 한 작업씩 달력에 나눠 적기",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-22",
+      "intent": "전업은 Max · 절약은 Pro",
+      "startSec": 323.35,
+      "endSec": 333.49,
+      "accentIndex": 2,
+      "contentHints": {
+        "kicker": "현실적인 선택",
+        "title": "전업은 Max · 절약은 Pro",
+        "detail": "사용량에 맞는 요금제를 선택하세요",
+        "image": null
+      },
+      "archetype": "compare"
+    },
+    {
+      "id": "card-23",
+      "intent": "구독 기록을 남기세요",
+      "startSec": 333.49,
+      "endSec": 351.44,
+      "accentIndex": 1,
+      "contentHints": {
+        "kicker": "TIP 06",
+        "title": "구독 기록을 남기세요",
+        "detail": "메모장이나 앱에 결제 내역을 한곳에 모으기",
+        "image": null
+      },
+      "archetype": "tip"
+    },
+    {
+      "id": "card-24",
+      "intent": "기록이 더 중요해집니다",
+      "startSec": 351.44,
+      "endSec": 358.19,
+      "accentIndex": 0,
+      "contentHints": {
+        "kicker": "구독이 늘수록",
+        "title": "기록이 더 중요해집니다",
+        "detail": "무엇을 결제했는지 한눈에 확인하세요",
+        "image": null
+      },
+      "archetype": "note"
+    },
+    {
+      "id": "card-25",
+      "intent": "구독료를 한눈에",
+      "startSec": 358.19,
+      "endSec": 365.98,
+      "accentIndex": 3,
+      "contentHints": {
+        "kicker": "AI 구독 관리 앱",
+        "title": "구독료를 한눈에",
+        "detail": "고정 댓글의 링크에서 활용할 수 있습니다",
+        "image": "app.png"
+      },
+      "archetype": "image"
+    },
+    {
+      "id": "card-26",
+      "intent": "결제 카드는 하나만",
+      "startSec": 365.98,
+      "endSec": 388.47,
+      "accentIndex": 2,
+      "contentHints": {
+        "kicker": "TIP 07",
+        "title": "결제 카드는 하나만",
+        "detail": "카드 사용 내역만 봐도 AI 구독을 확인할 수 있습니다",
+        "image": null
+      },
+      "archetype": "tip"
+    },
+    {
+      "id": "card-27",
+      "intent": "비싼 요금제보다 사용 습관",
+      "startSec": 388.47,
+      "endSec": 430.677333,
+      "accentIndex": 0,
+      "contentHints": {
+        "kicker": "AI 구독료 관리",
+        "title": "비싼 요금제보다 사용 습관",
+        "detail": "7가지 팁으로 Pro 요금제를 알뜰하게 써보세요",
+        "image": null
+      },
+      "archetype": "recap"
+    }
+  ]
+}

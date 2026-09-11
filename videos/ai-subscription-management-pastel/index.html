@@ -1,0 +1,1142 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <style>
+    @font-face{font-family:'Malgun Gothic';src:url('public/fonts/malgun.ttf') format('truetype');font-weight:400;font-display:block;}
+    @font-face{font-family:'Malgun Gothic';src:url('public/fonts/malgunbd.ttf') format('truetype');font-weight:700 900;font-display:block;}
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f9f4eb;font-family:'Malgun Gothic',sans-serif}
+    :root{--ink:#27324a;--ink-soft:#46516a;--accent-0:#b8f2e6;--accent-1:#ffa69e;--accent-2:#bde0fe;--accent-3:#c8b6ff;--accent-4:#faedcd;--paper:#faf3dd}
+    #stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:#f9f4eb}
+    .ambient{position:absolute;z-index:1;pointer-events:none;border-radius:50%;filter:blur(1px)}
+    #orb-a{right:-90px;top:-100px;width:320px;height:320px;background:rgba(200,182,255,.22)}
+    #orb-b{left:-70px;bottom:130px;width:220px;height:220px;background:rgba(184,242,230,.2)}
+
+    .scene-host{position:absolute;inset:0;width:1920px;height:1080px;pointer-events:none;overflow:hidden;z-index:3}
+    .scene{width:100%;height:100%;position:relative;overflow:hidden;background:var(--scene-tint);color:var(--ink);font-family:'Malgun Gothic',sans-serif}
+    .scene-ink-border{position:absolute;inset:22px;border:3px solid rgba(39,50,74,.32);border-radius:26px;pointer-events:none}
+
+    .eyebrow{display:inline-flex;align-items:center;gap:12px;font-size:26px;font-weight:700;letter-spacing:.08em;color:var(--ink-soft);text-transform:uppercase}
+    .dot{width:16px;height:16px;border-radius:50%;background:var(--scene-accent);border:2px solid var(--ink)}
+    .title{margin:22px 0 18px;line-height:1.14;letter-spacing:-.03em;font-weight:900;color:var(--ink);word-break:keep-all}
+    .detail{font-size:34px;line-height:1.48;font-weight:700;color:var(--ink-soft);word-break:keep-all;max-width:1240px}
+    .chip-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:6px}
+    .chip{padding:14px 26px;border:3px solid var(--ink);border-radius:999px;background:var(--scene-accent);font-size:28px;font-weight:800;color:var(--ink)}
+
+    .panel{position:absolute;border:5px solid var(--ink);border-radius:44px;background:rgba(255,255,255,.72);box-shadow:16px 18px 0 var(--scene-accent)}
+    .panel-center{left:200px;right:200px;top:230px;bottom:270px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:80px 100px}
+    .panel-hero .title{font-size:104px}
+    .panel-note .title{font-size:64px}
+    .panel-compare .title{font-size:68px}
+    .panel-stat .title{font-size:126px;letter-spacing:-.02em}
+    .panel-recap .title{font-size:80px}
+    .panel-recap .detail{font-size:36px}
+    .recap-chips{display:flex;flex-wrap:wrap;gap:14px;margin-top:28px}
+    .recap-chips .chip{background:var(--scene-accent)}
+
+    .stat-bar{width:100%;max-width:900px;height:34px;border:3px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden;margin:8px 0 22px}
+    .stat-bar-fill{height:100%;background:var(--scene-accent);border-radius:999px}
+
+    .panel-tip{left:170px;right:170px;top:210px;bottom:250px;display:flex;align-items:center;gap:72px;padding:0 100px}
+    .tip-number{flex:0 0 auto;width:230px;height:230px;display:grid;place-items:center;border-radius:56px;border:5px solid var(--ink);background:var(--scene-accent);font-size:104px;font-weight:900;box-shadow:12px 14px 0 rgba(39,50,74,.22)}
+    .tip-copy{flex:1 1 auto;min-width:0}
+    .tip-copy .title{font-size:72px}
+    .tip-copy .detail{font-size:36px}
+    .tip-steps{display:flex;gap:14px;margin-top:32px}
+    .dot-step{width:20px;height:20px;border-radius:50%;border:3px solid var(--ink);background:#fff}
+    .dot-step.filled{background:var(--scene-accent)}
+
+    .panel-image{left:150px;right:150px;top:200px;bottom:250px;display:grid;grid-template-columns:minmax(0,1fr) 780px;gap:64px;align-items:center;padding:70px 90px}
+    .panel-image .title{font-size:64px}
+    .panel-image .detail{font-size:34px;max-width:640px}
+    .image-frame{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+    .app-shot{width:100%;max-height:620px;object-fit:contain;border:5px solid var(--ink);border-radius:28px;background:#fff;box-shadow:14px 16px 0 rgba(39,50,74,.2)}
+
+    .caption{position:absolute;left:50%;bottom:56px;transform:translateX(-50%);max-width:1720px;z-index:10;pointer-events:none}
+    .caption span{display:block;background:rgba(39,50,74,.92);color:#faf3dd;font-size:42px;font-weight:800;line-height:1.35;padding:18px 40px;border-radius:20px;text-align:center;word-break:keep-all;box-shadow:0 8px 0 rgba(0,0,0,.08)}
+  </style>
+</head>
+<body>
+<div id="stage" data-composition-id="ai-subscription-pastel" data-start="0" data-duration="430.677333" data-fps="30" data-width="1920" data-height="1080">
+  <audio id="narration-audio" src="public/narration.m4a" data-start="0" data-duration="430.677333" data-track-index="10" data-volume="1"></audio>
+  <div id="orb-a" class="ambient" data-layout-ignore></div><div id="orb-b" class="ambient" data-layout-ignore></div>
+  <div id="card-01-host" class="scene-host clip" data-card-id="card-01" data-start="0.0000" data-duration="13.9000" data-track-index="2" style="opacity:0"><div class="scene" data-variant="hero" style="--scene-accent:var(--accent-0);--scene-tint:#eef9f6">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-01-panel" class="panel panel-center panel-hero">
+        <div class="eyebrow"><span class="dot"></span>AI 시대의 새로운 능력</div>
+        <h2 id="card-01-title" class="title">AI 구독료 관리</h2>
+        <div id="card-01-detail" class="detail">비싼 Max와 부족한 Pro 사이, 현명하게 쓰는 방법</div>
+      </div>
+  </div></div>
+<div id="card-02-host" class="scene-host clip" data-card-id="card-02" data-start="13.9000" data-duration="12.0200" data-track-index="2" style="opacity:0"><div class="scene" data-variant="stat" style="--scene-accent:var(--accent-1);--scene-tint:#fff1ef">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-02-panel" class="panel panel-center panel-stat">
+          <div class="eyebrow"><span class="dot"></span>CLAUDE MAX</div>
+          <h2 id="card-02-title" class="title">월 $110</h2>
+          <div class="stat-bar"><div class="stat-bar-fill" id="card-02-bar" style="width:0%"></div></div>
+          <div id="card-02-detail" class="chip-row"><span class="chip">약 13만 5천 원</span><span class="chip">충분히 활용하지 못하면 부담</span></div>
+        </div>
+  </div></div>
+<div id="card-03-host" class="scene-host clip" data-card-id="card-03" data-start="25.9200" data-duration="15.0000" data-track-index="2" style="opacity:0"><div class="scene" data-variant="stat" style="--scene-accent:var(--accent-2);--scene-tint:#eef6ff">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-03-panel" class="panel panel-center panel-stat">
+          <div class="eyebrow"><span class="dot"></span>CLAUDE PRO</div>
+          <h2 id="card-03-title" class="title">월 $19</h2>
+          <div class="stat-bar"><div class="stat-bar-fill" id="card-03-bar" style="width:0%"></div></div>
+          <div id="card-03-detail" class="chip-row"><span class="chip">약 2만 5천 원</span><span class="chip">요금 차이는 거의 5배</span></div>
+        </div>
+  </div></div>
+<div id="card-04-host" class="scene-host clip" data-card-id="card-04" data-start="40.9200" data-duration="11.7500" data-track-index="2" style="opacity:0"><div class="scene" data-variant="hero" style="--scene-accent:var(--accent-3);--scene-tint:#f4efff">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-04-panel" class="panel panel-center panel-hero">
+        <div class="eyebrow"><span class="dot"></span>직접 써보고 정리한</div>
+        <h2 id="card-04-title" class="title">7가지 절약 팁</h2>
+        <div id="card-04-detail" class="detail">Pro 요금제를 알뜰하게 쓰는 실전 노하우</div>
+      </div>
+  </div></div>
+<div id="card-05-host" class="scene-host clip" data-card-id="card-05" data-start="52.6700" data-duration="9.2800" data-track-index="2" style="opacity:0"><div class="scene" data-variant="tip" style="--scene-accent:var(--accent-0);--scene-tint:#eef9f6">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-05-panel" class="panel panel-tip">
+          <div id="card-05-number" class="tip-number">01</div>
+          <div class="tip-copy">
+            <div class="eyebrow"><span class="dot"></span>TIP 01</div>
+            <h2 id="card-05-title" class="title">3개 AI를 모두 써보세요</h2>
+            <div id="card-05-detail" class="detail">ChatGPT · Claude · Gemini는 강점이 다릅니다</div>
+            <div class="tip-steps"><span class="dot-step filled"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span></div>
+          </div>
+        </div>
+  </div></div>
+<div id="card-06-host" class="scene-host clip" data-card-id="card-06" data-start="61.9500" data-duration="6.3000" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-2);--scene-tint:#eef6ff">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-06-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>CLAUDE</div>
+        <h2 id="card-06-title" class="title">글쓰기와 코드 작성</h2>
+        <div id="card-06-detail" class="detail">특히 Claude Code가 유용합니다</div>
+      </div>
+  </div></div>
+<div id="card-07-host" class="scene-host clip" data-card-id="card-07" data-start="68.2500" data-duration="9.3400" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-3);--scene-tint:#f4efff">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-07-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>GEMINI</div>
+        <h2 id="card-07-title" class="title">이미지 · 영상 · 음악</h2>
+        <div id="card-07-detail" class="detail">다양한 생성 작업과 구글 생태계에 강점</div>
+      </div>
+  </div></div>
+<div id="card-08-host" class="scene-host clip" data-card-id="card-08" data-start="77.5900" data-duration="9.4200" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-1);--scene-tint:#fff1ef">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-08-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>CHATGPT</div>
+        <h2 id="card-08-title" class="title">두 장점을 두루두루</h2>
+        <div id="card-08-detail" class="detail">코드 작성과 이미지 생성을 함께 활용</div>
+      </div>
+  </div></div>
+<div id="card-09-host" class="scene-host clip" data-card-id="card-09" data-start="87.0100" data-duration="9.2700" data-track-index="2" style="opacity:0"><div class="scene" data-variant="tip" style="--scene-accent:var(--accent-1);--scene-tint:#fff1ef">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-09-panel" class="panel panel-tip">
+          <div id="card-09-number" class="tip-number">02</div>
+          <div class="tip-copy">
+            <div class="eyebrow"><span class="dot"></span>TIP 02</div>
+            <h2 id="card-09-title" class="title">유료는 1~2개만</h2>
+            <div id="card-09-detail" class="detail">주력 AI만 결제하고 나머지는 무료로 활용하세요</div>
+            <div class="tip-steps"><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span></div>
+          </div>
+        </div>
+  </div></div>
+<div id="card-10-host" class="scene-host clip" data-card-id="card-10" data-start="96.2800" data-duration="20.5900" data-track-index="2" style="opacity:0"><div class="scene" data-variant="compare" style="--scene-accent:var(--accent-0);--scene-tint:#eef9f6">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-10-panel" class="panel panel-center panel-compare">
+        <div class="eyebrow"><span class="dot"></span>추천 조합</div>
+        <h2 id="card-10-title" class="title">유료 1 + 무료 2</h2>
+        <div id="card-10-detail" class="detail">사용량과 작업 종류에 맞춰 섞는 것이 핵심</div>
+      </div>
+  </div></div>
+<div id="card-11-host" class="scene-host clip" data-card-id="card-11" data-start="116.8700" data-duration="21.4000" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-2);--scene-tint:#eef6ff">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-11-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>코드 작업이 많다면</div>
+        <h2 id="card-11-title" class="title">Claude 유료</h2>
+        <div id="card-11-detail" class="detail">ChatGPT와 Gemini는 무료 역할로 분배</div>
+      </div>
+  </div></div>
+<div id="card-12-host" class="scene-host clip" data-card-id="card-12" data-start="138.2700" data-duration="5.3900" data-track-index="2" style="opacity:0"><div class="scene" data-variant="stat" style="--scene-accent:var(--accent-3);--scene-tint:#f4efff">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-12-panel" class="panel panel-center panel-stat">
+          <div class="eyebrow"><span class="dot"></span>GEMINI 선택지</div>
+          <h2 id="card-12-title" class="title">월 약 7,500원</h2>
+          
+          <div id="card-12-detail" class="detail">20달러 요금제보다 저렴한 요금제도 있습니다</div>
+        </div>
+  </div></div>
+<div id="card-13-host" class="scene-host clip" data-card-id="card-13" data-start="143.6600" data-duration="16.2000" data-track-index="2" style="opacity:0"><div class="scene" data-variant="tip" style="--scene-accent:var(--accent-2);--scene-tint:#eef6ff">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-13-panel" class="panel panel-tip">
+          <div id="card-13-number" class="tip-number">03</div>
+          <div class="tip-copy">
+            <div class="eyebrow"><span class="dot"></span>TIP 03</div>
+            <h2 id="card-13-title" class="title">모바일 앱을 활용하세요</h2>
+            <div id="card-13-detail" class="detail">토큰이 다시 열리는 시간을 생활 속에서 활용</div>
+            <div class="tip-steps"><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span></div>
+          </div>
+        </div>
+  </div></div>
+<div id="card-14-host" class="scene-host clip" data-card-id="card-14" data-start="159.8600" data-duration="20.0000" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-0);--scene-tint:#eef9f6">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-14-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>핵심 포인트</div>
+        <h2 id="card-14-title" class="title">몇 시간 후 다시 사용</h2>
+        <div id="card-14-detail" class="detail">한 번 끊겨도 사용 가능 시간이 다시 돌아옵니다</div>
+      </div>
+  </div></div>
+<div id="card-15-host" class="scene-host clip" data-card-id="card-15" data-start="179.8600" data-duration="36.1200" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-1);--scene-tint:#fff1ef">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-15-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>모바일 루틴</div>
+        <h2 id="card-15-title" class="title">출근길에 작업 이어가기</h2>
+        <div id="card-15-detail" class="detail">"전에 요청한 작업을 마무리해 주세요"</div>
+      </div>
+  </div></div>
+<div id="card-16-host" class="scene-host clip" data-card-id="card-16" data-start="215.9800" data-duration="33.5100" data-track-index="2" style="opacity:0"><div class="scene" data-variant="compare" style="--scene-accent:var(--accent-3);--scene-tint:#f4efff">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-16-panel" class="panel panel-center panel-compare">
+        <div class="eyebrow"><span class="dot"></span>Max가 부담스럽다면</div>
+        <h2 id="card-16-title" class="title">Pro + 모바일</h2>
+        <div id="card-16-detail" class="detail">틈틈이 이어 쓰면 토큰 부족을 보완할 수 있습니다</div>
+      </div>
+  </div></div>
+<div id="card-17-host" class="scene-host clip" data-card-id="card-17" data-start="249.4900" data-duration="9.7800" data-track-index="2" style="opacity:0"><div class="scene" data-variant="tip" style="--scene-accent:var(--accent-3);--scene-tint:#f4efff">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-17-panel" class="panel panel-tip">
+          <div id="card-17-number" class="tip-number">04</div>
+          <div class="tip-copy">
+            <div class="eyebrow"><span class="dot"></span>TIP 04</div>
+            <h2 id="card-17-title" class="title">모델을 바꿔 쓰세요</h2>
+            <div id="card-17-detail" class="detail">어려운 시작은 Opus, 보통 작업은 Sonnet</div>
+            <div class="tip-steps"><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step"></span><span class="dot-step"></span><span class="dot-step"></span></div>
+          </div>
+        </div>
+  </div></div>
+<div id="card-18-host" class="scene-host clip" data-card-id="card-18" data-start="259.2700" data-duration="23.6500" data-track-index="2" style="opacity:0"><div class="scene" data-variant="compare" style="--scene-accent:var(--accent-1);--scene-tint:#fff1ef">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-18-panel" class="panel panel-center panel-compare">
+        <div class="eyebrow"><span class="dot"></span>모델 분배</div>
+        <h2 id="card-18-title" class="title">Opus → 뼈대</h2>
+        <div id="card-18-detail" class="detail">Sonnet → 대부분의 일반 작업</div>
+      </div>
+  </div></div>
+<div id="card-19-host" class="scene-host clip" data-card-id="card-19" data-start="282.9200" data-duration="10.0300" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-2);--scene-tint:#eef6ff">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-19-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>PRO 요금제 추천</div>
+        <h2 id="card-19-title" class="title">대부분은 Sonnet</h2>
+        <div id="card-19-detail" class="detail">토큰을 아끼면서도 웬만한 코드를 작성합니다</div>
+      </div>
+  </div></div>
+<div id="card-20-host" class="scene-host clip" data-card-id="card-20" data-start="292.9500" data-duration="13.2000" data-track-index="2" style="opacity:0"><div class="scene" data-variant="tip" style="--scene-accent:var(--accent-0);--scene-tint:#eef9f6">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-20-panel" class="panel panel-tip">
+          <div id="card-20-number" class="tip-number">05</div>
+          <div class="tip-copy">
+            <div class="eyebrow"><span class="dot"></span>TIP 05</div>
+            <h2 id="card-20-title" class="title">작업을 분배하세요</h2>
+            <div id="card-20-detail" class="detail">일주일 단위로 계획하면 몰아서 쓰는 일을 줄입니다</div>
+            <div class="tip-steps"><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step"></span><span class="dot-step"></span></div>
+          </div>
+        </div>
+  </div></div>
+<div id="card-21-host" class="scene-host clip" data-card-id="card-21" data-start="306.1500" data-duration="17.2000" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-1);--scene-tint:#fff1ef">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-21-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>실행 방법</div>
+        <h2 id="card-21-title" class="title">하루에 한 작업</h2>
+        <div id="card-21-detail" class="detail">또는 이틀에 한 작업씩 달력에 나눠 적기</div>
+      </div>
+  </div></div>
+<div id="card-22-host" class="scene-host clip" data-card-id="card-22" data-start="323.3500" data-duration="10.1400" data-track-index="2" style="opacity:0"><div class="scene" data-variant="compare" style="--scene-accent:var(--accent-2);--scene-tint:#eef6ff">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-22-panel" class="panel panel-center panel-compare">
+        <div class="eyebrow"><span class="dot"></span>현실적인 선택</div>
+        <h2 id="card-22-title" class="title">전업은 Max · 절약은 Pro</h2>
+        <div id="card-22-detail" class="detail">사용량에 맞는 요금제를 선택하세요</div>
+      </div>
+  </div></div>
+<div id="card-23-host" class="scene-host clip" data-card-id="card-23" data-start="333.4900" data-duration="17.9500" data-track-index="2" style="opacity:0"><div class="scene" data-variant="tip" style="--scene-accent:var(--accent-1);--scene-tint:#fff1ef">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-23-panel" class="panel panel-tip">
+          <div id="card-23-number" class="tip-number">06</div>
+          <div class="tip-copy">
+            <div class="eyebrow"><span class="dot"></span>TIP 06</div>
+            <h2 id="card-23-title" class="title">구독 기록을 남기세요</h2>
+            <div id="card-23-detail" class="detail">메모장이나 앱에 결제 내역을 한곳에 모으기</div>
+            <div class="tip-steps"><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step"></span></div>
+          </div>
+        </div>
+  </div></div>
+<div id="card-24-host" class="scene-host clip" data-card-id="card-24" data-start="351.4400" data-duration="6.7500" data-track-index="2" style="opacity:0"><div class="scene" data-variant="note" style="--scene-accent:var(--accent-0);--scene-tint:#eef9f6">
+    <div class="scene-ink-border"></div>
+    
+      <div id="card-24-panel" class="panel panel-center panel-note">
+        <div class="eyebrow"><span class="dot"></span>구독이 늘수록</div>
+        <h2 id="card-24-title" class="title">기록이 더 중요해집니다</h2>
+        <div id="card-24-detail" class="detail">무엇을 결제했는지 한눈에 확인하세요</div>
+      </div>
+  </div></div>
+<div id="card-25-host" class="scene-host clip" data-card-id="card-25" data-start="358.1900" data-duration="7.7900" data-track-index="2" style="opacity:0"><div class="scene" data-variant="image" style="--scene-accent:var(--accent-3);--scene-tint:#f4efff">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-25-panel" class="panel panel-image">
+          <div class="image-copy">
+            <div class="eyebrow"><span class="dot"></span>AI 구독 관리 앱</div>
+            <h2 id="card-25-title" class="title">구독료를 한눈에</h2>
+            <div id="card-25-detail" class="detail">고정 댓글의 링크에서 활용할 수 있습니다</div>
+          </div>
+          <div class="image-frame">
+            <img id="card-25-image" class="app-shot" src="public/app.png" alt="AI 구독 관리 앱 화면">
+          </div>
+        </div>
+  </div></div>
+<div id="card-26-host" class="scene-host clip" data-card-id="card-26" data-start="365.9800" data-duration="22.4900" data-track-index="2" style="opacity:0"><div class="scene" data-variant="tip" style="--scene-accent:var(--accent-2);--scene-tint:#eef6ff">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-26-panel" class="panel panel-tip">
+          <div id="card-26-number" class="tip-number">07</div>
+          <div class="tip-copy">
+            <div class="eyebrow"><span class="dot"></span>TIP 07</div>
+            <h2 id="card-26-title" class="title">결제 카드는 하나만</h2>
+            <div id="card-26-detail" class="detail">카드 사용 내역만 봐도 AI 구독을 확인할 수 있습니다</div>
+            <div class="tip-steps"><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span><span class="dot-step filled"></span></div>
+          </div>
+        </div>
+  </div></div>
+<div id="card-27-host" class="scene-host clip" data-card-id="card-27" data-start="388.4700" data-duration="42.2073" data-track-index="2" style="opacity:0"><div class="scene" data-variant="recap" style="--scene-accent:var(--accent-0);--scene-tint:#eef9f6">
+    <div class="scene-ink-border"></div>
+    
+        <div id="card-27-panel" class="panel panel-center panel-recap">
+          <div class="eyebrow"><span class="dot"></span>AI 구독료 관리</div>
+          <h2 id="card-27-title" class="title">비싼 요금제보다 사용 습관</h2>
+          <div id="card-27-detail" class="detail">7가지 팁으로 Pro 요금제를 알뜰하게 써보세요</div>
+          <div id="card-27-chips" class="recap-chips">
+            <span class="chip">역할 분배</span><span class="chip">모바일 활용</span><span class="chip">기록 습관</span>
+          </div>
+        </div>
+  </div></div>
+  <div class="caption clip" id="cap-0" data-start="0.000" data-duration="1.830" data-track-index="5" style="opacity:0"><span>AI 시대의 새로운 능력</span></div>
+<div class="caption clip" id="cap-1" data-start="1.830" data-duration="2.800" data-track-index="5" style="opacity:0"><span>AI 구독료 관리 능력에 대해서 말씀드리도록 하겠습니다</span></div>
+<div class="caption clip" id="cap-2" data-start="4.630" data-duration="3.330" data-track-index="5" style="opacity:0"><span>그중에서도 특히 맥스 요금제는 비싸게 느껴지시고,</span></div>
+<div class="caption clip" id="cap-3" data-start="7.970" data-duration="2.860" data-track-index="5" style="opacity:0"><span>프로 요금제는 토큰이 많이 모자라다라고</span></div>
+<div class="caption clip" id="cap-4" data-start="10.830" data-duration="3.110" data-track-index="5" style="opacity:0"><span>느껴지시는 분들을 위한 구독료 관리법입니다</span></div>
+<div class="caption clip" id="cap-5" data-start="13.930" data-duration="1.240" data-track-index="5" style="opacity:0"><span>클로드 기준으로</span></div>
+<div class="caption clip" id="cap-6" data-start="15.180" data-duration="2.630" data-track-index="5" style="opacity:0"><span>맥스 요금제는 한 달에 $110입니다</span></div>
+<div class="caption clip" id="cap-7" data-start="17.810" data-duration="3.280" data-track-index="5" style="opacity:0"><span>원화로 치자면 대략 13만 5천원 정도 됩니다</span></div>
+<div class="caption clip" id="cap-8" data-start="21.090" data-duration="4.830" data-track-index="5" style="opacity:0"><span>한 달에 이 정도 비용을 낸다는 것은 쉽지만은 않죠</span></div>
+<div class="caption clip" id="cap-9" data-start="25.920" data-duration="2.510" data-track-index="5" style="opacity:0"><span>프로 요금제는 한 달에 $19입니다</span></div>
+<div class="caption clip" id="cap-10" data-start="28.430" data-duration="2.230" data-track-index="5" style="opacity:0"><span>원화로 2만 5천원 정도 됩니다</span></div>
+<div class="caption clip" id="cap-11" data-start="30.670" data-duration="2.000" data-track-index="5" style="opacity:0"><span>요금이 거의 5배 정도 차이가 납니다</span></div>
+<div class="caption clip" id="cap-12" data-start="32.670" data-duration="3.430" data-track-index="5" style="opacity:0"><span>그래서 맥스 요금제는 다 활용 못하는 것 같고</span></div>
+<div class="caption clip" id="cap-13" data-start="36.090" data-duration="2.670" data-track-index="5" style="opacity:0"><span>프로 요금제는 토큰이 너무 금방 떨어져서</span></div>
+<div class="caption clip" id="cap-14" data-start="38.760" data-duration="2.170" data-track-index="5" style="opacity:0"><span>답답하신 분들이 분명히 계실 겁니다</span></div>
+<div class="caption clip" id="cap-15" data-start="40.920" data-duration="1.040" data-track-index="5" style="opacity:0"><span>이런 분들을 위한</span></div>
+<div class="caption clip" id="cap-16" data-start="41.970" data-duration="1.670" data-track-index="5" style="opacity:0"><span>일곱 가지 팁을 준비했습니다</span></div>
+<div class="caption clip" id="cap-17" data-start="43.630" data-duration="2.370" data-track-index="5" style="opacity:0"><span>저도 클로드 프로 요금제로</span></div>
+<div class="caption clip" id="cap-18" data-start="46.000" data-duration="2.550" data-track-index="5" style="opacity:0"><span>알뜰살뜰 써보고 있는데요</span></div>
+<div class="caption clip" id="cap-19" data-start="48.550" data-duration="4.120" data-track-index="5" style="opacity:0"><span>제가 직접 써보면서 얻게 된 노하우들을 공유하도록 하겠습니다</span></div>
+<div class="caption clip" id="cap-20" data-start="52.670" data-duration="4.010" data-track-index="5" style="opacity:0"><span>1번 ChatGPT, 클로드, 제미나이 세 개 다 쓰세요</span></div>
+<div class="caption clip" id="cap-21" data-start="56.670" data-duration="1.920" data-track-index="5" style="opacity:0"><span>먼저 ChatGPT, 클로드, 제미나이</span></div>
+<div class="caption clip" id="cap-22" data-start="58.590" data-duration="2.140" data-track-index="5" style="opacity:0"><span>세 개를 다 쓰시라고 추천드리고 싶습니다</span></div>
+<div class="caption clip" id="cap-23" data-start="60.730" data-duration="1.220" data-track-index="5" style="opacity:0"><span>다 장점이 다릅니다</span></div>
+<div class="caption clip" id="cap-24" data-start="61.950" data-duration="3.110" data-track-index="5" style="opacity:0"><span>클로드는 글 작성, 코드 작성에 특화되어 있습니다</span></div>
+<div class="caption clip" id="cap-25" data-start="65.060" data-duration="3.190" data-track-index="5" style="opacity:0"><span>특히 클로드 코드가 엄청나게 유용합니다</span></div>
+<div class="caption clip" id="cap-26" data-start="68.250" data-duration="1.150" data-track-index="5" style="opacity:0"><span>제미나이는 클로드만큼</span></div>
+<div class="caption clip" id="cap-27" data-start="69.400" data-duration="1.980" data-track-index="5" style="opacity:0"><span>코드 작성에 뛰어나진 않지만</span></div>
+<div class="caption clip" id="cap-28" data-start="71.380" data-duration="1.260" data-track-index="5" style="opacity:0"><span>여러 가지를 잘합니다</span></div>
+<div class="caption clip" id="cap-29" data-start="72.640" data-duration="4.950" data-track-index="5" style="opacity:0"><span>특히 이미지, 영상, 음악 생성 등을 할 수 있습니다</span></div>
+<div class="caption clip" id="cap-30" data-start="77.590" data-duration="4.100" data-track-index="5" style="opacity:0"><span>그리고 ChatGPT는 클로드, 제미나이의 장점을 두루두루 가지고 있습니다</span></div>
+<div class="caption clip" id="cap-31" data-start="81.690" data-duration="1.100" data-track-index="5" style="opacity:0"><span>코드 작성도 가능하고</span></div>
+<div class="caption clip" id="cap-32" data-start="82.790" data-duration="1.440" data-track-index="5" style="opacity:0"><span>이미지 생성도 가능합니다</span></div>
+<div class="caption clip" id="cap-33" data-start="84.230" data-duration="2.770" data-track-index="5" style="opacity:0"><span>그래서 이 세 가지를 두루두루 쓰시면 좋을 것 같습니다</span></div>
+<div class="caption clip" id="cap-34" data-start="87.010" data-duration="5.120" data-track-index="5" style="opacity:0"><span>2번, 주 사용 AI를 하나에서 두 개만 정해서</span></div>
+<div class="caption clip" id="cap-35" data-start="92.120" data-duration="1.200" data-track-index="5" style="opacity:0"><span>유료로 쓰시고</span></div>
+<div class="caption clip" id="cap-36" data-start="93.320" data-duration="2.960" data-track-index="5" style="opacity:0"><span>나머지는 공짜로 쓰시면 좋을 것 같습니다</span></div>
+<div class="caption clip" id="cap-37" data-start="96.280" data-duration="3.630" data-track-index="5" style="opacity:0"><span>그러니까 방금 말씀드린 ChatGPT, 클로드, 제미나이를</span></div>
+<div class="caption clip" id="cap-38" data-start="99.910" data-duration="2.000" data-track-index="5" style="opacity:0"><span>세 개 다 유료로 쓰셔도 괜찮습니다</span></div>
+<div class="caption clip" id="cap-39" data-start="101.910" data-duration="1.230" data-track-index="5" style="opacity:0"><span>AI를 많이 쓰시는 분들은</span></div>
+<div class="caption clip" id="cap-40" data-start="103.140" data-duration="1.380" data-track-index="5" style="opacity:0"><span>그러셔도 되는데</span></div>
+<div class="caption clip" id="cap-41" data-start="104.520" data-duration="2.380" data-track-index="5" style="opacity:0"><span>그렇게까지 AI 많이 안 쓰시는 분들은</span></div>
+<div class="caption clip" id="cap-42" data-start="106.900" data-duration="1.480" data-track-index="5" style="opacity:0"><span>하나 정도만 유료로 쓰시고</span></div>
+<div class="caption clip" id="cap-43" data-start="108.370" data-duration="2.580" data-track-index="5" style="opacity:0"><span>나머지 두 개는 무료로 쓰시면 좋겠습니다</span></div>
+<div class="caption clip" id="cap-44" data-start="110.950" data-duration="1.780" data-track-index="5" style="opacity:0"><span>무료로도 요즘은 쓸 수 있으니까요</span></div>
+<div class="caption clip" id="cap-45" data-start="112.720" data-duration="4.150" data-track-index="5" style="opacity:0"><span>이 세 가지를 적절하게 유료, 무료로 섞어서 쓰시면 좋을 것 같습니다</span></div>
+<div class="caption clip" id="cap-46" data-start="116.870" data-duration="1.960" data-track-index="5" style="opacity:0"><span>코드 작성을 많이 하시는 분들이라면</span></div>
+<div class="caption clip" id="cap-47" data-start="118.830" data-duration="2.600" data-track-index="5" style="opacity:0"><span>클로드는 유료로 쓰시고</span></div>
+<div class="caption clip" id="cap-48" data-start="121.430" data-duration="2.650" data-track-index="5" style="opacity:0"><span>ChatGPT랑 Gemini는 무료로 쓰시고</span></div>
+<div class="caption clip" id="cap-49" data-start="124.080" data-duration="2.140" data-track-index="5" style="opacity:0"><span>어떤 작업을 할 때는</span></div>
+<div class="caption clip" id="cap-50" data-start="126.220" data-duration="2.130" data-track-index="5" style="opacity:0"><span>ChatGPT랑 Gemini를 무료로 활용한다라고</span></div>
+<div class="caption clip" id="cap-51" data-start="128.350" data-duration="2.050" data-track-index="5" style="opacity:0"><span>이렇게 정해놓고 쓰시면 좋을 것 같아요</span></div>
+<div class="caption clip" id="cap-52" data-start="130.400" data-duration="1.660" data-track-index="5" style="opacity:0"><span>그리고 이미지, 영상,</span></div>
+<div class="caption clip" id="cap-53" data-start="132.060" data-duration="1.970" data-track-index="5" style="opacity:0"><span>음악 생성을 골고루 하시고</span></div>
+<div class="caption clip" id="cap-54" data-start="134.030" data-duration="2.130" data-track-index="5" style="opacity:0"><span>구글 플랫폼에 익숙하신 분들은</span></div>
+<div class="caption clip" id="cap-55" data-start="136.160" data-duration="2.110" data-track-index="5" style="opacity:0"><span>Gemini 요금을 쓰셔도 좋습니다</span></div>
+<div class="caption clip" id="cap-56" data-start="138.270" data-duration="3.080" data-track-index="5" style="opacity:0"><span>Gemini는 20달러짜리 요금제 밑에</span></div>
+<div class="caption clip" id="cap-57" data-start="141.340" data-duration="2.320" data-track-index="5" style="opacity:0"><span>월 약 7,500원짜리  요금제도 있습니다</span></div>
+<div class="caption clip" id="cap-58" data-start="143.660" data-duration="3.350" data-track-index="5" style="opacity:0"><span>3번 모바일 AI 앱을 잘 활용하세요</span></div>
+<div class="caption clip" id="cap-59" data-start="147.010" data-duration="1.470" data-track-index="5" style="opacity:0"><span>제가 조금 전에 설명해 드린</span></div>
+<div class="caption clip" id="cap-60" data-start="148.480" data-duration="4.430" data-track-index="5" style="opacity:0"><span>클로드, 챗GPT, 제미나이 모두 모바일 앱이 있습니다</span></div>
+<div class="caption clip" id="cap-61" data-start="152.920" data-duration="3.590" data-track-index="5" style="opacity:0"><span>모바일 사용이 우리가 요금제를 알뜰살뜰하게 쓸 수 있는</span></div>
+<div class="caption clip" id="cap-62" data-start="156.510" data-duration="1.850" data-track-index="5" style="opacity:0"><span>핵심 요건입니다</span></div>
+<div class="caption clip" id="cap-63" data-start="158.360" data-duration="2.270" data-track-index="5" style="opacity:0"><span>왜냐면 20달러짜리 요금제를 쓰시다 보면,</span></div>
+<div class="caption clip" id="cap-64" data-start="160.620" data-duration="1.150" data-track-index="5" style="opacity:0"><span>작업을 많이 하다 보면</span></div>
+<div class="caption clip" id="cap-65" data-start="161.770" data-duration="2.220" data-track-index="5" style="opacity:0"><span>토큰이 자주 끊기게 됩니다</span></div>
+<div class="caption clip" id="cap-66" data-start="163.990" data-duration="1.650" data-track-index="5" style="opacity:0"><span>그렇지만 여기서 중요한 점은</span></div>
+<div class="caption clip" id="cap-67" data-start="165.640" data-duration="1.040" data-track-index="5" style="opacity:0"><span>몇 시간 후에</span></div>
+<div class="caption clip" id="cap-68" data-start="166.680" data-duration="2.630" data-track-index="5" style="opacity:0"><span>우리가 또 다시 쓸 수 있게 됩니다</span></div>
+<div class="caption clip" id="cap-69" data-start="169.310" data-duration="4.530" data-track-index="5" style="opacity:0"><span>그렇기 때문에 컴퓨터 앞에서만 AI를 쓴다면</span></div>
+<div class="caption clip" id="cap-70" data-start="173.840" data-duration="1.980" data-track-index="5" style="opacity:0"><span>몇 시간 후에 바로 AI를 쓸 수 없고</span></div>
+<div class="caption clip" id="cap-71" data-start="175.820" data-duration="1.430" data-track-index="5" style="opacity:0"><span>다음 날 다시 한다든가 해야 됩니다</span></div>
+<div class="caption clip" id="cap-72" data-start="177.250" data-duration="0.500" data-track-index="5" style="opacity:0"><span>그렇게 되면</span></div>
+<div class="caption clip" id="cap-73" data-start="177.750" data-duration="0.700" data-track-index="5" style="opacity:0"><span>또 흐름이 끊겨서</span></div>
+<div class="caption clip" id="cap-74" data-start="178.450" data-duration="1.410" data-track-index="5" style="opacity:0"><span>우리가 잘 안 쓰게 돼요</span></div>
+<div class="caption clip" id="cap-75" data-start="179.860" data-duration="3.620" data-track-index="5" style="opacity:0"><span>그래서 모바일로 AI 앱을 쓰실 것을 추천드립니다</span></div>
+<div class="caption clip" id="cap-76" data-start="183.470" data-duration="0.850" data-track-index="5" style="opacity:0"><span>집에서 컴퓨터로</span></div>
+<div class="caption clip" id="cap-77" data-start="184.320" data-duration="0.870" data-track-index="5" style="opacity:0"><span>밤에 작업을 했어요</span></div>
+<div class="caption clip" id="cap-78" data-start="185.190" data-duration="0.850" data-track-index="5" style="opacity:0"><span>그러다가 토큰이 끊겼어요</span></div>
+<div class="caption clip" id="cap-79" data-start="186.040" data-duration="2.450" data-track-index="5" style="opacity:0"><span>그러면 그다음 날 출근하실 때나</span></div>
+<div class="caption clip" id="cap-80" data-start="188.490" data-duration="2.580" data-track-index="5" style="opacity:0"><span>아침에 잠깐 핸드폰으로 요청을 하세요</span></div>
+<div class="caption clip" id="cap-81" data-start="191.070" data-duration="2.720" data-track-index="5" style="opacity:0"><span>"전에 요청한 작업을 마무리해 주세요"라든가</span></div>
+<div class="caption clip" id="cap-82" data-start="193.780" data-duration="1.520" data-track-index="5" style="opacity:0"><span>이런 식으로 핸드폰으로</span></div>
+<div class="caption clip" id="cap-83" data-start="195.300" data-duration="1.900" data-track-index="5" style="opacity:0"><span>이제 클로드 앱으로 코드 기능을 쓸 수 있기 때문에</span></div>
+<div class="caption clip" id="cap-84" data-start="197.200" data-duration="2.350" data-track-index="5" style="opacity:0"><span>우리가 마무리하지 못한 작업을 마무리해 달라</span></div>
+<div class="caption clip" id="cap-85" data-start="199.550" data-duration="1.600" data-track-index="5" style="opacity:0"><span>이렇게 요청하면 또 작업을 하다가</span></div>
+<div class="caption clip" id="cap-86" data-start="201.150" data-duration="1.780" data-track-index="5" style="opacity:0"><span>토큰이 끊기면 또 몇 시간 있다가</span></div>
+<div class="caption clip" id="cap-87" data-start="202.930" data-duration="1.200" data-track-index="5" style="opacity:0"><span>우리가 일상생활 하다가</span></div>
+<div class="caption clip" id="cap-88" data-start="204.130" data-duration="2.740" data-track-index="5" style="opacity:0"><span>잠깐 핸드폰으로 또 요청을 하고</span></div>
+<div class="caption clip" id="cap-89" data-start="206.870" data-duration="2.580" data-track-index="5" style="opacity:0"><span>이렇게 틈틈이 모바일을 활용해서</span></div>
+<div class="caption clip" id="cap-90" data-start="209.450" data-duration="2.280" data-track-index="5" style="opacity:0"><span>작업을 이어나가시는 것이 핵심입니다</span></div>
+<div class="caption clip" id="cap-91" data-start="211.730" data-duration="1.950" data-track-index="5" style="opacity:0"><span>그렇게 하다 보면 토큰이 없어서</span></div>
+<div class="caption clip" id="cap-92" data-start="213.680" data-duration="2.300" data-track-index="5" style="opacity:0"><span>진행 못했던 작업을 마칠 수 있습니다</span></div>
+<div class="caption clip" id="cap-93" data-start="215.980" data-duration="2.020" data-track-index="5" style="opacity:0"><span>그래서 맥스를 쓰시는</span></div>
+<div class="caption clip" id="cap-94" data-start="218.000" data-duration="1.490" data-track-index="5" style="opacity:0"><span>가장 큰 이유가</span></div>
+<div class="caption clip" id="cap-95" data-start="219.490" data-duration="2.780" data-track-index="5" style="opacity:0"><span>이제 프로 요금제는 너무 감질맛 나서</span></div>
+<div class="caption clip" id="cap-96" data-start="222.270" data-duration="3.420" data-track-index="5" style="opacity:0"><span>토큰을 쓸만하면 끊기기 때문일 텐데요</span></div>
+<div class="caption clip" id="cap-97" data-start="225.680" data-duration="3.250" data-track-index="5" style="opacity:0"><span>그런데 이제 맥스 요금제를 쓰시면서도</span></div>
+<div class="caption clip" id="cap-98" data-start="228.930" data-duration="1.870" data-track-index="5" style="opacity:0"><span>AI로 수익이 있으시거나</span></div>
+<div class="caption clip" id="cap-99" data-start="230.800" data-duration="2.520" data-track-index="5" style="opacity:0"><span>그런 분들은 사실 맥스 요금제 쓰셔도 됩니다</span></div>
+<div class="caption clip" id="cap-100" data-start="233.320" data-duration="1.430" data-track-index="5" style="opacity:0"><span>당연히 쓰셔도 되는데</span></div>
+<div class="caption clip" id="cap-101" data-start="234.740" data-duration="1.640" data-track-index="5" style="opacity:0"><span>맥스 요금제를 쓰시지만</span></div>
+<div class="caption clip" id="cap-102" data-start="236.380" data-duration="2.300" data-track-index="5" style="opacity:0"><span>또 조금 돈이 아깝다는 생각이 드시는 분들은</span></div>
+<div class="caption clip" id="cap-103" data-start="238.680" data-duration="1.750" data-track-index="5" style="opacity:0"><span>프로 요금제를 좀 알뜰살뜰하게</span></div>
+<div class="caption clip" id="cap-104" data-start="240.430" data-duration="1.380" data-track-index="5" style="opacity:0"><span>잘 쓰시면 좋을 것 같고,</span></div>
+<div class="caption clip" id="cap-105" data-start="241.810" data-duration="1.720" data-track-index="5" style="opacity:0"><span>특히 모바일 AI 앱</span></div>
+<div class="caption clip" id="cap-106" data-start="243.520" data-duration="4.130" data-track-index="5" style="opacity:0"><span>클로드나 챗GPT나 제미나이 앱을 다운받아서 활용하시면</span></div>
+<div class="caption clip" id="cap-107" data-start="247.660" data-duration="1.830" data-track-index="5" style="opacity:0"><span>알뜰살뜰하게 잘 쓰실 수 있습니다</span></div>
+<div class="caption clip" id="cap-108" data-start="249.490" data-duration="2.110" data-track-index="5" style="opacity:0"><span>그리고 4번 모델 선택</span></div>
+<div class="caption clip" id="cap-109" data-start="251.600" data-duration="1.940" data-track-index="5" style="opacity:0"><span>지금 클로드를 기준으로 말씀드리자면</span></div>
+<div class="caption clip" id="cap-110" data-start="253.540" data-duration="2.130" data-track-index="5" style="opacity:0"><span>Opus 파이브를 쓰시면</span></div>
+<div class="caption clip" id="cap-111" data-start="255.670" data-duration="1.490" data-track-index="5" style="opacity:0"><span>굉장히 작업이 잘 됩니다</span></div>
+<div class="caption clip" id="cap-112" data-start="257.170" data-duration="2.100" data-track-index="5" style="opacity:0"><span>하지만 토큰이 너무 빨리 끝나버립니다</span></div>
+<div class="caption clip" id="cap-113" data-start="259.270" data-duration="2.770" data-track-index="5" style="opacity:0"><span>그래서 처음에 어려운 작업을 할 때</span></div>
+<div class="caption clip" id="cap-114" data-start="262.040" data-duration="0.960" data-track-index="5" style="opacity:0"><span>시작을 할 때</span></div>
+<div class="caption clip" id="cap-115" data-start="263.000" data-duration="0.760" data-track-index="5" style="opacity:0"><span>뼈대를 잡을 때는</span></div>
+<div class="caption clip" id="cap-116" data-start="263.760" data-duration="1.290" data-track-index="5" style="opacity:0"><span>Opus5를 쓰시고</span></div>
+<div class="caption clip" id="cap-117" data-start="265.050" data-duration="3.660" data-track-index="5" style="opacity:0"><span>보통의 작업들은 대부분 Sonnet5를 쓰시면 됩니다</span></div>
+<div class="caption clip" id="cap-118" data-start="268.710" data-duration="2.080" data-track-index="5" style="opacity:0"><span>Sonnet5를 쓰시면 좋습니다</span></div>
+<div class="caption clip" id="cap-119" data-start="270.790" data-duration="1.950" data-track-index="5" style="opacity:0"><span>Sonnet5를 쓰시면</span></div>
+<div class="caption clip" id="cap-120" data-start="272.740" data-duration="1.680" data-track-index="5" style="opacity:0"><span>20달러 프로 요금제로도 클로드를</span></div>
+<div class="caption clip" id="cap-121" data-start="274.420" data-duration="1.860" data-track-index="5" style="opacity:0"><span>꽤 오래 사용하실 수 있고</span></div>
+<div class="caption clip" id="cap-122" data-start="276.270" data-duration="2.570" data-track-index="5" style="opacity:0"><span>웬만한 코드는 잘 작성합니다</span></div>
+<div class="caption clip" id="cap-123" data-start="278.850" data-duration="4.080" data-track-index="5" style="opacity:0"><span>그래서 모델은 상황에 따라서 바꿔서 쓰시면 좋습니다</span></div>
+<div class="caption clip" id="cap-124" data-start="282.920" data-duration="1.680" data-track-index="5" style="opacity:0"><span>프로 요금제인데 오퍼스만 쓰신다?</span></div>
+<div class="caption clip" id="cap-125" data-start="284.610" data-duration="2.590" data-track-index="5" style="opacity:0"><span>그럼 정말 토큰이 빨리 끝나버립니다</span></div>
+<div class="caption clip" id="cap-126" data-start="287.200" data-duration="2.180" data-track-index="5" style="opacity:0"><span>그래서 대부분의 작업은</span></div>
+<div class="caption clip" id="cap-127" data-start="289.380" data-duration="2.130" data-track-index="5" style="opacity:0"><span>Sonnet5 파이브로 하실 것을 추천드립니다</span></div>
+<div class="caption clip" id="cap-128" data-start="291.520" data-duration="1.430" data-track-index="5" style="opacity:0"><span>5번 작업 분배</span></div>
+<div class="caption clip" id="cap-129" data-start="292.950" data-duration="1.660" data-track-index="5" style="opacity:0"><span>해야 할 작업이 있으시면</span></div>
+<div class="caption clip" id="cap-130" data-start="294.610" data-duration="2.700" data-track-index="5" style="opacity:0"><span>일주일 단위로 스케줄을 한번 짜시면 좋을 것 같아요</span></div>
+<div class="caption clip" id="cap-131" data-start="297.310" data-duration="2.770" data-track-index="5" style="opacity:0"><span>짜시고 분배를 하시면 좋습니다</span></div>
+<div class="caption clip" id="cap-132" data-start="300.080" data-duration="1.000" data-track-index="5" style="opacity:0"><span>Feel 받았을 때,</span></div>
+<div class="caption clip" id="cap-133" data-start="301.080" data-duration="0.890" data-track-index="5" style="opacity:0"><span>느낌 왔을 때</span></div>
+<div class="caption clip" id="cap-134" data-start="301.970" data-duration="1.350" data-track-index="5" style="opacity:0"><span>모든 작업을 하려고 하면</span></div>
+<div class="caption clip" id="cap-135" data-start="303.320" data-duration="2.830" data-track-index="5" style="opacity:0"><span>20달러짜리 요금제는 분명 모자라실 겁니다</span></div>
+<div class="caption clip" id="cap-136" data-start="306.150" data-duration="2.640" data-track-index="5" style="opacity:0"><span>그렇기 때문에 해야 될 작업이 있으시면</span></div>
+<div class="caption clip" id="cap-137" data-start="308.790" data-duration="1.030" data-track-index="5" style="opacity:0"><span>이제 달력에다가</span></div>
+<div class="caption clip" id="cap-138" data-start="309.820" data-duration="1.880" data-track-index="5" style="opacity:0"><span>일주일치를 나눠서 기재하시고</span></div>
+<div class="caption clip" id="cap-139" data-start="311.700" data-duration="1.150" data-track-index="5" style="opacity:0"><span>하루에 한 작업</span></div>
+<div class="caption clip" id="cap-140" data-start="312.850" data-duration="3.830" data-track-index="5" style="opacity:0"><span>아니면 이틀에 한 작업 정도씩 분배해서 해보시면 좋을 것 같아요</span></div>
+<div class="caption clip" id="cap-141" data-start="316.670" data-duration="1.100" data-track-index="5" style="opacity:0"><span>그렇게 하시다 보면</span></div>
+<div class="caption clip" id="cap-142" data-start="317.770" data-duration="2.480" data-track-index="5" style="opacity:0"><span>그리고 또 모바일까지 잘 활용하시게 되면</span></div>
+<div class="caption clip" id="cap-143" data-start="320.260" data-duration="3.090" data-track-index="5" style="opacity:0"><span>프로 요금제도 쓰실만하다라고 느끼실 수도 있습니다</span></div>
+<div class="caption clip" id="cap-144" data-start="323.350" data-duration="2.780" data-track-index="5" style="opacity:0"><span>물론 전업으로 AI를 활용하시는 분들은</span></div>
+<div class="caption clip" id="cap-145" data-start="326.120" data-duration="1.940" data-track-index="5" style="opacity:0"><span>맥스 요금제 쓰시는 게 좋습니다만,</span></div>
+<div class="caption clip" id="cap-146" data-start="328.070" data-duration="3.080" data-track-index="5" style="opacity:0"><span>맥스 요금제가 조금 아깝다고 느끼시는 분들은</span></div>
+<div class="caption clip" id="cap-147" data-start="331.150" data-duration="2.340" data-track-index="5" style="opacity:0"><span>프로 요금제를 알뜰살뜰하게 쓰시면 좋을 것 같습니다</span></div>
+<div class="caption clip" id="cap-148" data-start="333.490" data-duration="0.780" data-track-index="5" style="opacity:0"><span>그 다음에 여섯 번째</span></div>
+<div class="caption clip" id="cap-149" data-start="334.270" data-duration="2.560" data-track-index="5" style="opacity:0"><span>구독 기록을 꼭 남겨 놓으시면 좋습니다</span></div>
+<div class="caption clip" id="cap-150" data-start="336.830" data-duration="4.410" data-track-index="5" style="opacity:0"><span>그러니까 ChatGPT, 제미나이, 클로드를 제외한 여러 가지 AI 서비스를</span></div>
+<div class="caption clip" id="cap-151" data-start="341.240" data-duration="1.430" data-track-index="5" style="opacity:0"><span>이제 구독하는 경우에는</span></div>
+<div class="caption clip" id="cap-152" data-start="342.670" data-duration="2.370" data-track-index="5" style="opacity:0"><span>내가 뭘 구독했는지 모르는 경우도 많습니다</span></div>
+<div class="caption clip" id="cap-153" data-start="345.030" data-duration="0.740" data-track-index="5" style="opacity:0"><span>헷갈리죠</span></div>
+<div class="caption clip" id="cap-154" data-start="345.770" data-duration="2.310" data-track-index="5" style="opacity:0"><span>그리고 앞으로는 더 헷갈릴 가능성이 높습니다</span></div>
+<div class="caption clip" id="cap-155" data-start="348.080" data-duration="3.360" data-track-index="5" style="opacity:0"><span>왜냐하면 우리가 AI 서비스를 더 많이 쓸 가능성이 높기 때문이죠</span></div>
+<div class="caption clip" id="cap-156" data-start="351.440" data-duration="2.110" data-track-index="5" style="opacity:0"><span>그렇기 때문에 꼭 구독 기록을</span></div>
+<div class="caption clip" id="cap-157" data-start="353.550" data-duration="1.760" data-track-index="5" style="opacity:0"><span>메모장에다 적어 두시거나</span></div>
+<div class="caption clip" id="cap-158" data-start="355.310" data-duration="2.880" data-track-index="5" style="opacity:0"><span>아니면 앱에다가 적어서 관리를 하시면 좋습니다</span></div>
+<div class="caption clip" id="cap-159" data-start="358.190" data-duration="3.980" data-track-index="5" style="opacity:0"><span>그래서 제가 간단한 AI 구독 관리 앱을 하나 만들었는데요</span></div>
+<div class="caption clip" id="cap-160" data-start="362.170" data-duration="1.940" data-track-index="5" style="opacity:0"><span>고정 댓글에 링크를 달아놓겠습니다</span></div>
+<div class="caption clip" id="cap-161" data-start="364.110" data-duration="1.870" data-track-index="5" style="opacity:0"><span>들어가셔서 활용하시면 되고</span></div>
+<div class="caption clip" id="cap-162" data-start="365.980" data-duration="2.100" data-track-index="5" style="opacity:0"><span>그리고 일곱 번째 팁을 알려드리자면</span></div>
+<div class="caption clip" id="cap-163" data-start="368.080" data-duration="2.630" data-track-index="5" style="opacity:0"><span>AI 구독 결제용 카드는 하나만 정하시면 좋을 것 같습니다</span></div>
+<div class="caption clip" id="cap-164" data-start="370.700" data-duration="1.550" data-track-index="5" style="opacity:0"><span>카드를 하나만 정하면</span></div>
+<div class="caption clip" id="cap-165" data-start="372.250" data-duration="2.040" data-track-index="5" style="opacity:0"><span>나중에 카드 사용 내역을 봤을 때</span></div>
+<div class="caption clip" id="cap-166" data-start="374.290" data-duration="2.330" data-track-index="5" style="opacity:0"><span>내가 어떠한 AI 서비스를 구독했는지</span></div>
+<div class="caption clip" id="cap-167" data-start="376.620" data-duration="1.180" data-track-index="5" style="opacity:0"><span>한눈에 볼 수 있죠</span></div>
+<div class="caption clip" id="cap-168" data-start="377.790" data-duration="1.230" data-track-index="5" style="opacity:0"><span>그렇기 때문에 결제할 때는</span></div>
+<div class="caption clip" id="cap-169" data-start="379.030" data-duration="2.810" data-track-index="5" style="opacity:0"><span>가급적 하나의 카드만 딱 정해서</span></div>
+<div class="caption clip" id="cap-170" data-start="381.830" data-duration="1.510" data-track-index="5" style="opacity:0"><span>결제를 하시면 좋을 것 같습니다</span></div>
+<div class="caption clip" id="cap-171" data-start="383.340" data-duration="3.520" data-track-index="5" style="opacity:0"><span>아니면 내가 어떠한 AI 서비스를 구독하고 있는지</span></div>
+<div class="caption clip" id="cap-172" data-start="386.860" data-duration="1.610" data-track-index="5" style="opacity:0"><span>나중에 헷갈릴 가능성이 높습니다</span></div>
+<div class="caption clip" id="cap-173" data-start="388.470" data-duration="2.850" data-track-index="5" style="opacity:0"><span>그래서 이렇게 일곱 가지 팁을 제가 드렸는데요</span></div>
+<div class="caption clip" id="cap-174" data-start="391.320" data-duration="3.700" data-track-index="5" style="opacity:0"><span>저도 실제로 클로드 20달러짜리 요금제를 활용하고 있습니다</span></div>
+<div class="caption clip" id="cap-175" data-start="395.020" data-duration="1.540" data-track-index="5" style="opacity:0"><span>왜냐하면 교육을 가면</span></div>
+<div class="caption clip" id="cap-176" data-start="396.560" data-duration="2.080" data-track-index="5" style="opacity:0"><span>이제 맥스 요금제를 쓰시는 분들이</span></div>
+<div class="caption clip" id="cap-177" data-start="398.630" data-duration="1.050" data-track-index="5" style="opacity:0"><span>그렇게 많지는 않으시고</span></div>
+<div class="caption clip" id="cap-178" data-start="399.680" data-duration="1.810" data-track-index="5" style="opacity:0"><span>20달러짜리 요금제를 쓰시거나</span></div>
+<div class="caption clip" id="cap-179" data-start="401.490" data-duration="1.930" data-track-index="5" style="opacity:0"><span>무료 회원이신 경우가 많습니다</span></div>
+<div class="caption clip" id="cap-180" data-start="403.420" data-duration="2.250" data-track-index="5" style="opacity:0"><span>그렇기 때문에 이제 그분들에게</span></div>
+<div class="caption clip" id="cap-181" data-start="405.670" data-duration="2.430" data-track-index="5" style="opacity:0"><span>제가 어떻게 이 20달러짜리 요금제를</span></div>
+<div class="caption clip" id="cap-182" data-start="408.100" data-duration="1.380" data-track-index="5" style="opacity:0"><span>알뜰살뜰하게 쓸 수 있는지를</span></div>
+<div class="caption clip" id="cap-183" data-start="409.470" data-duration="0.850" data-track-index="5" style="opacity:0"><span>잘 알려드리기 위해서</span></div>
+<div class="caption clip" id="cap-184" data-start="410.320" data-duration="2.380" data-track-index="5" style="opacity:0"><span>저도 20달러짜리 요금제로</span></div>
+<div class="caption clip" id="cap-185" data-start="412.700" data-duration="2.170" data-track-index="5" style="opacity:0"><span>여러 가지 작업 들을 분배해서 하고 있습니다</span></div>
+<div class="caption clip" id="cap-186" data-start="414.870" data-duration="1.940" data-track-index="5" style="opacity:0"><span>그리고 모바일 앱도 잘 활용하고 있고요</span></div>
+<div class="caption clip" id="cap-187" data-start="416.810" data-duration="1.420" data-track-index="5" style="opacity:0"><span>그렇기 때문에 지금 제가 알려드리는</span></div>
+<div class="caption clip" id="cap-188" data-start="418.220" data-duration="1.300" data-track-index="5" style="opacity:0"><span>이 팁을 잘 활용하셔서</span></div>
+<div class="caption clip" id="cap-189" data-start="419.520" data-duration="2.530" data-track-index="5" style="opacity:0"><span>굳이 맥스까지 안 쓰셔도 되는 분들은</span></div>
+<div class="caption clip" id="cap-190" data-start="422.060" data-duration="2.900" data-track-index="5" style="opacity:0"><span>프로 요금제를 잘 알뜰하게 써보시면 좋을 것 같습니다</span></div>
+<div class="caption clip" id="cap-191" data-start="424.960" data-duration="1.660" data-track-index="5" style="opacity:0"><span>오늘의 제 영상은 여기까지입니다</span></div>
+<div class="caption clip" id="cap-192" data-start="426.620" data-duration="1.170" data-track-index="5" style="opacity:0"><span>영상이 도움이 되셨다면</span></div>
+<div class="caption clip" id="cap-193" data-start="427.780" data-duration="2.140" data-track-index="5" style="opacity:0"><span>좋아요와 구독을 눌러주시면 감사하겠습니다</span></div>
+<div class="caption clip" id="cap-194" data-start="429.920" data-duration="0.750" data-track-index="5" style="opacity:0"><span>감사합니다</span></div>
+  <script src="public/vendor/gsap.min.js"></script>
+  <script>
+  (function(){
+    const tl=window.gsap.timeline({paused:true});
+    tl.to('#orb-a',{scale:1.12,x:-24,y:18,duration:4,ease:'sine.inOut',repeat:106,yoyo:true},0);
+    tl.to('#orb-b',{scale:1.14,x:20,y:-16,duration:5,ease:'sine.inOut',repeat:85,yoyo:true},0);
+    
+    tl.fromTo('.scene-host[data-card-id="card-01"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},0.0000);
+    tl.fromTo('#card-01-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},0.0600);
+    tl.fromTo('#card-01-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},0.2800);
+    tl.fromTo('#card-01-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},0.5000);
+    tl.to('.scene-host[data-card-id="card-01"]',{opacity:0,duration:.35,ease:'power2.in'},13.5500);
+    tl.set('.scene-host[data-card-id="card-01"]',{opacity:0},13.9000);
+
+    tl.fromTo('.scene-host[data-card-id="card-02"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},13.9000);
+    tl.fromTo('#card-02-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},13.9600);
+    tl.fromTo('#card-02-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},14.1800);
+    tl.fromTo('#card-02-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},14.4000);
+    tl.fromTo('#card-02-bar',{width:'0%'},{width:'100%',duration:.7,ease:'power2.out'},14.4200);
+    tl.to('.scene-host[data-card-id="card-02"]',{opacity:0,duration:.35,ease:'power2.in'},25.5700);
+    tl.set('.scene-host[data-card-id="card-02"]',{opacity:0},25.9200);
+
+    tl.fromTo('.scene-host[data-card-id="card-03"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},25.9200);
+    tl.fromTo('#card-03-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},25.9800);
+    tl.fromTo('#card-03-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},26.2000);
+    tl.fromTo('#card-03-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},26.4200);
+    tl.fromTo('#card-03-bar',{width:'0%'},{width:'17%',duration:.7,ease:'power2.out'},26.4400);
+    tl.to('.scene-host[data-card-id="card-03"]',{opacity:0,duration:.35,ease:'power2.in'},40.5700);
+    tl.set('.scene-host[data-card-id="card-03"]',{opacity:0},40.9200);
+
+    tl.fromTo('.scene-host[data-card-id="card-04"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},40.9200);
+    tl.fromTo('#card-04-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},40.9800);
+    tl.fromTo('#card-04-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},41.2000);
+    tl.fromTo('#card-04-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},41.4200);
+    tl.to('.scene-host[data-card-id="card-04"]',{opacity:0,duration:.35,ease:'power2.in'},52.3200);
+    tl.set('.scene-host[data-card-id="card-04"]',{opacity:0},52.6700);
+
+    tl.fromTo('.scene-host[data-card-id="card-05"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},52.6700);
+    tl.fromTo('#card-05-panel',{opacity:0,x:70},{opacity:1,x:0,duration:.5,ease:'power3.out'},52.7300);
+    tl.fromTo('#card-05-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},52.9500);
+    tl.fromTo('#card-05-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},53.1700);
+    tl.fromTo('#card-05-number',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.5,ease:'back.out(1.7)'},52.7900);
+    tl.to('.scene-host[data-card-id="card-05"]',{opacity:0,duration:.35,ease:'power2.in'},61.6000);
+    tl.set('.scene-host[data-card-id="card-05"]',{opacity:0},61.9500);
+
+    tl.fromTo('.scene-host[data-card-id="card-06"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},61.9500);
+    tl.fromTo('#card-06-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},62.0100);
+    tl.fromTo('#card-06-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},62.2300);
+    tl.fromTo('#card-06-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},62.4500);
+    tl.to('.scene-host[data-card-id="card-06"]',{opacity:0,duration:.35,ease:'power2.in'},67.9000);
+    tl.set('.scene-host[data-card-id="card-06"]',{opacity:0},68.2500);
+
+    tl.fromTo('.scene-host[data-card-id="card-07"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},68.2500);
+    tl.fromTo('#card-07-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},68.3100);
+    tl.fromTo('#card-07-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},68.5300);
+    tl.fromTo('#card-07-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},68.7500);
+    tl.to('.scene-host[data-card-id="card-07"]',{opacity:0,duration:.35,ease:'power2.in'},77.2400);
+    tl.set('.scene-host[data-card-id="card-07"]',{opacity:0},77.5900);
+
+    tl.fromTo('.scene-host[data-card-id="card-08"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},77.5900);
+    tl.fromTo('#card-08-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},77.6500);
+    tl.fromTo('#card-08-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},77.8700);
+    tl.fromTo('#card-08-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},78.0900);
+    tl.to('.scene-host[data-card-id="card-08"]',{opacity:0,duration:.35,ease:'power2.in'},86.6600);
+    tl.set('.scene-host[data-card-id="card-08"]',{opacity:0},87.0100);
+
+    tl.fromTo('.scene-host[data-card-id="card-09"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},87.0100);
+    tl.fromTo('#card-09-panel',{opacity:0,x:70},{opacity:1,x:0,duration:.5,ease:'power3.out'},87.0700);
+    tl.fromTo('#card-09-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},87.2900);
+    tl.fromTo('#card-09-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},87.5100);
+    tl.fromTo('#card-09-number',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.5,ease:'back.out(1.7)'},87.1300);
+    tl.to('.scene-host[data-card-id="card-09"]',{opacity:0,duration:.35,ease:'power2.in'},95.9300);
+    tl.set('.scene-host[data-card-id="card-09"]',{opacity:0},96.2800);
+
+    tl.fromTo('.scene-host[data-card-id="card-10"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},96.2800);
+    tl.fromTo('#card-10-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},96.3400);
+    tl.fromTo('#card-10-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},96.5600);
+    tl.fromTo('#card-10-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},96.7800);
+    tl.to('.scene-host[data-card-id="card-10"]',{opacity:0,duration:.35,ease:'power2.in'},116.5200);
+    tl.set('.scene-host[data-card-id="card-10"]',{opacity:0},116.8700);
+
+    tl.fromTo('.scene-host[data-card-id="card-11"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},116.8700);
+    tl.fromTo('#card-11-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},116.9300);
+    tl.fromTo('#card-11-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},117.1500);
+    tl.fromTo('#card-11-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},117.3700);
+    tl.to('.scene-host[data-card-id="card-11"]',{opacity:0,duration:.35,ease:'power2.in'},137.9200);
+    tl.set('.scene-host[data-card-id="card-11"]',{opacity:0},138.2700);
+
+    tl.fromTo('.scene-host[data-card-id="card-12"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},138.2700);
+    tl.fromTo('#card-12-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},138.3300);
+    tl.fromTo('#card-12-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},138.5500);
+    tl.fromTo('#card-12-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},138.7700);
+    tl.to('.scene-host[data-card-id="card-12"]',{opacity:0,duration:.35,ease:'power2.in'},143.3100);
+    tl.set('.scene-host[data-card-id="card-12"]',{opacity:0},143.6600);
+
+    tl.fromTo('.scene-host[data-card-id="card-13"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},143.6600);
+    tl.fromTo('#card-13-panel',{opacity:0,x:70},{opacity:1,x:0,duration:.5,ease:'power3.out'},143.7200);
+    tl.fromTo('#card-13-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},143.9400);
+    tl.fromTo('#card-13-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},144.1600);
+    tl.fromTo('#card-13-number',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.5,ease:'back.out(1.7)'},143.7800);
+    tl.to('.scene-host[data-card-id="card-13"]',{opacity:0,duration:.35,ease:'power2.in'},159.5100);
+    tl.set('.scene-host[data-card-id="card-13"]',{opacity:0},159.8600);
+
+    tl.fromTo('.scene-host[data-card-id="card-14"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},159.8600);
+    tl.fromTo('#card-14-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},159.9200);
+    tl.fromTo('#card-14-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},160.1400);
+    tl.fromTo('#card-14-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},160.3600);
+    tl.to('.scene-host[data-card-id="card-14"]',{opacity:0,duration:.35,ease:'power2.in'},179.5100);
+    tl.set('.scene-host[data-card-id="card-14"]',{opacity:0},179.8600);
+
+    tl.fromTo('.scene-host[data-card-id="card-15"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},179.8600);
+    tl.fromTo('#card-15-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},179.9200);
+    tl.fromTo('#card-15-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},180.1400);
+    tl.fromTo('#card-15-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},180.3600);
+    tl.to('.scene-host[data-card-id="card-15"]',{opacity:0,duration:.35,ease:'power2.in'},215.6300);
+    tl.set('.scene-host[data-card-id="card-15"]',{opacity:0},215.9800);
+
+    tl.fromTo('.scene-host[data-card-id="card-16"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},215.9800);
+    tl.fromTo('#card-16-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},216.0400);
+    tl.fromTo('#card-16-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},216.2600);
+    tl.fromTo('#card-16-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},216.4800);
+    tl.to('.scene-host[data-card-id="card-16"]',{opacity:0,duration:.35,ease:'power2.in'},249.1400);
+    tl.set('.scene-host[data-card-id="card-16"]',{opacity:0},249.4900);
+
+    tl.fromTo('.scene-host[data-card-id="card-17"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},249.4900);
+    tl.fromTo('#card-17-panel',{opacity:0,x:70},{opacity:1,x:0,duration:.5,ease:'power3.out'},249.5500);
+    tl.fromTo('#card-17-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},249.7700);
+    tl.fromTo('#card-17-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},249.9900);
+    tl.fromTo('#card-17-number',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.5,ease:'back.out(1.7)'},249.6100);
+    tl.to('.scene-host[data-card-id="card-17"]',{opacity:0,duration:.35,ease:'power2.in'},258.9200);
+    tl.set('.scene-host[data-card-id="card-17"]',{opacity:0},259.2700);
+
+    tl.fromTo('.scene-host[data-card-id="card-18"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},259.2700);
+    tl.fromTo('#card-18-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},259.3300);
+    tl.fromTo('#card-18-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},259.5500);
+    tl.fromTo('#card-18-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},259.7700);
+    tl.to('.scene-host[data-card-id="card-18"]',{opacity:0,duration:.35,ease:'power2.in'},282.5700);
+    tl.set('.scene-host[data-card-id="card-18"]',{opacity:0},282.9200);
+
+    tl.fromTo('.scene-host[data-card-id="card-19"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},282.9200);
+    tl.fromTo('#card-19-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},282.9800);
+    tl.fromTo('#card-19-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},283.2000);
+    tl.fromTo('#card-19-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},283.4200);
+    tl.to('.scene-host[data-card-id="card-19"]',{opacity:0,duration:.35,ease:'power2.in'},292.6000);
+    tl.set('.scene-host[data-card-id="card-19"]',{opacity:0},292.9500);
+
+    tl.fromTo('.scene-host[data-card-id="card-20"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},292.9500);
+    tl.fromTo('#card-20-panel',{opacity:0,x:70},{opacity:1,x:0,duration:.5,ease:'power3.out'},293.0100);
+    tl.fromTo('#card-20-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},293.2300);
+    tl.fromTo('#card-20-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},293.4500);
+    tl.fromTo('#card-20-number',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.5,ease:'back.out(1.7)'},293.0700);
+    tl.to('.scene-host[data-card-id="card-20"]',{opacity:0,duration:.35,ease:'power2.in'},305.8000);
+    tl.set('.scene-host[data-card-id="card-20"]',{opacity:0},306.1500);
+
+    tl.fromTo('.scene-host[data-card-id="card-21"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},306.1500);
+    tl.fromTo('#card-21-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},306.2100);
+    tl.fromTo('#card-21-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},306.4300);
+    tl.fromTo('#card-21-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},306.6500);
+    tl.to('.scene-host[data-card-id="card-21"]',{opacity:0,duration:.35,ease:'power2.in'},323.0000);
+    tl.set('.scene-host[data-card-id="card-21"]',{opacity:0},323.3500);
+
+    tl.fromTo('.scene-host[data-card-id="card-22"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},323.3500);
+    tl.fromTo('#card-22-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},323.4100);
+    tl.fromTo('#card-22-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},323.6300);
+    tl.fromTo('#card-22-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},323.8500);
+    tl.to('.scene-host[data-card-id="card-22"]',{opacity:0,duration:.35,ease:'power2.in'},333.1400);
+    tl.set('.scene-host[data-card-id="card-22"]',{opacity:0},333.4900);
+
+    tl.fromTo('.scene-host[data-card-id="card-23"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},333.4900);
+    tl.fromTo('#card-23-panel',{opacity:0,x:70},{opacity:1,x:0,duration:.5,ease:'power3.out'},333.5500);
+    tl.fromTo('#card-23-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},333.7700);
+    tl.fromTo('#card-23-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},333.9900);
+    tl.fromTo('#card-23-number',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.5,ease:'back.out(1.7)'},333.6100);
+    tl.to('.scene-host[data-card-id="card-23"]',{opacity:0,duration:.35,ease:'power2.in'},351.0900);
+    tl.set('.scene-host[data-card-id="card-23"]',{opacity:0},351.4400);
+
+    tl.fromTo('.scene-host[data-card-id="card-24"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},351.4400);
+    tl.fromTo('#card-24-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},351.5000);
+    tl.fromTo('#card-24-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},351.7200);
+    tl.fromTo('#card-24-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},351.9400);
+    tl.to('.scene-host[data-card-id="card-24"]',{opacity:0,duration:.35,ease:'power2.in'},357.8400);
+    tl.set('.scene-host[data-card-id="card-24"]',{opacity:0},358.1900);
+
+    tl.fromTo('.scene-host[data-card-id="card-25"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},358.1900);
+    tl.fromTo('#card-25-panel',{opacity:0,x:70},{opacity:1,x:0,duration:.5,ease:'power3.out'},358.2500);
+    tl.fromTo('#card-25-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},358.4700);
+    tl.fromTo('#card-25-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},358.6900);
+    tl.fromTo('#card-25-image',{opacity:0,scale:.94},{opacity:1,scale:1,duration:.55,ease:'power2.out'},358.5300);
+    tl.to('.scene-host[data-card-id="card-25"]',{opacity:0,duration:.35,ease:'power2.in'},365.6300);
+    tl.set('.scene-host[data-card-id="card-25"]',{opacity:0},365.9800);
+
+    tl.fromTo('.scene-host[data-card-id="card-26"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},365.9800);
+    tl.fromTo('#card-26-panel',{opacity:0,x:70},{opacity:1,x:0,duration:.5,ease:'power3.out'},366.0400);
+    tl.fromTo('#card-26-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},366.2600);
+    tl.fromTo('#card-26-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},366.4800);
+    tl.fromTo('#card-26-number',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.5,ease:'back.out(1.7)'},366.1000);
+    tl.to('.scene-host[data-card-id="card-26"]',{opacity:0,duration:.35,ease:'power2.in'},388.1200);
+    tl.set('.scene-host[data-card-id="card-26"]',{opacity:0},388.4700);
+
+    tl.fromTo('.scene-host[data-card-id="card-27"]',{opacity:0},{opacity:1,duration:.4,ease:'power2.out'},388.4700);
+    tl.fromTo('#card-27-panel',{opacity:0,y:50},{opacity:1,y:0,duration:.5,ease:'power3.out'},388.5300);
+    tl.fromTo('#card-27-title',{opacity:0,y:18},{opacity:1,y:0,duration:.42,ease:'power2.out'},388.7500);
+    tl.fromTo('#card-27-detail',{opacity:0,y:14},{opacity:1,y:0,duration:.42,ease:'power2.out'},388.9300);
+    tl.fromTo('#card-27-chips',{opacity:0,y:14},{opacity:1,y:0,duration:.4,ease:'power2.out'},389.0900);
+    tl.to('.scene-host[data-card-id="card-27"]',{opacity:0,duration:.35,ease:'power2.in'},430.3273);
+    tl.set('.scene-host[data-card-id="card-27"]',{opacity:0},430.6773);
+    tl.set('#cap-0',{opacity:1},0.000);
+    tl.set('#cap-0',{opacity:0},1.830);
+    tl.set('#cap-1',{opacity:1},1.830);
+    tl.set('#cap-1',{opacity:0},4.630);
+    tl.set('#cap-2',{opacity:1},4.630);
+    tl.set('#cap-2',{opacity:0},7.960);
+    tl.set('#cap-3',{opacity:1},7.970);
+    tl.set('#cap-3',{opacity:0},10.830);
+    tl.set('#cap-4',{opacity:1},10.830);
+    tl.set('#cap-4',{opacity:0},13.940);
+    tl.set('#cap-5',{opacity:1},13.930);
+    tl.set('#cap-5',{opacity:0},15.170);
+    tl.set('#cap-6',{opacity:1},15.180);
+    tl.set('#cap-6',{opacity:0},17.810);
+    tl.set('#cap-7',{opacity:1},17.810);
+    tl.set('#cap-7',{opacity:0},21.090);
+    tl.set('#cap-8',{opacity:1},21.090);
+    tl.set('#cap-8',{opacity:0},25.920);
+    tl.set('#cap-9',{opacity:1},25.920);
+    tl.set('#cap-9',{opacity:0},28.430);
+    tl.set('#cap-10',{opacity:1},28.430);
+    tl.set('#cap-10',{opacity:0},30.660);
+    tl.set('#cap-11',{opacity:1},30.670);
+    tl.set('#cap-11',{opacity:0},32.670);
+    tl.set('#cap-12',{opacity:1},32.670);
+    tl.set('#cap-12',{opacity:0},36.100);
+    tl.set('#cap-13',{opacity:1},36.090);
+    tl.set('#cap-13',{opacity:0},38.760);
+    tl.set('#cap-14',{opacity:1},38.760);
+    tl.set('#cap-14',{opacity:0},40.930);
+    tl.set('#cap-15',{opacity:1},40.920);
+    tl.set('#cap-15',{opacity:0},41.960);
+    tl.set('#cap-16',{opacity:1},41.970);
+    tl.set('#cap-16',{opacity:0},43.640);
+    tl.set('#cap-17',{opacity:1},43.630);
+    tl.set('#cap-17',{opacity:0},46.000);
+    tl.set('#cap-18',{opacity:1},46.000);
+    tl.set('#cap-18',{opacity:0},48.550);
+    tl.set('#cap-19',{opacity:1},48.550);
+    tl.set('#cap-19',{opacity:0},52.670);
+    tl.set('#cap-20',{opacity:1},52.670);
+    tl.set('#cap-20',{opacity:0},56.680);
+    tl.set('#cap-21',{opacity:1},56.670);
+    tl.set('#cap-21',{opacity:0},58.590);
+    tl.set('#cap-22',{opacity:1},58.590);
+    tl.set('#cap-22',{opacity:0},60.730);
+    tl.set('#cap-23',{opacity:1},60.730);
+    tl.set('#cap-23',{opacity:0},61.950);
+    tl.set('#cap-24',{opacity:1},61.950);
+    tl.set('#cap-24',{opacity:0},65.060);
+    tl.set('#cap-25',{opacity:1},65.060);
+    tl.set('#cap-25',{opacity:0},68.250);
+    tl.set('#cap-26',{opacity:1},68.250);
+    tl.set('#cap-26',{opacity:0},69.400);
+    tl.set('#cap-27',{opacity:1},69.400);
+    tl.set('#cap-27',{opacity:0},71.380);
+    tl.set('#cap-28',{opacity:1},71.380);
+    tl.set('#cap-28',{opacity:0},72.640);
+    tl.set('#cap-29',{opacity:1},72.640);
+    tl.set('#cap-29',{opacity:0},77.590);
+    tl.set('#cap-30',{opacity:1},77.590);
+    tl.set('#cap-30',{opacity:0},81.690);
+    tl.set('#cap-31',{opacity:1},81.690);
+    tl.set('#cap-31',{opacity:0},82.790);
+    tl.set('#cap-32',{opacity:1},82.790);
+    tl.set('#cap-32',{opacity:0},84.230);
+    tl.set('#cap-33',{opacity:1},84.230);
+    tl.set('#cap-33',{opacity:0},87.000);
+    tl.set('#cap-34',{opacity:1},87.010);
+    tl.set('#cap-34',{opacity:0},92.130);
+    tl.set('#cap-35',{opacity:1},92.120);
+    tl.set('#cap-35',{opacity:0},93.320);
+    tl.set('#cap-36',{opacity:1},93.320);
+    tl.set('#cap-36',{opacity:0},96.280);
+    tl.set('#cap-37',{opacity:1},96.280);
+    tl.set('#cap-37',{opacity:0},99.910);
+    tl.set('#cap-38',{opacity:1},99.910);
+    tl.set('#cap-38',{opacity:0},101.910);
+    tl.set('#cap-39',{opacity:1},101.910);
+    tl.set('#cap-39',{opacity:0},103.140);
+    tl.set('#cap-40',{opacity:1},103.140);
+    tl.set('#cap-40',{opacity:0},104.520);
+    tl.set('#cap-41',{opacity:1},104.520);
+    tl.set('#cap-41',{opacity:0},106.900);
+    tl.set('#cap-42',{opacity:1},106.900);
+    tl.set('#cap-42',{opacity:0},108.380);
+    tl.set('#cap-43',{opacity:1},108.370);
+    tl.set('#cap-43',{opacity:0},110.950);
+    tl.set('#cap-44',{opacity:1},110.950);
+    tl.set('#cap-44',{opacity:0},112.730);
+    tl.set('#cap-45',{opacity:1},112.720);
+    tl.set('#cap-45',{opacity:0},116.870);
+    tl.set('#cap-46',{opacity:1},116.870);
+    tl.set('#cap-46',{opacity:0},118.830);
+    tl.set('#cap-47',{opacity:1},118.830);
+    tl.set('#cap-47',{opacity:0},121.430);
+    tl.set('#cap-48',{opacity:1},121.430);
+    tl.set('#cap-48',{opacity:0},124.080);
+    tl.set('#cap-49',{opacity:1},124.080);
+    tl.set('#cap-49',{opacity:0},126.220);
+    tl.set('#cap-50',{opacity:1},126.220);
+    tl.set('#cap-50',{opacity:0},128.350);
+    tl.set('#cap-51',{opacity:1},128.350);
+    tl.set('#cap-51',{opacity:0},130.400);
+    tl.set('#cap-52',{opacity:1},130.400);
+    tl.set('#cap-52',{opacity:0},132.060);
+    tl.set('#cap-53',{opacity:1},132.060);
+    tl.set('#cap-53',{opacity:0},134.030);
+    tl.set('#cap-54',{opacity:1},134.030);
+    tl.set('#cap-54',{opacity:0},136.160);
+    tl.set('#cap-55',{opacity:1},136.160);
+    tl.set('#cap-55',{opacity:0},138.270);
+    tl.set('#cap-56',{opacity:1},138.270);
+    tl.set('#cap-56',{opacity:0},141.350);
+    tl.set('#cap-57',{opacity:1},141.340);
+    tl.set('#cap-57',{opacity:0},143.660);
+    tl.set('#cap-58',{opacity:1},143.660);
+    tl.set('#cap-58',{opacity:0},147.010);
+    tl.set('#cap-59',{opacity:1},147.010);
+    tl.set('#cap-59',{opacity:0},148.480);
+    tl.set('#cap-60',{opacity:1},148.480);
+    tl.set('#cap-60',{opacity:0},152.910);
+    tl.set('#cap-61',{opacity:1},152.920);
+    tl.set('#cap-61',{opacity:0},156.510);
+    tl.set('#cap-62',{opacity:1},156.510);
+    tl.set('#cap-62',{opacity:0},158.360);
+    tl.set('#cap-63',{opacity:1},158.360);
+    tl.set('#cap-63',{opacity:0},160.630);
+    tl.set('#cap-64',{opacity:1},160.620);
+    tl.set('#cap-64',{opacity:0},161.770);
+    tl.set('#cap-65',{opacity:1},161.770);
+    tl.set('#cap-65',{opacity:0},163.990);
+    tl.set('#cap-66',{opacity:1},163.990);
+    tl.set('#cap-66',{opacity:0},165.640);
+    tl.set('#cap-67',{opacity:1},165.640);
+    tl.set('#cap-67',{opacity:0},166.680);
+    tl.set('#cap-68',{opacity:1},166.680);
+    tl.set('#cap-68',{opacity:0},169.310);
+    tl.set('#cap-69',{opacity:1},169.310);
+    tl.set('#cap-69',{opacity:0},173.840);
+    tl.set('#cap-70',{opacity:1},173.840);
+    tl.set('#cap-70',{opacity:0},175.820);
+    tl.set('#cap-71',{opacity:1},175.820);
+    tl.set('#cap-71',{opacity:0},177.250);
+    tl.set('#cap-72',{opacity:1},177.250);
+    tl.set('#cap-72',{opacity:0},177.750);
+    tl.set('#cap-73',{opacity:1},177.750);
+    tl.set('#cap-73',{opacity:0},178.450);
+    tl.set('#cap-74',{opacity:1},178.450);
+    tl.set('#cap-74',{opacity:0},179.860);
+    tl.set('#cap-75',{opacity:1},179.860);
+    tl.set('#cap-75',{opacity:0},183.480);
+    tl.set('#cap-76',{opacity:1},183.470);
+    tl.set('#cap-76',{opacity:0},184.320);
+    tl.set('#cap-77',{opacity:1},184.320);
+    tl.set('#cap-77',{opacity:0},185.190);
+    tl.set('#cap-78',{opacity:1},185.190);
+    tl.set('#cap-78',{opacity:0},186.040);
+    tl.set('#cap-79',{opacity:1},186.040);
+    tl.set('#cap-79',{opacity:0},188.490);
+    tl.set('#cap-80',{opacity:1},188.490);
+    tl.set('#cap-80',{opacity:0},191.070);
+    tl.set('#cap-81',{opacity:1},191.070);
+    tl.set('#cap-81',{opacity:0},193.790);
+    tl.set('#cap-82',{opacity:1},193.780);
+    tl.set('#cap-82',{opacity:0},195.300);
+    tl.set('#cap-83',{opacity:1},195.300);
+    tl.set('#cap-83',{opacity:0},197.200);
+    tl.set('#cap-84',{opacity:1},197.200);
+    tl.set('#cap-84',{opacity:0},199.550);
+    tl.set('#cap-85',{opacity:1},199.550);
+    tl.set('#cap-85',{opacity:0},201.150);
+    tl.set('#cap-86',{opacity:1},201.150);
+    tl.set('#cap-86',{opacity:0},202.930);
+    tl.set('#cap-87',{opacity:1},202.930);
+    tl.set('#cap-87',{opacity:0},204.130);
+    tl.set('#cap-88',{opacity:1},204.130);
+    tl.set('#cap-88',{opacity:0},206.870);
+    tl.set('#cap-89',{opacity:1},206.870);
+    tl.set('#cap-89',{opacity:0},209.450);
+    tl.set('#cap-90',{opacity:1},209.450);
+    tl.set('#cap-90',{opacity:0},211.730);
+    tl.set('#cap-91',{opacity:1},211.730);
+    tl.set('#cap-91',{opacity:0},213.680);
+    tl.set('#cap-92',{opacity:1},213.680);
+    tl.set('#cap-92',{opacity:0},215.980);
+    tl.set('#cap-93',{opacity:1},215.980);
+    tl.set('#cap-93',{opacity:0},218.000);
+    tl.set('#cap-94',{opacity:1},218.000);
+    tl.set('#cap-94',{opacity:0},219.490);
+    tl.set('#cap-95',{opacity:1},219.490);
+    tl.set('#cap-95',{opacity:0},222.270);
+    tl.set('#cap-96',{opacity:1},222.270);
+    tl.set('#cap-96',{opacity:0},225.690);
+    tl.set('#cap-97',{opacity:1},225.680);
+    tl.set('#cap-97',{opacity:0},228.930);
+    tl.set('#cap-98',{opacity:1},228.930);
+    tl.set('#cap-98',{opacity:0},230.800);
+    tl.set('#cap-99',{opacity:1},230.800);
+    tl.set('#cap-99',{opacity:0},233.320);
+    tl.set('#cap-100',{opacity:1},233.320);
+    tl.set('#cap-100',{opacity:0},234.750);
+    tl.set('#cap-101',{opacity:1},234.740);
+    tl.set('#cap-101',{opacity:0},236.380);
+    tl.set('#cap-102',{opacity:1},236.380);
+    tl.set('#cap-102',{opacity:0},238.680);
+    tl.set('#cap-103',{opacity:1},238.680);
+    tl.set('#cap-103',{opacity:0},240.430);
+    tl.set('#cap-104',{opacity:1},240.430);
+    tl.set('#cap-104',{opacity:0},241.810);
+    tl.set('#cap-105',{opacity:1},241.810);
+    tl.set('#cap-105',{opacity:0},243.530);
+    tl.set('#cap-106',{opacity:1},243.520);
+    tl.set('#cap-106',{opacity:0},247.650);
+    tl.set('#cap-107',{opacity:1},247.660);
+    tl.set('#cap-107',{opacity:0},249.490);
+    tl.set('#cap-108',{opacity:1},249.490);
+    tl.set('#cap-108',{opacity:0},251.600);
+    tl.set('#cap-109',{opacity:1},251.600);
+    tl.set('#cap-109',{opacity:0},253.540);
+    tl.set('#cap-110',{opacity:1},253.540);
+    tl.set('#cap-110',{opacity:0},255.670);
+    tl.set('#cap-111',{opacity:1},255.670);
+    tl.set('#cap-111',{opacity:0},257.160);
+    tl.set('#cap-112',{opacity:1},257.170);
+    tl.set('#cap-112',{opacity:0},259.270);
+    tl.set('#cap-113',{opacity:1},259.270);
+    tl.set('#cap-113',{opacity:0},262.040);
+    tl.set('#cap-114',{opacity:1},262.040);
+    tl.set('#cap-114',{opacity:0},263.000);
+    tl.set('#cap-115',{opacity:1},263.000);
+    tl.set('#cap-115',{opacity:0},263.760);
+    tl.set('#cap-116',{opacity:1},263.760);
+    tl.set('#cap-116',{opacity:0},265.050);
+    tl.set('#cap-117',{opacity:1},265.050);
+    tl.set('#cap-117',{opacity:0},268.710);
+    tl.set('#cap-118',{opacity:1},268.710);
+    tl.set('#cap-118',{opacity:0},270.790);
+    tl.set('#cap-119',{opacity:1},270.790);
+    tl.set('#cap-119',{opacity:0},272.740);
+    tl.set('#cap-120',{opacity:1},272.740);
+    tl.set('#cap-120',{opacity:0},274.420);
+    tl.set('#cap-121',{opacity:1},274.420);
+    tl.set('#cap-121',{opacity:0},276.280);
+    tl.set('#cap-122',{opacity:1},276.270);
+    tl.set('#cap-122',{opacity:0},278.840);
+    tl.set('#cap-123',{opacity:1},278.850);
+    tl.set('#cap-123',{opacity:0},282.930);
+    tl.set('#cap-124',{opacity:1},282.920);
+    tl.set('#cap-124',{opacity:0},284.600);
+    tl.set('#cap-125',{opacity:1},284.610);
+    tl.set('#cap-125',{opacity:0},287.200);
+    tl.set('#cap-126',{opacity:1},287.200);
+    tl.set('#cap-126',{opacity:0},289.380);
+    tl.set('#cap-127',{opacity:1},289.380);
+    tl.set('#cap-127',{opacity:0},291.510);
+    tl.set('#cap-128',{opacity:1},291.520);
+    tl.set('#cap-128',{opacity:0},292.950);
+    tl.set('#cap-129',{opacity:1},292.950);
+    tl.set('#cap-129',{opacity:0},294.610);
+    tl.set('#cap-130',{opacity:1},294.610);
+    tl.set('#cap-130',{opacity:0},297.310);
+    tl.set('#cap-131',{opacity:1},297.310);
+    tl.set('#cap-131',{opacity:0},300.080);
+    tl.set('#cap-132',{opacity:1},300.080);
+    tl.set('#cap-132',{opacity:0},301.080);
+    tl.set('#cap-133',{opacity:1},301.080);
+    tl.set('#cap-133',{opacity:0},301.970);
+    tl.set('#cap-134',{opacity:1},301.970);
+    tl.set('#cap-134',{opacity:0},303.320);
+    tl.set('#cap-135',{opacity:1},303.320);
+    tl.set('#cap-135',{opacity:0},306.150);
+    tl.set('#cap-136',{opacity:1},306.150);
+    tl.set('#cap-136',{opacity:0},308.790);
+    tl.set('#cap-137',{opacity:1},308.790);
+    tl.set('#cap-137',{opacity:0},309.820);
+    tl.set('#cap-138',{opacity:1},309.820);
+    tl.set('#cap-138',{opacity:0},311.700);
+    tl.set('#cap-139',{opacity:1},311.700);
+    tl.set('#cap-139',{opacity:0},312.850);
+    tl.set('#cap-140',{opacity:1},312.850);
+    tl.set('#cap-140',{opacity:0},316.680);
+    tl.set('#cap-141',{opacity:1},316.670);
+    tl.set('#cap-141',{opacity:0},317.770);
+    tl.set('#cap-142',{opacity:1},317.770);
+    tl.set('#cap-142',{opacity:0},320.250);
+    tl.set('#cap-143',{opacity:1},320.260);
+    tl.set('#cap-143',{opacity:0},323.350);
+    tl.set('#cap-144',{opacity:1},323.350);
+    tl.set('#cap-144',{opacity:0},326.130);
+    tl.set('#cap-145',{opacity:1},326.120);
+    tl.set('#cap-145',{opacity:0},328.060);
+    tl.set('#cap-146',{opacity:1},328.070);
+    tl.set('#cap-146',{opacity:0},331.150);
+    tl.set('#cap-147',{opacity:1},331.150);
+    tl.set('#cap-147',{opacity:0},333.490);
+    tl.set('#cap-148',{opacity:1},333.490);
+    tl.set('#cap-148',{opacity:0},334.270);
+    tl.set('#cap-149',{opacity:1},334.270);
+    tl.set('#cap-149',{opacity:0},336.830);
+    tl.set('#cap-150',{opacity:1},336.830);
+    tl.set('#cap-150',{opacity:0},341.240);
+    tl.set('#cap-151',{opacity:1},341.240);
+    tl.set('#cap-151',{opacity:0},342.670);
+    tl.set('#cap-152',{opacity:1},342.670);
+    tl.set('#cap-152',{opacity:0},345.040);
+    tl.set('#cap-153',{opacity:1},345.030);
+    tl.set('#cap-153',{opacity:0},345.770);
+    tl.set('#cap-154',{opacity:1},345.770);
+    tl.set('#cap-154',{opacity:0},348.080);
+    tl.set('#cap-155',{opacity:1},348.080);
+    tl.set('#cap-155',{opacity:0},351.440);
+    tl.set('#cap-156',{opacity:1},351.440);
+    tl.set('#cap-156',{opacity:0},353.550);
+    tl.set('#cap-157',{opacity:1},353.550);
+    tl.set('#cap-157',{opacity:0},355.310);
+    tl.set('#cap-158',{opacity:1},355.310);
+    tl.set('#cap-158',{opacity:0},358.190);
+    tl.set('#cap-159',{opacity:1},358.190);
+    tl.set('#cap-159',{opacity:0},362.170);
+    tl.set('#cap-160',{opacity:1},362.170);
+    tl.set('#cap-160',{opacity:0},364.110);
+    tl.set('#cap-161',{opacity:1},364.110);
+    tl.set('#cap-161',{opacity:0},365.980);
+    tl.set('#cap-162',{opacity:1},365.980);
+    tl.set('#cap-162',{opacity:0},368.080);
+    tl.set('#cap-163',{opacity:1},368.080);
+    tl.set('#cap-163',{opacity:0},370.710);
+    tl.set('#cap-164',{opacity:1},370.700);
+    tl.set('#cap-164',{opacity:0},372.250);
+    tl.set('#cap-165',{opacity:1},372.250);
+    tl.set('#cap-165',{opacity:0},374.290);
+    tl.set('#cap-166',{opacity:1},374.290);
+    tl.set('#cap-166',{opacity:0},376.620);
+    tl.set('#cap-167',{opacity:1},376.620);
+    tl.set('#cap-167',{opacity:0},377.800);
+    tl.set('#cap-168',{opacity:1},377.790);
+    tl.set('#cap-168',{opacity:0},379.020);
+    tl.set('#cap-169',{opacity:1},379.030);
+    tl.set('#cap-169',{opacity:0},381.840);
+    tl.set('#cap-170',{opacity:1},381.830);
+    tl.set('#cap-170',{opacity:0},383.340);
+    tl.set('#cap-171',{opacity:1},383.340);
+    tl.set('#cap-171',{opacity:0},386.860);
+    tl.set('#cap-172',{opacity:1},386.860);
+    tl.set('#cap-172',{opacity:0},388.470);
+    tl.set('#cap-173',{opacity:1},388.470);
+    tl.set('#cap-173',{opacity:0},391.320);
+    tl.set('#cap-174',{opacity:1},391.320);
+    tl.set('#cap-174',{opacity:0},395.020);
+    tl.set('#cap-175',{opacity:1},395.020);
+    tl.set('#cap-175',{opacity:0},396.560);
+    tl.set('#cap-176',{opacity:1},396.560);
+    tl.set('#cap-176',{opacity:0},398.640);
+    tl.set('#cap-177',{opacity:1},398.630);
+    tl.set('#cap-177',{opacity:0},399.680);
+    tl.set('#cap-178',{opacity:1},399.680);
+    tl.set('#cap-178',{opacity:0},401.490);
+    tl.set('#cap-179',{opacity:1},401.490);
+    tl.set('#cap-179',{opacity:0},403.420);
+    tl.set('#cap-180',{opacity:1},403.420);
+    tl.set('#cap-180',{opacity:0},405.670);
+    tl.set('#cap-181',{opacity:1},405.670);
+    tl.set('#cap-181',{opacity:0},408.100);
+    tl.set('#cap-182',{opacity:1},408.100);
+    tl.set('#cap-182',{opacity:0},409.480);
+    tl.set('#cap-183',{opacity:1},409.470);
+    tl.set('#cap-183',{opacity:0},410.320);
+    tl.set('#cap-184',{opacity:1},410.320);
+    tl.set('#cap-184',{opacity:0},412.700);
+    tl.set('#cap-185',{opacity:1},412.700);
+    tl.set('#cap-185',{opacity:0},414.870);
+    tl.set('#cap-186',{opacity:1},414.870);
+    tl.set('#cap-186',{opacity:0},416.810);
+    tl.set('#cap-187',{opacity:1},416.810);
+    tl.set('#cap-187',{opacity:0},418.230);
+    tl.set('#cap-188',{opacity:1},418.220);
+    tl.set('#cap-188',{opacity:0},419.520);
+    tl.set('#cap-189',{opacity:1},419.520);
+    tl.set('#cap-189',{opacity:0},422.050);
+    tl.set('#cap-190',{opacity:1},422.060);
+    tl.set('#cap-190',{opacity:0},424.960);
+    tl.set('#cap-191',{opacity:1},424.960);
+    tl.set('#cap-191',{opacity:0},426.620);
+    tl.set('#cap-192',{opacity:1},426.620);
+    tl.set('#cap-192',{opacity:0},427.790);
+    tl.set('#cap-193',{opacity:1},427.780);
+    tl.set('#cap-193',{opacity:0},429.920);
+    tl.set('#cap-194',{opacity:1},429.920);
+    tl.set('#cap-194',{opacity:0},430.670);
+    window.__timelines=window.__timelines||{};
+    window.__timelines['ai-subscription-pastel']=tl;
+  })();
+  </script>
+</div>
+</body>
+</html>

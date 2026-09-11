@@ -15,6 +15,18 @@ assets/narration.wav
 transcript.json
 transcript.txt
 
+# videos/<이름>/ 프로젝트 (원본 소스 오디오·화면 캡처·QA 스냅샷 — 저장소에는 코드/설정만)
+videos/*/public/narration.*
+videos/*/public/input-video.*
+videos/*/qa_check/
+videos/*/source-frames/
+
+# Microsoft 시스템 폰트(맑은 고딕)는 재배포 라이선스가 없어 공개 저장소에 올리지 않습니다.
+# 렌더에는 로컬 C:\Windows\Fonts 에서 복사해 로컬에서만 사용하세요.
+videos/*/public/fonts/malgun*.ttf
+
+*.log
+
 # 시스템
 .DS_Store
 Thumbs.db
