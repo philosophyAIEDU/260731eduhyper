@@ -105,7 +105,7 @@ const A = {
   // 유한 반복 (repeat:-1 금지)
   loop: (s, t0, t1, from, to, per, o = {}) => {
     const n = Math.max(0, Math.floor((t1 - t0) / per) - 1);
-    return `tl.fromTo(${q(s)},${from},{...${to},duration:${per},ease:'${o.e ?? 'sine.inOut'}',yoyo:${o.yoyo ?? true},repeat:${n}${opt(o)}},${f(t0)});`;
+    return `tl.fromTo(${q(s)},${from},{...${to},duration:${per},ease:'${o.e ?? 'sine.inOut'}',yoyo:${o.yoyo ?? true},repeat:${n},immediateRender:false${opt(o)}},${f(t0)});`;
   },
   bob: (s, t0, t1, amp = 12, per = 1.8, o = {}) => A.loop(s, t0, t1, '{y:0}', `{y:${-amp}}`, per, o),
   spin: (s, t0, t1, per = 6) => {
@@ -747,6 +747,7 @@ S('s22', 208.3, '나눔', `
   ${Array.from({ length: 8 }, (_, i) => `<div id="s22-h${i}" class="abs" style="left:${1520}px;top:${440}px">${svg('heart', PAL.rose[1], 40)}</div>`).join('')}`,
   (e) => [
     ...headAnim('s22', 208.4),
+    A.set('#s22-c0,#s22-c1', 208.3, '{opacity:0}'),
     A.pop('#s22-n0', 209.53, { s: 0.3 }), A.bob('#s22-n0 .fl', 210.3, e, 10, 1.6),
     A.draw('#s22-ln .dr:nth-of-type(1)', 210.6, { d: 0.9 }),
     A.loop('#s22-c0', 211.0, e, '{x:0,opacity:1}', '{x:250,opacity:0}', 1.1, { yoyo: false, e: 'power1.in' }),
