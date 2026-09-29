@@ -32,6 +32,9 @@ style_preset: pastel-warm
 node build.mjs
 npx hyperframes@0.8.34 check
 npx hyperframes@0.8.34 render -o renders/philosophy-ai-volunteer-2nd.mp4 -q high
+
+# 음질 보존: 렌더가 오디오를 다시 인코딩하므로, 초고 영상의 오디오 스트림을 무손실로 되돌려 넣는다
+ffmpeg -i renders/philosophy-ai-volunteer-2nd.mp4 -i "초고 영상.mp4" -map 0:v -map 1:a -c copy -movflags +faststart final.mp4
 ```
 
 ## 메모
