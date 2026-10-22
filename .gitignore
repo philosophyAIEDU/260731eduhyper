@@ -31,3 +31,6 @@ videos/*/public/fonts/malgun*.ttf
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 업로드용 완성 영상 (Git LFS)
+!upload-videos/*.mp4

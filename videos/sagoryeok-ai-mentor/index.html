@@ -1,0 +1,1192 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>AI로 사고력 향상하기</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+@font-face { font-family: "Pretendard"; src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations"); font-weight: 45 920; font-style: normal; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #fdf6ee; }
+:root {
+  --ink: #34314a; --ink-soft: #5b5873; --cream: #fdf6ee;
+  --hl-y: rgba(255, 220, 120, .8); --hl-m: rgba(140, 222, 190, .72); --hl-p: rgba(248, 180, 200, .78);
+}
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Pretendard", sans-serif; color: var(--ink);
+  background: linear-gradient(135deg, #fff4ea 0%, #fdf0f4 50%, #efedff 100%); }
+
+/* footage — shrinks to the left during debate key moments */
+#vframe { position: absolute; inset: 0; z-index: 0; filter: drop-shadow(0 24px 40px rgba(80, 60, 90, .25)); }
+#vwrap { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; transform-origin: 0 0; clip-path: inset(0px 0px 0px 0px round 0px); }
+#vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#startfade, #endfade { position: absolute; inset: 0; z-index: 20; background: #fdf6ee; pointer-events: none; }
+#endfade { opacity: 0; }
+
+/* caption band — covers the burned-in captions and the Windows taskbar */
+#band { position: absolute; left: 0; right: 0; top: 916px; height: 164px; z-index: 7;
+  background: linear-gradient(180deg, #fffaf4 0%, #fdf3ea 100%); box-shadow: 0 -10px 30px rgba(80, 60, 50, .16); }
+#band::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 6px;
+  background: linear-gradient(90deg, #ffc7b4, #ffe39c 30%, #b9e8d1 60%, #cfc3ff 85%, #ffc2d3); }
+.bdot { position: absolute; border-radius: 50%; }
+.cap { position: absolute; left: 0; right: 0; top: 922px; height: 158px; z-index: 8; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.cap span { display: block; max-width: 1560px; padding: 0 30px; color: var(--ink);
+  font-size: 52px; font-weight: 700; line-height: 1.3; text-align: center; word-break: keep-all; letter-spacing: -.01em; }
+
+/* pastel stages */
+.stagebg { position: absolute; inset: 0; z-index: 2; overflow: hidden; background: linear-gradient(135deg, #fff6ee 0%, #fdf1f4 45%, #f1f0ff 100%); }
+.blob { position: absolute; border-radius: 50%; }
+.dc { position: absolute; display: block; }
+.dc-dot { border-radius: 50%; background: var(--c); opacity: .8; }
+.dc-ring { border-radius: 50%; border: 4px solid var(--c); opacity: .85; }
+.dc-dia { background: var(--c); opacity: .75; border-radius: 4px; }
+.charclip { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.cwrap { position: absolute; left: 50px; top: 170px; width: 520px; height: 720px; transform-origin: 50% 100%; }
+.cphil { position: absolute; left: 0; bottom: 0; width: 520px; height: auto; transform-origin: 50% 100%; filter: drop-shadow(0 24px 30px rgba(80, 60, 90, .22)); }
+.ctag { position: absolute; left: 0; right: 0; bottom: -10px; display: flex; justify-content: center; }
+.say::before { content: ""; position: absolute; left: -30px; top: 120px; width: 0; height: 0;
+  border-top: 22px solid transparent; border-bottom: 22px solid transparent; border-right: 32px solid rgba(255, 255, 255, .95); }
+
+/* graphics */
+.scene { position: absolute; inset: 0; z-index: 3; }
+.sc { position: absolute; inset: 0; opacity: 0; }
+.sc-peek { z-index: 1; }
+.wash { position: absolute; left: 0; top: 0; width: 1920px; height: 916px; pointer-events: none; }
+.wash-center { background: radial-gradient(ellipse 1400px 860px at 50% 50%, rgba(253, 246, 238, .9), rgba(253, 246, 238, .6) 60%, rgba(253, 246, 238, 0) 100%); }
+
+.card { position: absolute; display: block; background: rgba(255, 255, 255, .95); border: 2px solid #fff; border-radius: 44px;
+  box-shadow: 0 30px 70px rgba(80, 60, 70, .22), 0 6px 18px rgba(80, 60, 70, .1); }
+.scard { left: 640px; top: 150px; width: 1200px; min-height: 560px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 40px; padding: 56px 60px; }
+.side { left: 1250px; top: 180px; width: 630px; display: flex; flex-direction: column; align-items: flex-start; gap: 26px; padding: 44px 44px 48px; }
+.side.center { align-items: center; text-align: center; }
+.titlecard { left: 330px; top: 220px; width: 1260px; display: flex; flex-direction: column; align-items: center; gap: 30px; padding: 64px 60px; }
+
+.pill { display: inline-flex; align-items: center; gap: 14px; padding: 14px 28px; border-radius: 999px; background: #fff;
+  box-shadow: 0 8px 22px rgba(120, 92, 80, .12); font-size: 30px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.side .pill { font-size: 26px; padding: 12px 24px; }
+.pill-soft { background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e8da; }
+.pdot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; }
+.okpill { display: inline-flex; align-items: center; gap: 16px; padding: 14px 30px 14px 16px; border-radius: 999px; background: #e3f6ec;
+  font-size: 34px; font-weight: 750; color: #24533f; box-shadow: 0 10px 24px rgba(60, 140, 100, .14); white-space: nowrap; }
+.okc { display: block; width: 50px; height: 50px; border-radius: 50%; background: #3fa877; padding: 6px; flex: 0 0 auto; }
+.okc svg { display: block; width: 100%; height: 100%; }
+.nopill { background: #f3f1f5; color: #7a7690; box-shadow: none; }
+.nopill .okc { background: #b9b4c6; }
+.nopill span:last-child { text-decoration: line-through; text-decoration-thickness: 3px; text-decoration-color: rgba(122, 118, 144, .6); }
+.okpill.big { font-size: 40px; padding: 18px 40px 18px 18px; }
+.okpill.big .okc { width: 58px; height: 58px; }
+.ok-sm { font-size: 28px; padding: 10px 24px 10px 12px; }
+.ok-sm .okc { width: 40px; height: 40px; }
+
+.h1 { font-size: 96px; font-weight: 900; line-height: 1.18; letter-spacing: -.035em; word-break: keep-all; }
+.h1.center { text-align: center; }
+.h2 { font-size: 68px; font-weight: 850; line-height: 1.24; letter-spacing: -.03em; word-break: keep-all; text-align: center; }
+.h2.sm { font-size: 54px; }
+.h3 { font-size: 50px; font-weight: 850; line-height: 1.28; letter-spacing: -.03em; word-break: keep-all; }
+.h3.left { text-align: left; }
+.h3.sm { font-size: 42px; }
+.hl { background-image: linear-gradient(var(--hlc), var(--hlc)); background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 38%; padding: 0 4px; }
+.sub { font-size: 38px; font-weight: 600; color: var(--ink-soft); text-align: center; word-break: keep-all; line-height: 1.35; }
+.sub b { color: var(--ink); font-weight: 850; }
+.sub.left { text-align: left; font-size: 32px; }
+.row { display: flex; align-items: center; }
+.row.gap { gap: 22px; }
+.row.wrap { flex-wrap: wrap; }
+
+.ico { display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; border-radius: 50%; padding: 34px; flex: 0 0 auto;
+  box-shadow: 0 12px 26px rgba(120, 92, 80, .12), inset 0 0 0 6px rgba(255, 255, 255, .7); }
+.ico svg { display: block; width: 100%; height: 100%; }
+.ico.sm { width: 120px; height: 120px; padding: 27px; }
+.ico.xs { width: 84px; height: 84px; padding: 18px; }
+.arrow { display: block; width: 90px; height: 24px; flex: 0 0 auto; }
+.arrow.sm { width: 70px; }
+.arrow path, .darrow path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.darrow { display: block; width: 24px; height: 52px; margin-left: 30px; }
+.flow { display: flex; align-items: flex-start; gap: 22px; }
+.flow .arrow { margin-top: 63px; }
+.node { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 220px; }
+.nlabel { font-size: 34px; font-weight: 750; color: var(--ink); text-align: center; word-break: keep-all; line-height: 1.25; }
+
+.ichip { display: inline-flex; align-items: center; gap: 18px; padding: 10px 30px 10px 10px; border-radius: 999px; background: #fff;
+  box-shadow: 0 8px 22px rgba(120, 92, 80, .12), inset 0 0 0 2px #f3ece4; font-size: 34px; font-weight: 800; white-space: nowrap; }
+.chips5 { display: flex; flex-wrap: wrap; justify-content: center; gap: 22px; max-width: 1000px; }
+.vflow, .vlist { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.vlist { gap: 18px; }
+
+.field { width: 100%; display: flex; flex-direction: column; gap: 8px; padding: 22px 28px; border-radius: 26px; background: #f8f6fc; box-shadow: inset 0 0 0 2px #ebe6f5; }
+.flab { font-size: 24px; font-weight: 700; color: #8d7bd6; letter-spacing: .04em; }
+.fval { font-size: 42px; font-weight: 900; letter-spacing: -.03em; line-height: 1.25; }
+.fval.sm { font-size: 36px; font-weight: 800; }
+
+.duo2 { display: flex; align-items: center; gap: 40px; }
+.dcol { width: 400px; display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 34px 20px; border-radius: 32px; background: #faf8fd; }
+.dct { font-size: 44px; font-weight: 900; letter-spacing: -.03em; }
+.dcs { font-size: 32px; font-weight: 600; color: var(--ink-soft); text-align: center; line-height: 1.35; }
+.dcs b.dn { display: inline-block; color: #e8708f; font-size: 40px; font-weight: 900; }
+
+.eqs { display: flex; flex-direction: column; gap: 24px; width: 100%; }
+.eq { display: flex; align-items: center; gap: 24px; padding: 22px 34px; border-radius: 30px; background: #f7f5fb; font-size: 40px; font-weight: 650; color: var(--ink-soft); white-space: nowrap; }
+.eq b { font-weight: 900; color: var(--ink); }
+.eq.hot { background: #fff6e6; box-shadow: inset 0 0 0 3px #f6cf7c; }
+
+.bars { display: flex; flex-direction: column; gap: 26px; width: 100%; }
+.barrow { display: flex; align-items: center; gap: 22px; }
+.blab { width: 250px; font-size: 36px; font-weight: 800; flex: 0 0 auto; }
+.bar { flex: 1 1 auto; height: 44px; border-radius: 22px; background: #f1eef6; overflow: hidden; }
+.barf { display: block; height: 100%; width: 100%; border-radius: 22px; }
+
+.vs2 { display: flex; flex-direction: column; align-items: center; gap: 22px; }
+
+.def { font-size: 32px; font-weight: 600; color: var(--ink-soft); line-height: 1.35; word-break: keep-all; }
+.def b { color: var(--ink); font-weight: 850; }
+.cmp2 { width: 100%; display: flex; align-items: center; gap: 22px; padding: 20px 24px; border-radius: 28px; }
+.cmp2 > div:last-child { display: flex; flex-direction: column; gap: 4px; }
+.cmp2 b { font-size: 36px; font-weight: 900; letter-spacing: -.02em; }
+.cmp2 span { font-size: 30px; font-weight: 600; color: var(--ink-soft); line-height: 1.3; word-break: keep-all; }
+.cmp2 em { font-style: normal; font-weight: 850; color: var(--ink); }
+.cmp2.good { background: #effaf4; box-shadow: inset 0 0 0 3px #a9e0c4; }
+.cmp2.bad { background: #f5f4f8; box-shadow: inset 0 0 0 2px #e4e1ec; }
+.ne { align-self: center; font-size: 56px; font-weight: 900; color: #e8708f; line-height: .8; }
+.ne.big { font-size: 80px; }
+.numrow { display: flex; align-items: flex-start; gap: 20px; font-size: 36px; font-weight: 600; line-height: 1.35; word-break: keep-all; }
+.numrow b { font-weight: 900; }
+.nb { display: flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: #ebe6ff; color: #6b58c8; font-size: 30px; font-weight: 900; flex: 0 0 auto; }
+.tagbox { padding: 16px 26px; border-radius: 22px; background: #fff6e6; box-shadow: inset 0 0 0 3px #f6cf7c; font-size: 32px; font-weight: 850; white-space: nowrap; }
+.tagbox.ghost { background: #f5f4f8; box-shadow: inset 0 0 0 3px #dcd7e8; border: 0; color: var(--ink-soft); }
+.vs { font-size: 34px; font-weight: 900; color: #7d62c0; }
+.prompt { font-size: 38px; font-weight: 700; color: var(--ink-soft); }
+.prompt b { color: var(--ink); font-weight: 900; }
+.scary { align-self: flex-end; padding: 12px 26px; border-radius: 999px; background: #fff0f3; color: #b04a6c; font-size: 30px; font-weight: 850; }
+.bigq { font-size: 46px; font-weight: 750; line-height: 1.3; word-break: keep-all; }
+.bigq b { font-weight: 900; color: #6b58c8; }
+.bigq.ghost { color: var(--ink-soft); }
+.bigq.ghost b { color: #b04a6c; }
+.mini { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px 12px 14px; border-radius: 999px; background: #fff6e6; font-size: 30px; font-weight: 800; color: #9a6a12; }
+.mini svg { width: 40px; height: 40px; }
+.advice { width: 100%; display: flex; flex-direction: column; gap: 8px; padding: 24px 28px; border-radius: 28px; background: #fff6e6; box-shadow: inset 0 0 0 3px #f6cf7c; }
+.adk { font-size: 24px; font-weight: 800; color: #b07d10; letter-spacing: .04em; }
+.advice b { font-size: 38px; font-weight: 900; line-height: 1.3; letter-spacing: -.02em; }
+.advice span:last-child { font-size: 28px; font-weight: 650; color: var(--ink-soft); }
+.flexup { display: inline-flex; align-items: center; gap: 14px; font-size: 34px; font-weight: 700; }
+.flexup svg { width: 52px; height: 52px; }
+.flexup b { font-weight: 900; color: #2f8a63; }
+
+/* peek: the character rises from behind the caption band */
+.peek { position: absolute; right: 30px; bottom: 164px; width: 1100px; height: 520px; }
+.pchar { position: absolute; right: 0; bottom: -60px; width: 330px; height: auto; filter: drop-shadow(0 18px 26px rgba(80, 60, 90, .25)); transform-origin: 50% 100%; }
+.pbub { position: absolute; right: 330px; top: 120px; max-width: 640px; padding: 30px 40px 30px; border-radius: 40px 40px 10px 40px; background: #fff;
+  box-shadow: 0 24px 60px rgba(80, 60, 70, .26), inset 0 0 0 3px #f3e6ff; display: flex; flex-direction: column; gap: 10px; transform-origin: 100% 100%; }
+.pbub.blush { box-shadow: 0 24px 60px rgba(80, 60, 70, .26), inset 0 0 0 3px #ffc9d6; }
+.pl { font-size: 44px; font-weight: 750; line-height: 1.28; letter-spacing: -.02em; word-break: keep-all; }
+.pl b { font-weight: 900; color: #b04a6c; }
+.pname { align-self: flex-end; font-size: 22px; font-weight: 700; color: #8a7cc0; }
+
+/* section chip + chapter card + brand */
+#brand { position: absolute; left: 36px; top: 30px; z-index: 6; display: flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 999px;
+  background: rgba(255, 255, 255, .94); box-shadow: 0 8px 22px rgba(80, 60, 70, .18); font-size: 24px; font-weight: 600; color: var(--ink-soft); }
+#brand b { font-weight: 850; color: var(--ink); }
+.chapter { position: absolute; right: 36px; top: 30px; z-index: 6; }
+.chip-in { display: flex; align-items: center; gap: 12px; padding: 12px 24px; border-radius: 999px; background: rgba(255, 255, 255, .94);
+  box-shadow: 0 8px 22px rgba(80, 60, 70, .18); font-size: 24px; font-weight: 700; color: var(--ink-soft); }
+.chip-in b { color: #d0603f; font-weight: 850; }
+.ccard { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.cc-in { margin-top: -80px; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 44px 84px; border-radius: 40px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 30px 70px rgba(80, 60, 70, .25), inset 0 0 0 3px #f7e6da; }
+.cc-n { font-size: 28px; font-weight: 800; letter-spacing: .18em; color: #d0603f; }
+.cc-t { font-size: 78px; font-weight: 900; letter-spacing: -.035em; }
+.cc-s { font-size: 32px; font-weight: 650; color: var(--ink-soft); }
+
+/* end card (on the outro stage, right of the character) */
+#endclip { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.endin { position: absolute; left: 640px; top: 160px; width: 1200px; height: 600px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 34px;
+  border-radius: 44px; background: rgba(255, 255, 255, .95); box-shadow: 0 30px 70px rgba(80, 60, 70, .22); }
+.end-k { font-size: 36px; font-weight: 750; color: #d0603f; }
+.end-big { font-size: 84px; font-weight: 900; letter-spacing: -.04em; text-align: center; line-height: 1.15; }
+.end-mid { font-size: 36px; font-weight: 650; color: var(--ink-soft); }
+.cta { display: inline-flex; align-items: center; gap: 16px; padding: 20px 44px 20px 30px; border-radius: 999px; background: #ef8a6f; color: #fff;
+  font-size: 44px; font-weight: 900; box-shadow: 0 14px 30px rgba(239, 138, 111, .35); }
+.cta svg { width: 54px; height: 54px; }
+.cta.sub2 { background: #e8708f; box-shadow: 0 14px 30px rgba(232, 112, 143, .35); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="469.066" data-width="1920" data-height="1080">
+  <div id="vframe"><div id="vwrap"><video id="vid" class="clip" src="assets/media/source.mp4" playsinline data-has-audio="true" data-start="0" data-duration="469.066" data-track-index="0"></video></div></div>
+  <div id="introbg" class="stagebg clip" data-start="29.10" data-duration="89.81" data-track-index="1">
+    <div class="blob" style="left:-220px;top:-200px;width:900px;height:760px;background:radial-gradient(closest-side,rgba(255,205,186,.75),rgba(255,205,186,0))"></div>
+    <div class="blob" style="left:1180px;top:380px;width:980px;height:820px;background:radial-gradient(closest-side,rgba(207,195,255,.7),rgba(207,195,255,0))"></div>
+    <div class="blob" style="left:700px;top:-260px;width:760px;height:600px;background:radial-gradient(closest-side,rgba(185,232,209,.6),rgba(185,232,209,0))"></div>
+    <span id="intro-dc0" class="dc dc-dia" style="left:120px;top:140px;width:19.3px;height:19.3px;--c:#7fd1ae"></span><span id="intro-dc1" class="dc dc-ring" style="left:420px;top:90px;width:15.3px;height:15.3px;--c:#b9acf2"></span><span id="intro-dc2" class="dc dc-dot" style="left:780px;top:60px;width:20.8px;height:20.8px;--c:#f4c25b"></span><span id="intro-dc3" class="dc dc-dia" style="left:1180px;top:110px;width:24.0px;height:24.0px;--c:#f39a86"></span><span id="intro-dc4" class="dc dc-dot" style="left:1560px;top:80px;width:21.4px;height:21.4px;--c:#f3a3b8"></span><span id="intro-dc5" class="dc dc-dia" style="left:1820px;top:190px;width:20.9px;height:20.9px;--c:#7fd1ae"></span><span id="intro-dc6" class="dc dc-ring" style="left:70px;top:480px;width:25.8px;height:25.8px;--c:#b9acf2"></span><span id="intro-dc7" class="dc dc-dot" style="left:1860px;top:470px;width:20.7px;height:20.7px;--c:#f4c25b"></span><span id="intro-dc8" class="dc dc-dia" style="left:160px;top:800px;width:25.3px;height:25.3px;--c:#f39a86"></span><span id="intro-dc9" class="dc dc-dot" style="left:560px;top:840px;width:19.1px;height:19.1px;--c:#f3a3b8"></span><span id="intro-dc10" class="dc dc-dia" style="left:1360px;top:850px;width:22.6px;height:22.6px;--c:#7fd1ae"></span><span id="intro-dc11" class="dc dc-ring" style="left:1780px;top:780px;width:23.7px;height:23.7px;--c:#b9acf2"></span><span id="intro-dc12" class="dc dc-dot" style="left:980px;top:820px;width:25.3px;height:25.3px;--c:#f4c25b"></span><span id="intro-dc13" class="dc dc-dia" style="left:300px;top:360px;width:16.9px;height:16.9px;--c:#f39a86"></span><span id="intro-dc14" class="dc dc-dot" style="left:1640px;top:330px;width:14.6px;height:14.6px;--c:#f3a3b8"></span>
+  </div>
+  <div id="intro-char" class="charclip clip" data-start="29.10" data-duration="89.81" data-track-index="4">
+    <div id="intro-wrap" class="cwrap">
+      <img id="intro-phil" class="cphil" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+      <div class="ctag"><div id="intro-k" class="pill "><span class="pdot" style="background:#ef8a6f"></span><span>필로소피</span></div></div>
+    </div>
+  </div>
+  <div id="outrobg" class="stagebg clip" data-start="408.01" data-duration="61.06" data-track-index="1">
+    <div class="blob" style="left:-220px;top:-200px;width:900px;height:760px;background:radial-gradient(closest-side,rgba(255,205,186,.75),rgba(255,205,186,0))"></div>
+    <div class="blob" style="left:1180px;top:380px;width:980px;height:820px;background:radial-gradient(closest-side,rgba(207,195,255,.7),rgba(207,195,255,0))"></div>
+    <div class="blob" style="left:700px;top:-260px;width:760px;height:600px;background:radial-gradient(closest-side,rgba(185,232,209,.6),rgba(185,232,209,0))"></div>
+    <span id="outro-dc0" class="dc dc-dia" style="left:120px;top:140px;width:18.4px;height:18.4px;--c:#7fd1ae"></span><span id="outro-dc1" class="dc dc-ring" style="left:420px;top:90px;width:22.9px;height:22.9px;--c:#b9acf2"></span><span id="outro-dc2" class="dc dc-dot" style="left:780px;top:60px;width:22.2px;height:22.2px;--c:#f4c25b"></span><span id="outro-dc3" class="dc dc-dia" style="left:1180px;top:110px;width:19.1px;height:19.1px;--c:#f39a86"></span><span id="outro-dc4" class="dc dc-dot" style="left:1560px;top:80px;width:19.2px;height:19.2px;--c:#f3a3b8"></span><span id="outro-dc5" class="dc dc-dia" style="left:1820px;top:190px;width:25.7px;height:25.7px;--c:#7fd1ae"></span><span id="outro-dc6" class="dc dc-ring" style="left:70px;top:480px;width:17.0px;height:17.0px;--c:#b9acf2"></span><span id="outro-dc7" class="dc dc-dot" style="left:1860px;top:470px;width:23.2px;height:23.2px;--c:#f4c25b"></span><span id="outro-dc8" class="dc dc-dia" style="left:160px;top:800px;width:19.0px;height:19.0px;--c:#f39a86"></span><span id="outro-dc9" class="dc dc-dot" style="left:560px;top:840px;width:18.5px;height:18.5px;--c:#f3a3b8"></span><span id="outro-dc10" class="dc dc-dia" style="left:1360px;top:850px;width:16.9px;height:16.9px;--c:#7fd1ae"></span><span id="outro-dc11" class="dc dc-ring" style="left:1780px;top:780px;width:15.0px;height:15.0px;--c:#b9acf2"></span><span id="outro-dc12" class="dc dc-dot" style="left:980px;top:820px;width:22.3px;height:22.3px;--c:#f4c25b"></span><span id="outro-dc13" class="dc dc-dia" style="left:300px;top:360px;width:23.3px;height:23.3px;--c:#f39a86"></span><span id="outro-dc14" class="dc dc-dot" style="left:1640px;top:330px;width:25.2px;height:25.2px;--c:#f3a3b8"></span>
+  </div>
+  <div id="outro-char" class="charclip clip" data-start="408.01" data-duration="61.06" data-track-index="4">
+    <div id="outro-wrap" class="cwrap">
+      <img id="outro-phil" class="cphil" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+      <div class="ctag"><div id="outro-k" class="pill "><span class="pdot" style="background:#ef8a6f"></span><span>필로소피</span></div></div>
+    </div>
+  </div>
+
+<div id="g-open" class="scene clip" data-start="0.20" data-duration="4.40" data-track-index="2">
+  <div id="g-open-sc" class="sc"><div class="wash wash-center"></div>
+  <div id="go-c" class="card titlecard">
+    <div id="go-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>Claude 프로젝트 · 사고력 향상 AI 멘토</span></div>
+    <h1 id="go-h" class="h1 center">AI로 <span class="hl" style="--hlc:var(--hl-y)">사고력</span> 향상하기</h1>
+    <div id="go-s" class="sub">사용법이 아니라, 생각하는 힘을 키우는 AI 활용법</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-setup" class="scene clip" data-start="9.97" data-duration="8.15" data-track-index="2">
+  <div id="g-setup-sc" class="sc">
+  <div id="gsu-c" class="card side">
+    <div id="gsu-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>새 프로젝트 만들기</span></div>
+    <div id="gsu-1" class="field"><div class="flab">이름</div><div class="fval">사고력 향상 AI 멘토</div></div>
+    <div id="gsu-2" class="field"><div class="flab">목적</div><div class="fval sm">사용자의 사고력 향상에<br>도움을 줍니다</div></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-guide" class="scene clip" data-start="18.17" data-duration="8.05" data-track-index="2">
+  <div id="g-guide-sc" class="sc">
+  <div id="ggd-c" class="card side">
+    <div id="ggd-k" class="pill pill-soft"><span class="pdot" style="background:#4fb489"></span><span>지침은 무료로 제공해 드려요</span></div>
+    <div class="vflow">
+      <div id="ggd-1" class="ichip"><div id="ggd-1-i" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 56s-16-15-16-28a16 16 0 0 1 32 0c0 13-16 28-16 28z"/><circle cx="32" cy="28" r="6"/></svg></div><span>고정 댓글</span></div>
+      <svg id="ggd-a1" class="darrow" viewBox="0 0 24 70" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M12 4v58M2 50l10 12 10-12"/></svg>
+      <div id="ggd-2" class="ichip"><div id="ggd-2-i" class="ico xs" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M27 37l10-10"/><path d="M22 30l-6 6a8 8 0 0 0 12 12l6-6M42 34l6-6a8 8 0 0 0-12-12l-6 6"/></svg></div><span>네이버 카페 링크</span></div>
+      <svg id="ggd-a2" class="darrow" viewBox="0 0 24 70" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M12 4v58M2 50l10 12 10-12"/></svg>
+      <div id="ggd-3" class="ichip"><div id="ggd-3-i" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></div><span>지침 받아서 붙여넣기</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="g-i1" class="scene clip" data-start="29.20" data-duration="8.14" data-track-index="2">
+  <div id="g-i1-sc" class="sc">
+  <div id="gi1-c" class="card scard say">
+    <div id="gi1-k" class="pill pill-soft"><span class="pdot" style="background:#6aa3e6"></span><span>AI를 배우는 우리</span></div>
+    <div class="row gap"><div id="gi1-a" class="okpill "><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>사용법 배우기</span></div><div id="gi1-b" class="okpill "><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>익히기</span></div></div>
+    <div id="gi1-h" class="h2">좋아요. 그런데 이게<br><span class="hl" style="--hlc:var(--hl-p)">가장 중요한 건</span> 아닙니다</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-i2" class="scene clip" data-start="37.39" data-duration="11.34" data-track-index="2">
+  <div id="g-i2-sc" class="sc">
+  <div id="gi2-c" class="card scard say">
+    <div id="gi2-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>그럼 무엇이 중요할까?</span></div>
+    <div class="flow tight"><div class="node" id="gi2-n0"><div id="gi2-i0" class="ico " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#e7a92c" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#e7a92c" stroke-width="1.5"/></svg></div><div class="nlabel">AI를 활용해서</div></div><svg id="gi2-a1" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div class="node" id="gi2-n1"><div id="gi2-i1" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M26 12c-6 0-10 4-10 9-5 1-8 5-8 10 0 4 2 7 5 9-1 5 3 11 9 11 2 3 5 4 8 4V12z"/><path d="M38 12c6 0 10 4 10 9 5 1 8 5 8 10 0 4-2 7-5 9 1 5-3 11-9 11-2 3-5 4-8 4V12z"/></svg></div><div class="nlabel">사고력 향상</div></div><svg id="gi2-a2" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div class="node" id="gi2-n2"><div id="gi2-i2" class="ico " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 50l16-16 10 8 20-22"/><path d="M42 20h12v12"/></svg></div><div class="nlabel">지속적으로</div></div></div>
+    <div id="gi2-h" class="h2">AI로 <span class="hl" style="--hlc:var(--hl-y)">생각하는 힘</span>을 키우는 것</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-i3" class="scene clip" data-start="48.78" data-duration="11.90" data-track-index="2">
+  <div id="g-i3-sc" class="sc">
+  <div id="gi3-c" class="card scard say">
+    <div id="gi3-k" class="pill pill-soft"><span class="pdot" style="background:#6aa3e6"></span><span>쉽게 말하면, 내비게이션</span></div>
+    <div class="duo2">
+      <div id="gi3-a" class="dcol"><div id="gi3-ia" class="ico sm" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16l16-6 16 6 16-6v38l-16 6-16-6-16 6z"/><path d="M24 10v38M40 16v38"/></svg></div><div class="dct">내비 이전</div><div class="dcs">지도 보고<br>스스로 길 찾기</div></div>
+      <svg id="gi3-ar" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+      <div id="gi3-b" class="dcol"><div id="gi3-ib" class="ico sm" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 42l5-14c1-3 3-4 6-4h22c3 0 5 1 6 4l5 14v8H10z"/><path d="M10 42h44"/><circle cx="20" cy="50" r="4" fill="#ef8a6f"/><circle cx="44" cy="50" r="4" fill="#ef8a6f"/></svg></div><div class="dct">내비 이후</div><div class="dcs">내비 없이 운전할 수<br>있는 사람 <b class="dn">↓</b></div></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="g-i4" class="scene clip" data-start="60.73" data-duration="9.07" data-track-index="2">
+  <div id="g-i4-sc" class="sc">
+  <div id="gi4-c" class="card scard say">
+    <div id="gi4-h" class="h2">AI도 <span class="hl" style="--hlc:var(--hl-m)">마찬가지</span>입니다</div>
+    <div class="chips5">
+      <div id="gi4-1" class="ichip"><div id="gi4-1-i" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M26 12c-6 0-10 4-10 9-5 1-8 5-8 10 0 4 2 7 5 9-1 5 3 11 9 11 2 3 5 4 8 4V12z"/><path d="M38 12c6 0 10 4 10 9 5 1 8 5 8 10 0 4-2 7-5 9 1 5-3 11-9 11-2 3-5 4-8 4V12z"/></svg></div><span>생각</span></div>
+      <div id="gi4-2" class="ichip"><div id="gi4-2-i" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M44 8l12 12-30 30-14 2 2-14z"/><path d="M38 14l12 12"/></svg></div><span>글쓰기</span></div>
+      <div id="gi4-3" class="ichip"><div id="gi4-3-i" class="ico xs" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8C18 8 8 18 8 31s10 23 22 23c4 0 5-3 3-6s0-6 4-6h7c6 0 12-5 12-12C56 17 45 8 32 8z"/><circle cx="20" cy="31" r="3" fill="#e8708f"/><circle cx="27" cy="20" r="3" fill="#e8708f"/><circle cx="40" cy="20" r="3" fill="#e8708f"/></svg></div><span>그림</span></div>
+      <div id="gi4-4" class="ichip"><div id="gi4-4-i" class="ico xs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 46V14l28-6v32"/><circle cx="18" cy="46" r="6"/><circle cx="46" cy="40" r="6"/></svg></div><span>음악</span></div>
+      <div id="gi4-5" class="ichip"><div id="gi4-5-i" class="ico xs" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 20L10 32l12 12M42 20l12 12-12 12M36 14l-8 36"/></svg></div><span>코딩</span></div>
+    </div>
+    <div id="gi4-s" class="sub">AI와 함께하는 시대는 <b>이미 시작됐어요</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-i5" class="scene clip" data-start="69.85" data-duration="10.75" data-track-index="2">
+  <div id="g-i5-sc" class="sc">
+  <div id="gi5-c" class="card scard say">
+    <div id="gi5-k" class="pill pill-soft"><span class="pdot" style="background:#e7a92c"></span><span>시간이 흐르면…</span></div>
+    <div class="row gap"><div id="gi5-i" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="8"/><circle cx="44" cy="26" r="6"/><path d="M8 52c2-9 8-14 16-14s14 5 16 14"/><path d="M40 38c7 0 13 4 15 12"/></svg></div><div id="gi5-j" class="ico " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#e7a92c" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#e7a92c" stroke-width="1.5"/></svg></div></div>
+    <div id="gi5-t" class="sub">그때 태어난 아이들에겐 <b>AI가 익숙한 것</b></div>
+    <div id="gi5-h" class="h2">AI 없이 하는 게<br><span class="hl" style="--hlc:var(--hl-p)">오히려 어색한</span> 세대</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-i6" class="scene clip" data-start="80.65" data-duration="9.83" data-track-index="2">
+  <div id="g-i6-sc" class="sc">
+  <div id="gi6-c" class="card scard say">
+    <div id="gi6-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>그렇기 때문에</span></div>
+    <div class="eqs">
+      <div id="gi6-r1" class="eq"><div id="gi6-i1" class="ico xs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 16l16-6 16 6 16-6v38l-16 6-16-6-16 6z"/><path d="M24 10v38M40 16v38"/></svg></div><span>내비 없으면</span><svg id="gi6-a1" class="arrow sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><b>길을 못 찾고</b></div>
+      <div id="gi6-r2" class="eq hot"><div id="gi6-i2" class="ico xs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#e7a92c" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#e7a92c" stroke-width="1.5"/></svg></div><span>AI 없으면</span><svg id="gi6-a2" class="arrow sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><b>글쓰기도, 생각도 어렵다</b></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="g-i7" class="scene clip" data-start="90.53" data-duration="17.92" data-track-index="2">
+  <div id="g-i7-sc" class="sc">
+  <div id="gi7-c" class="card scard say">
+    <div id="gi7-k" class="pill pill-soft"><span class="pdot" style="background:#e8708f"></span><span>AI를 어려서부터 쓰는 세대라면</span></div>
+    <div class="bars">
+      <div id="gi7-b1" class="barrow"><div id="gi7-i1" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14c8-3 15-3 22 2 7-5 14-5 22-2v38c-8-3-15-3-22 2-7-5-14-5-22-2z"/><path d="M32 16v38"/></svg></div><span class="blab">책 읽는 시간</span><div class="bar"><span id="gi7-f1" class="barf" style="background:#f3a48e"></span></div></div>
+      <div id="gi7-b2" class="barrow"><div id="gi7-i2" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M26 12c-6 0-10 4-10 9-5 1-8 5-8 10 0 4 2 7 5 9-1 5 3 11 9 11 2 3 5 4 8 4V12z"/><path d="M38 12c6 0 10 4 10 9 5 1 8 5 8 10 0 4-2 7-5 9 1 5-3 11-9 11-2 3-5 4-8 4V12z"/></svg></div><span class="blab">생각하는 시간</span><div class="bar"><span id="gi7-f2" class="barf" style="background:#b4a6f0"></span></div></div>
+    </div>
+    <div id="gi7-h" class="h2 sm">현저히 줄어들 <span class="hl" style="--hlc:var(--hl-p)">가능성</span>이 있습니다</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-i8" class="scene clip" data-start="108.50" data-duration="10.36" data-track-index="2">
+  <div id="g-i8-sc" class="sc">
+  <div id="gi8-c" class="card scard say">
+    <div id="gi8-k" class="pill pill-soft"><span class="pdot" style="background:#4fb489"></span><span>그래서 우리는</span></div>
+    <div class="vs2">
+      <div id="gi8-a" class="okpill nopill big"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21l22 22M43 21L21 43"/></svg></span><span>AI 사용법만 계속 익히기</span></div>
+      <div id="gi8-b" class="okpill big"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>AI를 활용해 사고력 향상하기</span></div>
+    </div>
+    <div id="gi8-h" class="h2">이게 <span class="hl" style="--hlc:var(--hl-y)">굉장히 중요합니다</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-pick" class="scene clip" data-start="144.30" data-duration="10.62" data-track-index="2">
+  <div id="g-pick-sc" class="sc">
+  <div id="gpk-c" class="card side">
+    <div id="gpk-k" class="pill pill-soft"><span class="pdot" style="background:#6aa3e6"></span><span>제가 고른 것: 1, 2, 3 전부</span></div>
+    <div class="vlist">
+      <div id="gpk-1" class="ichip"><div id="gpk-1-i" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M26 12c-6 0-10 4-10 9-5 1-8 5-8 10 0 4 2 7 5 9-1 5 3 11 9 11 2 3 5 4 8 4V12z"/><path d="M38 12c6 0 10 4 10 9 5 1 8 5 8 10 0 4-2 7-5 9 1 5-3 11-9 11-2 3-5 4-8 4V12z"/></svg></div><span>논리적 사고</span></div>
+      <div id="gpk-2" class="ichip"><div id="gpk-2-i" class="ico xs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 32s10-16 26-16 26 16 26 16-10 16-26 16S6 32 6 32z"/><circle cx="32" cy="32" r="7"/></svg></div><span>비판적 사고</span></div>
+      <div id="gpk-3" class="ichip"><div id="gpk-3-i" class="ico xs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#e7a92c" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#e7a92c" stroke-width="1.5"/></svg></div><span>창의적 사고</span></div>
+    </div>
+    <div id="gpk-ok" class="okpill ok-sm"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>토론 질문 주고받기</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-topic" class="scene clip" data-start="154.97" data-duration="5.97" data-track-index="2">
+  <div id="g-topic-sc" class="sc">
+  <div id="gtp-c" class="card side center">
+    <div id="gtp-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>토론 주제</span></div>
+    <div id="gtp-i" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><path d="M25 26c0-5 3-8 7-8s7 3 7 7c0 6-7 6-7 12"/><circle cx="32" cy="45" r="1.5" fill="#9a8be6"/></svg></div>
+    <div id="gtp-h" class="h3">AI가 인간의 <span class="hl" style="--hlc:var(--hl-y)">창의성</span>을<br>대체할 수 있을까?</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-myarg" class="scene clip" data-start="160.99" data-duration="17.68" data-track-index="2">
+  <div id="g-myarg-sc" class="sc">
+  <div id="gma-c" class="card side">
+    <div id="gma-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>나의 주장</span></div>
+    <div id="gma-d" class="def">창의성 = <b>기존에 없는 것</b>을 생각해내는 것</div>
+    <div id="gma-1" class="cmp2 good"><div id="gma-i1" class="ico xs" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="13"/><circle cx="32" cy="32" r="4" fill="#4fb489"/></svg></div><div><b>사람</b><span>확률이 낮아도 확신을 갖고 도전</span></div></div>
+    <div id="gma-2" class="cmp2 bad"><div id="gma-i2" class="ico xs" style="background:#efedf3"><svg viewBox="0 0 64 64" fill="none" stroke="#8e8aa3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="10" width="44" height="44" rx="9"/><circle cx="22" cy="22" r="3.5" fill="#8e8aa3"/><circle cx="42" cy="22" r="3.5" fill="#8e8aa3"/><circle cx="32" cy="32" r="3.5" fill="#8e8aa3"/><circle cx="22" cy="42" r="3.5" fill="#8e8aa3"/><circle cx="42" cy="42" r="3.5" fill="#8e8aa3"/></svg></div><div><b>AI</b><span>확률이 낮으면 선택하지 않는다</span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-p-sharp" class="scene clip" data-start="193.93" data-duration="8.10" data-track-index="3">
+  <div id="g-p-sharp-sc" class="sc sc-peek">
+  <div id="g-p-sharp-w" class="peek">
+    <div id="g-p-sharp-b" class="pbub "><div id="g-p-sharp-l0" class="pl">이렇게 <b>날선 토론</b>은 처음!</div><div id="g-p-sharp-l1" class="pl">AI가 약간 <b>긁혔나 봐요</b></div><span class="pname">필로소피</span></div>
+    <img id="g-p-sharp-p" class="pchar" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+  </div>
+  </div>
+</div>
+
+<div id="g-counter1" class="scene clip" data-start="215.18" data-duration="9.47" data-track-index="2">
+  <div id="g-counter1-sc" class="sc">
+  <div id="gc1-c" class="card side">
+    <div id="gc1-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>AI의 반론 두 가지</span></div>
+    <div id="gc1-1" class="numrow"><span class="nb">1</span><div>‘기존에 없는 것’이라는<br><b>기준이 과연 명확할까요?</b></div></div>
+    <div id="gc1-2" class="numrow"><span class="nb">2</span><div><b>확률 논리</b>에 대해서는?</div></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-p-blush" class="scene clip" data-start="224.75" data-duration="4.45" data-track-index="3">
+  <div id="g-p-blush-sc" class="sc sc-peek">
+  <div id="g-p-blush-w" class="peek">
+    <div id="g-p-blush-b" class="pbub blush"><div id="g-p-blush-l0" class="pl">여기서부터 <b>얼굴이 살짝</b><br><b>붉어지더라고요</b></div><span class="pname">필로소피</span></div>
+    <img id="g-p-blush-p" class="pchar" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+  </div>
+  </div>
+</div>
+
+<div id="g-temp" class="scene clip" data-start="239.45" data-duration="10.90" data-track-index="2">
+  <div id="g-temp-sc" class="sc">
+  <div id="gtm-c" class="card side">
+    <div id="gtm-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>나의 재반론</span></div>
+    <div class="sub left">같은 ‘낮은 확률’이라도…</div>
+    <div id="gtm-1" class="cmp2 bad"><div id="gtm-i1" class="ico xs" style="background:#efedf3"><svg viewBox="0 0 64 64" fill="none" stroke="#8e8aa3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="10" width="44" height="44" rx="9"/><circle cx="22" cy="22" r="3.5" fill="#8e8aa3"/><circle cx="42" cy="22" r="3.5" fill="#8e8aa3"/><circle cx="32" cy="32" r="3.5" fill="#8e8aa3"/><circle cx="22" cy="42" r="3.5" fill="#8e8aa3"/><circle cx="42" cy="42" r="3.5" fill="#8e8aa3"/></svg></div><div><b>AI</b><span>temperature로 <em>랜덤하게</em></span></div></div>
+    <div id="gtm-ne" class="ne">≠</div>
+    <div id="gtm-2" class="cmp2 good"><div id="gtm-i2" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><circle cx="32" cy="32" r="13"/><circle cx="32" cy="32" r="4" fill="#ef8a6f"/></svg></div><div><b>인간</b><span><em>의도·목적성</em>을 가지고</span></div></div>
+    <div id="gtm-h" class="h3 sm"><span class="hl" style="--hlc:var(--hl-p)">근본적으로 다릅니다</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-brain" class="scene clip" data-start="251.07" data-duration="11.52" data-track-index="2">
+  <div id="g-brain-sc" class="sc">
+  <div id="gbr-c" class="card side center">
+    <div id="gbr-i" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M26 12c-6 0-10 4-10 9-5 1-8 5-8 10 0 4 2 7 5 9-1 5 3 11 9 11 2 3 5 4 8 4V12z"/><path d="M38 12c6 0 10 4 10 9 5 1 8 5 8 10 0 4-2 7-5 9 1 5-3 11-9 11-2 3-5 4-8 4V12z"/></svg></div>
+    <div id="gbr-k" class="pill pill-soft"><span class="pdot" style="background:#4fb489"></span><span>토론하면서 느낀 점</span></div>
+    <div id="gbr-h" class="h3">평소보다 AI를 쓸 때<br><span class="hl" style="--hlc:var(--hl-y)">머리를 많이 쓰게</span><br>되더라고요</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-intent" class="scene clip" data-start="269.50" data-duration="7.46" data-track-index="2">
+  <div id="g-intent-sc" class="sc">
+  <div id="gin-c" class="card side">
+    <div id="gin-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>AI가 더 파고듭니다</span></div>
+    <div id="gin-h" class="h3 left">‘의도’는 어떻게<br>확인할 수 있을까요?</div>
+    <div class="row gap">
+      <div id="gin-a" class="tagbox">진짜 의도</div><div id="gin-v" class="vs">vs</div><div id="gin-b" class="tagbox ghost">의도의 시뮬레이션</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="g-draw" class="scene clip" data-start="280.17" data-duration="22.85" data-track-index="2">
+  <div id="g-draw-sc" class="sc">
+  <div id="gdr-c" class="card side">
+    <div id="gdr-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>의도 확인법: 같은 그림을 또 그릴 수 있는가</span></div>
+    <div class="prompt" id="gdr-p">“<b>행복</b>을 표현해 보세요”</div>
+    <div id="gdr-1" class="cmp2 good"><div id="gdr-i1" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 30L32 12l22 18"/><path d="M16 26v26h32V26"/><path d="M27 52V38h10v14"/></svg></div><div><b>어린아이</b><span>네 명의 가족과 집<br>다시 그려도 <em>비슷한 그림</em></span></div></div>
+    <div id="gdr-2" class="cmp2 bad"><div id="gdr-i2" class="ico xs" style="background:#efedf3"><svg viewBox="0 0 64 64" fill="none" stroke="#8e8aa3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="10" width="44" height="44" rx="9"/><circle cx="22" cy="22" r="3.5" fill="#8e8aa3"/><circle cx="42" cy="22" r="3.5" fill="#8e8aa3"/><circle cx="32" cy="32" r="3.5" fill="#8e8aa3"/><circle cx="22" cy="42" r="3.5" fill="#8e8aa3"/><circle cx="42" cy="42" r="3.5" fill="#8e8aa3"/></svg></div><div><b>AI</b><span>별의별 그림이 다 나온다</span></div></div>
+    <div id="gdr-h" class="sub left">의도 없이 <b>확률적으로</b> 답하기 때문</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-picasso" class="scene clip" data-start="325.82" data-duration="11.19" data-track-index="2">
+  <div id="g-picasso-sc" class="sc">
+  <div id="gpc-c" class="card side">
+    <div id="gpc-k" class="pill pill-soft"><span class="pdot" style="background:#e8708f"></span><span>일관성이란?</span></div>
+    <div id="gpc-1" class="cmp2 good"><div id="gpc-i1" class="ico xs" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8C18 8 8 18 8 31s10 23 22 23c4 0 5-3 3-6s0-6 4-6h7c6 0 12-5 12-12C56 17 45 8 32 8z"/><circle cx="20" cy="31" r="3" fill="#e8708f"/><circle cx="27" cy="20" r="3" fill="#e8708f"/><circle cx="40" cy="20" r="3" fill="#e8708f"/></svg></div><div><b>피카소</b><span>그림은 다양해도<br>누가 봐도 <em>피카소의 그림</em></span></div></div>
+    <div id="gpc-2" class="cmp2 bad"><div id="gpc-i2" class="ico xs" style="background:#efedf3"><svg viewBox="0 0 64 64" fill="none" stroke="#8e8aa3" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="10" width="44" height="44" rx="9"/><circle cx="22" cy="22" r="3.5" fill="#8e8aa3"/><circle cx="42" cy="22" r="3.5" fill="#8e8aa3"/><circle cx="32" cy="32" r="3.5" fill="#8e8aa3"/><circle cx="22" cy="42" r="3.5" fill="#8e8aa3"/><circle cx="42" cy="42" r="3.5" fill="#8e8aa3"/></svg></div><div><b>AI</b><span>같은 프롬프트에도<br><em>아예 관련 없는 그림</em></span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-p-think" class="scene clip" data-start="337.30" data-duration="3.95" data-track-index="3">
+  <div id="g-p-think-sc" class="sc sc-peek">
+  <div id="g-p-think-w" class="peek">
+    <div id="g-p-think-b" class="pbub blush"><div id="g-p-think-l0" class="pl">얼굴이 붉어지고<br><b>머리를 엄청 쓰게</b> 되더라고요</div><span class="pname">필로소피</span></div>
+    <img id="g-p-think-p" class="pchar" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+  </div>
+  </div>
+</div>
+
+<div id="g-inner" class="scene clip" data-start="346.09" data-duration="7.74" data-track-index="2">
+  <div id="g-inner-sc" class="sc">
+  <div id="gnr-c" class="card side">
+    <div id="gnr-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>AI의 마지막 질문</span></div>
+    <div id="gnr-h" class="h3 left">“AI에겐 내면이 없다”<br>— 그걸 <span class="hl" style="--hlc:var(--hl-p)">확신할 근거</span>는<br>무엇인가요?</div>
+    <div id="gnr-t" class="scary">와… 무섭더라고요</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-seem" class="scene clip" data-start="356.96" data-duration="6.71" data-track-index="2">
+  <div id="g-seem-sc" class="sc">
+  <div id="gsm-c" class="card side center">
+    <div id="gsm-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>태생적인 차이</span></div>
+    <div id="gsm-a" class="bigq">내면이 <b>있는</b> 것</div>
+    <div id="gsm-ne" class="ne big">≠</div>
+    <div id="gsm-b" class="bigq ghost">내면이 있는 것처럼 <b>보이는</b> 것</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-onto" class="scene clip" data-start="367.84" data-duration="13.18" data-track-index="2">
+  <div id="g-onto-sc" class="sc">
+  <div id="gon-c" class="card side">
+    <div id="gon-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>결국 핵심 신념에 도달</span></div>
+    <div id="gon-h" class="h3 left">철학에서 말하는<br><span class="hl" style="--hlc:var(--hl-m)">존재론적 입장</span></div>
+    <div id="gon-s" class="sub left">외부에서 구별이 불가능해져도<br><b>본질적으로 다르다</b></div>
+    <div id="gon-r" class="mini"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M36 6L14 36h16l-4 22 22-30H32z" fill="#e7a92c" stroke-width="2"/></svg><span>AI가 화가 난 것 같아요</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-review" class="scene clip" data-start="381.07" data-duration="21.09" data-track-index="2">
+  <div id="g-review-sc" class="sc">
+  <div id="grv-c" class="card side">
+    <div id="grv-k" class="pill pill-soft"><span class="pdot" style="background:#4fb489"></span><span>AI의 토론 피드백</span></div>
+    <div class="row gap wrap"><div id="grv-1" class="okpill ok-sm"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>논리적</span></div><div id="grv-2" class="okpill ok-sm"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>비판적</span></div><div id="grv-3" class="okpill ok-sm"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>창의적</span></div></div>
+    <div id="grv-q" class="advice"><span class="adk">한 가지 더</span><b>“내가 틀릴 수 있는 조건은<br>무엇일까?”</b><span>스스로 질문하는 습관</span></div>
+    <div id="grv-h" class="flexup"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 50l16-16 10 8 20-22"/><path d="M42 20h12v12"/></svg><span>사고의 유연성 <b>한 단계 UP</b></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="g-p-angry" class="scene clip" data-start="402.26" data-duration="6.00" data-track-index="3">
+  <div id="g-p-angry-sc" class="sc sc-peek">
+  <div id="g-p-angry-w" class="peek">
+    <div id="g-p-angry-b" class="pbub "><div id="g-p-angry-l0" class="pl">존재론적으로 얘기하니까<br><b>화가 난 것 같아요</b></div><div id="g-p-angry-l1" class="pl">마지막엔 <b>따끔한 충고</b>까지!</div><span class="pname">필로소피</span></div>
+    <img id="g-p-angry-p" class="pchar" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+  </div>
+  </div>
+</div>
+
+<div id="g-o1" class="scene clip" data-start="408.11" data-duration="6.51" data-track-index="2">
+  <div id="g-o1-sc" class="sc">
+  <div id="go1-c" class="card scard say">
+    <div id="go1-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>AI와 토론해 보고 느낀 점</span></div>
+    <div id="go1-i" class="ico " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="28" cy="28" r="16"/><path d="M40 40l14 14"/></svg></div>
+    <div id="go1-h" class="h2">우리는 AI를<br><span class="hl" style="--hlc:var(--hl-y)">정보를 얻으려고만</span> 쓰잖아요</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-o2" class="scene clip" data-start="414.67" data-duration="15.26" data-track-index="2">
+  <div id="g-o2-sc" class="sc">
+  <div id="go2-c" class="card scard say">
+    <div id="go2-k" class="pill pill-soft"><span class="pdot" style="background:#4fb489"></span><span>사용법은 어렵지 않아요</span></div>
+    <div class="flow tight"><div class="node" id="go2-n0"><div id="go2-i0" class="ico " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18c0-3 2-5 5-5h12l5 6h21c3 0 5 2 5 5v23c0 3-2 5-5 5H13c-3 0-5-2-5-5z"/><path d="M8 26h48"/></svg></div><div class="nlabel">프로젝트<br>만들기</div></div><svg id="go2-a1" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div class="node" id="go2-n1"><div id="go2-i1" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M26 12c-6 0-10 4-10 9-5 1-8 5-8 10 0 4 2 7 5 9-1 5 3 11 9 11 2 3 5 4 8 4V12z"/><path d="M38 12c6 0 10 4 10 9 5 1 8 5 8 10 0 4-2 7-5 9 1 5-3 11-9 11-2 3-5 4-8 4V12z"/></svg></div><div class="nlabel">사고력 향상<br>지침</div></div><svg id="go2-a2" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div class="node" id="go2-n2"><div id="go2-i2" class="ico " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><div class="nlabel">토론하도록<br>세팅</div></div></div>
+    <div id="go2-h" class="h2 sm">생각보다 <span class="hl" style="--hlc:var(--hl-y)">머리를 많이 쓰게</span> 됩니다</div>
+  </div>
+  </div>
+</div>
+
+<div id="g-o3" class="scene clip" data-start="429.98" data-duration="16.18" data-track-index="2">
+  <div id="g-o3-sc" class="sc">
+  <div id="go3-c" class="card scard say">
+    <div id="go3-k" class="pill pill-soft"><span class="pdot" style="background:#e8708f"></span><span>선생님들께</span></div>
+    <div id="go3-h" class="h2 sm">학생들을 위해 어떻게 쓰면 좋을지<br>한번 고민해 보세요</div>
+    <div class="vs2">
+      <div id="go3-a" class="okpill nopill big"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21l22 22M43 21L21 43"/></svg></span><span>AI 사용법만 알려주기</span></div>
+      <div id="go3-b" class="okpill big"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>사고력을 키우는 방향으로 AI 쓰게 하기</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="g-o4" class="scene clip" data-start="446.21" data-duration="9.99" data-track-index="2">
+  <div id="g-o4-sc" class="sc">
+  <div id="go4-c" class="card scard say">
+    <div id="go4-k" class="pill pill-soft"><span class="pdot" style="background:#6aa3e6"></span><span>다시, 내비게이션</span></div>
+    <div class="eqs">
+      <div id="go4-r1" class="eq"><div id="go4-i1" class="ico xs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 42l5-14c1-3 3-4 6-4h22c3 0 5 1 6 4l5 14v8H10z"/><path d="M10 42h44"/><circle cx="20" cy="50" r="4" fill="#6aa3e6"/><circle cx="44" cy="50" r="4" fill="#6aa3e6"/></svg></div><span>내비 등장 이후</span><svg id="go4-a1" class="arrow sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><b>직접 운전하는 능력 ↓</b></div>
+      <div id="go4-r2" class="eq hot"><div id="go4-i2" class="ico xs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#e7a92c" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#e7a92c" stroke-width="1.5"/></svg></div><span>AI 등장 이후</span><svg id="go4-a2" class="arrow sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><b>사고력 · 글쓰기 능력 ↓</b></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="g-o5" class="scene clip" data-start="456.25" data-duration="7.85" data-track-index="2">
+  <div id="g-o5-sc" class="sc">
+  <div id="go5-c" class="card scard say">
+    <div class="row gap"><div id="go5-i1" class="ico sm" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M26 12c-6 0-10 4-10 9-5 1-8 5-8 10 0 4 2 7 5 9-1 5 3 11 9 11 2 3 5 4 8 4V12z"/><path d="M38 12c6 0 10 4 10 9 5 1 8 5 8 10 0 4-2 7-5 9 1 5-3 11-9 11-2 3-5 4-8 4V12z"/></svg></div><div id="go5-i2" class="ico sm" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M44 8l12 12-30 30-14 2 2-14z"/><path d="M38 14l12 12"/></svg></div></div>
+    <div id="go5-h" class="h2">AI로 <span class="hl" style="--hlc:var(--hl-y)">사고력</span>과 <span class="hl" style="--hlc:var(--hl-m)">글쓰기</span>를<br>키울 수 있도록</div>
+    <div id="go5-ok" class="okpill "><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>우리가 안내해 주세요</span></div>
+  </div>
+  </div>
+</div>
+  <div id="brand"><span class="pdot" style="background:#9a8be6"></span><span>필로소피</span><b>AI 교육</b></div>
+<div id="sec0" class="chapter clip" data-start="0.00" data-duration="29.10" data-track-index="6"><div id="sec0-in" class="chip-in"><b>01</b><span>사고력 향상 AI 멘토 만들기</span></div></div>
+<div id="sec1" class="chapter clip" data-start="29.10" data-duration="99.37" data-track-index="6"><div id="sec1-in" class="chip-in"><b>02</b><span>왜 사고력일까?</span></div></div>
+<div id="sec2" class="chapter clip" data-start="128.47" data-duration="279.54" data-track-index="6"><div id="sec2-in" class="chip-in"><b>03</b><span>AI와 토론 실습</span></div></div>
+<div id="sec3" class="chapter clip" data-start="408.01" data-duration="56.14" data-track-index="6"><div id="sec3-in" class="chip-in"><b>04</b><span>토론을 마치며</span></div></div>
+<div id="cc0" class="ccard clip" data-start="128.47" data-duration="2.700" data-track-index="7"><div id="cc0-in" class="cc-in"><div class="cc-n">실습</div><div class="cc-t">AI와 날선 토론 해보기</div><div class="cc-s">주제 · AI가 인간의 창의성을 대체할 수 있을까?</div></div></div>
+<div id="endclip" class="clip" data-start="464.15" data-duration="4.92" data-track-index="5">
+    <div id="end-in" class="endin">
+      <div id="end-k" class="end-k">오늘의 영상은 여기까지입니다</div>
+      <div id="end-h" class="end-big">AI로 <span class="hl" style="--hlc:var(--hl-y)">생각하는 힘</span>을 키우세요</div>
+      <div class="row gap">
+        <div id="end-like" class="cta"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 28v26H10V28z"/><path d="M20 28l10-18c4 0 6 3 5 7l-2 9h15c3 0 5 3 4 6l-4 18c-1 3-3 4-6 4H20"/></svg><span>좋아요</span></div>
+        <div id="end-sub" class="cta sub2"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 44V30a14 14 0 0 1 28 0v14l5 5H13z"/><path d="M27 54a5 5 0 0 0 10 0"/></svg><span>구독</span></div>
+      </div>
+      <div id="end-t" class="end-mid">감사합니다 · 필로소피 AI 교육</div>
+    </div>
+  </div>
+  <div id="band"><span class="bdot" style="left:40px;top:70px;width:16px;height:16px;background:#ffc7b4"></span><span class="bdot" style="left:68px;top:94px;width:10px;height:10px;background:#b9e8d1"></span><span class="bdot" style="right:46px;top:66px;width:14px;height:14px;background:#cfc3ff"></span><span class="bdot" style="right:72px;top:96px;width:10px;height:10px;background:#ffe39c"></span></div>
+<div id="cap0" class="cap clip" data-start="0.000" data-duration="2.970" data-track-index="8"><span>오늘은 AI로 사고력 향상하는 방법을</span></div>
+<div id="cap1" class="cap clip" data-start="2.970" data-duration="1.730" data-track-index="8"><span>한번 같이 이야기를 나눠보려고 하는데요</span></div>
+<div id="cap2" class="cap clip" data-start="4.700" data-duration="1.160" data-track-index="8"><span>방법은 어렵지 않습니다</span></div>
+<div id="cap3" class="cap clip" data-start="5.860" data-duration="2.600" data-track-index="8"><span>클로드에서 프로젝트를 선택하시고</span></div>
+<div id="cap4" class="cap clip" data-start="8.460" data-duration="1.710" data-track-index="8"><span>새 프로젝트를 하나 만드시면 됩니다</span></div>
+<div id="cap5" class="cap clip" data-start="10.170" data-duration="4.830" data-track-index="8"><span>만드셨을 때 사고력 향상 AI 멘토라는 이름으로 만드시고</span></div>
+<div id="cap6" class="cap clip" data-start="15.000" data-duration="3.270" data-track-index="8"><span>목적은 사용자의 사고력 향상에 도움을 줍니다라고 하시고,</span></div>
+<div id="cap7" class="cap clip" data-start="18.270" data-duration="2.480" data-track-index="8"><span>이 지침은 제가 제공해 드리겠습니다</span></div>
+<div id="cap8" class="cap clip" data-start="20.750" data-duration="1.400" data-track-index="8"><span>고정 댓글 보시면</span></div>
+<div id="cap9" class="cap clip" data-start="22.150" data-duration="1.740" data-track-index="8"><span>네이버 카페 링크가 하나 있을 겁니다</span></div>
+<div id="cap10" class="cap clip" data-start="23.890" data-duration="1.830" data-track-index="8"><span>거기 들어가셔서 받으시면 되고</span></div>
+<div id="cap11" class="cap clip" data-start="25.720" data-duration="1.660" data-track-index="8"><span>제가 무슨 작업을 했냐면</span></div>
+<div id="cap12" class="cap clip" data-start="27.380" data-duration="1.870" data-track-index="8"><span>이 AI와 토론을 했어요</span></div>
+<div id="cap13" class="cap clip" data-start="29.250" data-duration="1.260" data-track-index="8"><span>AI의 사용법을</span></div>
+<div id="cap14" class="cap clip" data-start="30.510" data-duration="2.590" data-track-index="8"><span>우리가 계속 배우는 것도 좋고</span></div>
+<div id="cap15" class="cap clip" data-start="33.100" data-duration="1.820" data-track-index="8"><span>그걸 익히는 것도 좋지만</span></div>
+<div id="cap16" class="cap clip" data-start="34.920" data-duration="2.520" data-track-index="8"><span>그게 가장 중요한 것은 아니라고 생각합니다</span></div>
+<div id="cap17" class="cap clip" data-start="37.440" data-duration="1.890" data-track-index="8"><span>그 얘기가 무슨 얘기냐면</span></div>
+<div id="cap18" class="cap clip" data-start="39.330" data-duration="1.480" data-track-index="8"><span>우리는 AI를 활용해서</span></div>
+<div id="cap19" class="cap clip" data-start="40.810" data-duration="3.760" data-track-index="8"><span>우리의 사고력을 향상하는 방법을 익혀야 되고</span></div>
+<div id="cap20" class="cap clip" data-start="44.570" data-duration="2.670" data-track-index="8"><span>지속적으로 사고력을 향상시켜야 합니다</span></div>
+<div id="cap21" class="cap clip" data-start="47.240" data-duration="1.590" data-track-index="8"><span>그게 중요한 점입니다</span></div>
+<div id="cap22" class="cap clip" data-start="48.830" data-duration="1.660" data-track-index="8"><span>쉽게 말씀드리자면</span></div>
+<div id="cap23" class="cap clip" data-start="50.490" data-duration="2.060" data-track-index="8"><span>내비게이션이라는 기계가 나오기 전에</span></div>
+<div id="cap24" class="cap clip" data-start="52.550" data-duration="2.770" data-track-index="8"><span>많은 분들은 내비게이션 없이 길을 찾으셨었습니다</span></div>
+<div id="cap25" class="cap clip" data-start="55.320" data-duration="2.640" data-track-index="8"><span>하지만 내비게이션에 익숙해진 이후로</span></div>
+<div id="cap26" class="cap clip" data-start="57.960" data-duration="2.820" data-track-index="8"><span>내비게이션 없이 지금 운전할 수 있는 사람 많이 줄었죠</span></div>
+<div id="cap27" class="cap clip" data-start="60.780" data-duration="1.780" data-track-index="8"><span>AI도 마찬가지라고 생각합니다</span></div>
+<div id="cap28" class="cap clip" data-start="62.560" data-duration="2.670" data-track-index="8"><span>AI를 활용해서 생각하고 글을 쓰고,</span></div>
+<div id="cap29" class="cap clip" data-start="65.230" data-duration="1.730" data-track-index="8"><span>그림을 그리고, 음악을 만들고,</span></div>
+<div id="cap30" class="cap clip" data-start="66.960" data-duration="0.930" data-track-index="8"><span>코딩을 하고</span></div>
+<div id="cap31" class="cap clip" data-start="67.890" data-duration="2.010" data-track-index="8"><span>지금 그런 시대가 이미 시작됐죠</span></div>
+<div id="cap32" class="cap clip" data-start="69.900" data-duration="1.540" data-track-index="8"><span>그렇게 시간이 많이 흐르면</span></div>
+<div id="cap33" class="cap clip" data-start="71.440" data-duration="1.790" data-track-index="8"><span>그때 태어난 아이들은</span></div>
+<div id="cap34" class="cap clip" data-start="73.230" data-duration="2.350" data-track-index="8"><span>AI를 쓰는 것이 익숙할 것입니다</span></div>
+<div id="cap35" class="cap clip" data-start="75.580" data-duration="2.720" data-track-index="8"><span>그래서 AI 없이 무언가를 한다는 것이</span></div>
+<div id="cap36" class="cap clip" data-start="78.300" data-duration="2.400" data-track-index="8"><span>오히려 어색한 상황이 될 겁니다</span></div>
+<div id="cap37" class="cap clip" data-start="80.700" data-duration="1.240" data-track-index="8"><span>그렇기 때문에</span></div>
+<div id="cap38" class="cap clip" data-start="81.940" data-duration="2.200" data-track-index="8"><span>내비게이션을 우리가 안 쓰면</span></div>
+<div id="cap39" class="cap clip" data-start="84.140" data-duration="1.080" data-track-index="8"><span>길을 못 찾는 것처럼</span></div>
+<div id="cap40" class="cap clip" data-start="85.220" data-duration="3.330" data-track-index="8"><span>AI 없으면 우리가 글을 쓰기도 어렵고</span></div>
+<div id="cap41" class="cap clip" data-start="88.550" data-duration="2.030" data-track-index="8"><span>사고를 하기도 어려워질 겁니다</span></div>
+<div id="cap42" class="cap clip" data-start="90.580" data-duration="1.960" data-track-index="8"><span>AI 없이 자란 우리 세대가 생각하면</span></div>
+<div id="cap43" class="cap clip" data-start="92.540" data-duration="1.230" data-track-index="8"><span>말도 안 된다</span></div>
+<div id="cap44" class="cap clip" data-start="93.770" data-duration="2.150" data-track-index="8"><span>이렇게까지 될까라고 생각하실 수 있지만</span></div>
+<div id="cap45" class="cap clip" data-start="95.920" data-duration="2.650" data-track-index="8"><span>AI를 어려서부터 쓰고</span></div>
+<div id="cap46" class="cap clip" data-start="98.570" data-duration="2.880" data-track-index="8"><span>책을 읽을 시간이나 생각을 할 시간이</span></div>
+<div id="cap47" class="cap clip" data-start="101.450" data-duration="3.850" data-track-index="8"><span>현저히 줄어든 세대는 그럴 수도 있습니다</span></div>
+<div id="cap48" class="cap clip" data-start="105.300" data-duration="1.970" data-track-index="8"><span>물론 그렇지 않으면 좋겠지만</span></div>
+<div id="cap49" class="cap clip" data-start="107.270" data-duration="1.280" data-track-index="8"><span>그럴 가능성이 있습니다</span></div>
+<div id="cap50" class="cap clip" data-start="108.550" data-duration="2.200" data-track-index="8"><span>그렇기 때문에 우리는 AI 사용법만</span></div>
+<div id="cap51" class="cap clip" data-start="110.750" data-duration="3.110" data-track-index="8"><span>계속 익히는 것에 집중할 것이 아니라</span></div>
+<div id="cap52" class="cap clip" data-start="113.860" data-duration="1.080" data-track-index="8"><span>AI를 활용해서</span></div>
+<div id="cap53" class="cap clip" data-start="114.940" data-duration="2.580" data-track-index="8"><span>우리의 사고력을 향상시켜 봐야 합니다</span></div>
+<div id="cap54" class="cap clip" data-start="117.520" data-duration="1.240" data-track-index="8"><span>그게 굉장히 중요하고요</span></div>
+<div id="cap55" class="cap clip" data-start="118.760" data-duration="0.890" data-track-index="8"><span>이 프로젝트 만드는 건</span></div>
+<div id="cap56" class="cap clip" data-start="119.650" data-duration="0.820" data-track-index="8"><span>굉장히 간단합니다</span></div>
+<div id="cap57" class="cap clip" data-start="120.470" data-duration="1.250" data-track-index="8"><span>그래서 오늘 영상은</span></div>
+<div id="cap58" class="cap clip" data-start="121.720" data-duration="2.800" data-track-index="8"><span>사고력을 향상시키는 방법에 집중해 있습니다</span></div>
+<div id="cap59" class="cap clip" data-start="124.520" data-duration="2.700" data-track-index="8"><span>우리 선생님들도 제가 제공하는 지침을 활용해서</span></div>
+<div id="cap60" class="cap clip" data-start="127.220" data-duration="1.250" data-track-index="8"><span>프로젝트를 하나 만들어 보시고</span></div>
+<div id="cap61" class="cap clip" data-start="128.470" data-duration="2.150" data-track-index="8"><span>이제 실습 한번 해보겠습니다</span></div>
+<div id="cap62" class="cap clip" data-start="130.620" data-duration="1.940" data-track-index="8"><span>제가 AI에게 "안녕하세요."</span></div>
+<div id="cap63" class="cap clip" data-start="132.560" data-duration="0.810" data-track-index="8"><span>이렇게 물어봤어요</span></div>
+<div id="cap64" class="cap clip" data-start="133.370" data-duration="0.790" data-track-index="8"><span>인사를 했어요</span></div>
+<div id="cap65" class="cap clip" data-start="134.160" data-duration="1.590" data-track-index="8"><span>그랬더니 "안녕하세요</span></div>
+<div id="cap66" class="cap clip" data-start="135.750" data-duration="0.900" data-track-index="8"><span>무엇을 도와드릴까요?"</span></div>
+<div id="cap67" class="cap clip" data-start="136.650" data-duration="0.770" data-track-index="8"><span>이렇게 답이 왔습니다</span></div>
+<div id="cap68" class="cap clip" data-start="137.420" data-duration="1.920" data-track-index="8"><span>"사고력 향상에 도움을 줄 수 있나요?"</span></div>
+<div id="cap69" class="cap clip" data-start="139.340" data-duration="0.770" data-track-index="8"><span>이렇게 물어보니까</span></div>
+<div id="cap70" class="cap clip" data-start="140.110" data-duration="0.850" data-track-index="8"><span>"물론이죠."</span></div>
+<div id="cap71" class="cap clip" data-start="140.960" data-duration="2.860" data-track-index="8"><span>사고력 향상을 다양한 방면에서 도와줄 수 있대요</span></div>
+<div id="cap72" class="cap clip" data-start="143.820" data-duration="0.580" data-track-index="8"><span>좋아요</span></div>
+<div id="cap73" class="cap clip" data-start="144.400" data-duration="1.600" data-track-index="8"><span>그래서 제가 저한테 질문을 했길래</span></div>
+<div id="cap74" class="cap clip" data-start="146.000" data-duration="1.280" data-track-index="8"><span>1, 2, 3 다 필요하다 이렇게 했어요</span></div>
+<div id="cap75" class="cap clip" data-start="147.280" data-duration="2.980" data-track-index="8"><span>논리적 사고, 비판적 사고, 창의적 사고 다 키우고 싶다</span></div>
+<div id="cap76" class="cap clip" data-start="150.260" data-duration="1.020" data-track-index="8"><span>이렇게 하니까</span></div>
+<div id="cap77" class="cap clip" data-start="151.280" data-duration="1.940" data-track-index="8"><span>토론 질문 주고받기</span></div>
+<div id="cap78" class="cap clip" data-start="153.220" data-duration="1.850" data-track-index="8"><span>이런 걸 제가 하자고 했어요</span></div>
+<div id="cap79" class="cap clip" data-start="155.070" data-duration="1.560" data-track-index="8"><span>그랬더니 주제</span></div>
+<div id="cap80" class="cap clip" data-start="156.630" data-duration="2.540" data-track-index="8"><span>AI가 인간의 창의성을 대체할 수 있을까요?</span></div>
+<div id="cap81" class="cap clip" data-start="159.170" data-duration="1.920" data-track-index="8"><span>이렇게 저한테 질문을 하네요</span></div>
+<div id="cap82" class="cap clip" data-start="161.090" data-duration="1.960" data-track-index="8"><span>그래서 제가 창의성이라는 것은</span></div>
+<div id="cap83" class="cap clip" data-start="163.050" data-duration="2.420" data-track-index="8"><span>기존에 없는 것을 생각해내는 것이라고 생각합니다</span></div>
+<div id="cap84" class="cap clip" data-start="165.470" data-duration="2.270" data-track-index="8"><span>그렇기 때문에 데이터를 기반으로 답을 하는 AI는</span></div>
+<div id="cap85" class="cap clip" data-start="167.740" data-duration="2.410" data-track-index="8"><span>근본적으로 창의적이기는 어렵다고 봅니다</span></div>
+<div id="cap86" class="cap clip" data-start="170.150" data-duration="1.340" data-track-index="8"><span>사람은 확률이 낮아도</span></div>
+<div id="cap87" class="cap clip" data-start="171.490" data-duration="0.600" data-track-index="8"><span>확신을 가지고</span></div>
+<div id="cap88" class="cap clip" data-start="172.090" data-duration="1.750" data-track-index="8"><span>어떤 창의적인 일을 하는 반면에</span></div>
+<div id="cap89" class="cap clip" data-start="173.840" data-duration="1.170" data-track-index="8"><span>AI는 확률이 낮으면</span></div>
+<div id="cap90" class="cap clip" data-start="175.010" data-duration="1.550" data-track-index="8"><span>그것을 선택하지 않기 때문에</span></div>
+<div id="cap91" class="cap clip" data-start="176.560" data-duration="1.710" data-track-index="8"><span>창의적인 일을 하기 쉽지 않다고 합니다</span></div>
+<div id="cap92" class="cap clip" data-start="178.270" data-duration="1.450" data-track-index="8"><span>제가 좀 날서게</span></div>
+<div id="cap93" class="cap clip" data-start="179.720" data-duration="0.660" data-track-index="8"><span>뭐랄까</span></div>
+<div id="cap94" class="cap clip" data-start="180.380" data-duration="1.140" data-track-index="8"><span>좋게 얘기한 게 아니라</span></div>
+<div id="cap95" class="cap clip" data-start="181.520" data-duration="1.320" data-track-index="8"><span>제 생각을 가지고</span></div>
+<div id="cap96" class="cap clip" data-start="182.840" data-duration="2.200" data-track-index="8"><span>진짜 찬반 토론을 하듯이</span></div>
+<div id="cap97" class="cap clip" data-start="185.040" data-duration="2.580" data-track-index="8"><span>진지하게 이렇게 답을 보냈어요</span></div>
+<div id="cap98" class="cap clip" data-start="187.620" data-duration="2.510" data-track-index="8"><span>원래 클로드랑 저랑은 사이가 굉장히 좋았는데요</span></div>
+<div id="cap99" class="cap clip" data-start="190.130" data-duration="1.010" data-track-index="8"><span>항상 질문만 하고</span></div>
+<div id="cap100" class="cap clip" data-start="191.140" data-duration="0.990" data-track-index="8"><span>클로드가 답을 주고</span></div>
+<div id="cap101" class="cap clip" data-start="192.130" data-duration="0.610" data-track-index="8"><span>제가 고맙다고 하고</span></div>
+<div id="cap102" class="cap clip" data-start="192.740" data-duration="1.290" data-track-index="8"><span>이렇게 지냈는데</span></div>
+<div id="cap103" class="cap clip" data-start="194.030" data-duration="2.080" data-track-index="8"><span>이렇게 날선 토론을 한 건 처음이었습니다</span></div>
+<div id="cap104" class="cap clip" data-start="196.110" data-duration="0.960" data-track-index="8"><span>지금 보고 계신 선생님들도</span></div>
+<div id="cap105" class="cap clip" data-start="197.070" data-duration="1.010" data-track-index="8"><span>꼭 한번 해보세요</span></div>
+<div id="cap106" class="cap clip" data-start="198.080" data-duration="1.440" data-track-index="8"><span>제가 이렇게 딱 보냈더니</span></div>
+<div id="cap107" class="cap clip" data-start="199.520" data-duration="1.910" data-track-index="8"><span>AI가 약간 긁혔나 봐요</span></div>
+<div id="cap108" class="cap clip" data-start="201.430" data-duration="1.890" data-track-index="8"><span>정말 흥미로운 관점이네요</span></div>
+<div id="cap109" class="cap clip" data-start="203.320" data-duration="1.620" data-track-index="8"><span>논리적으로 잘 구성된 주장입니다</span></div>
+<div id="cap110" class="cap clip" data-start="204.940" data-duration="2.890" data-track-index="8"><span>특히 확률 이거 아주 진하게 표시했죠</span></div>
+<div id="cap111" class="cap clip" data-start="207.830" data-duration="1.580" data-track-index="8"><span>확률이라는 개념을 끌어와서</span></div>
+<div id="cap112" class="cap clip" data-start="209.410" data-duration="2.990" data-track-index="8"><span>AI와 인간의 차이를 설명한 부분이 인상적이에요</span></div>
+<div id="cap113" class="cap clip" data-start="212.400" data-duration="1.460" data-track-index="8"><span>정리하면 이런 구조네요</span></div>
+<div id="cap114" class="cap clip" data-start="213.860" data-duration="1.420" data-track-index="8"><span>이러면서 제 얘기를 정리해요</span></div>
+<div id="cap115" class="cap clip" data-start="215.280" data-duration="1.510" data-track-index="8"><span>그리고 약간 정색하면서</span></div>
+<div id="cap116" class="cap clip" data-start="216.790" data-duration="2.320" data-track-index="8"><span>반론을 두 가지를 저에게 줍니다</span></div>
+<div id="cap117" class="cap clip" data-start="219.110" data-duration="0.970" data-track-index="8"><span>첫째,</span></div>
+<div id="cap118" class="cap clip" data-start="220.080" data-duration="2.740" data-track-index="8"><span>기존에 없는 것이라는 기준이 과연 명확할까요?</span></div>
+<div id="cap119" class="cap clip" data-start="222.820" data-duration="1.880" data-track-index="8"><span>둘째, 확률 논리에 대해서인데요</span></div>
+<div id="cap120" class="cap clip" data-start="224.700" data-duration="0.880" data-track-index="8"><span>와, 여기서부터</span></div>
+<div id="cap121" class="cap clip" data-start="225.580" data-duration="1.560" data-track-index="8"><span>저도 이제 얼굴이 살짝 붉어지더라고요</span></div>
+<div id="cap122" class="cap clip" data-start="227.140" data-duration="1.760" data-track-index="8"><span>그래서 저도 진지하게 답을 했습니다</span></div>
+<div id="cap123" class="cap clip" data-start="228.900" data-duration="2.100" data-track-index="8"><span>기존에 없는 것이라는 것의 의미</span></div>
+<div id="cap124" class="cap clip" data-start="231.000" data-duration="0.770" data-track-index="8"><span>전 세계를 뒤져서</span></div>
+<div id="cap125" class="cap clip" data-start="231.770" data-duration="2.160" data-track-index="8"><span>그것이 있는지 없는지는 사람은 모릅니다</span></div>
+<div id="cap126" class="cap clip" data-start="233.930" data-duration="1.110" data-track-index="8"><span>AI는 알 수 있겠죠</span></div>
+<div id="cap127" class="cap clip" data-start="235.040" data-duration="2.190" data-track-index="8"><span>하지만 창의적으로 인간이 뭔가를 만들었을 때는</span></div>
+<div id="cap128" class="cap clip" data-start="237.230" data-duration="2.320" data-track-index="8"><span>그것이 존재하지 않는다고 생각하고 만들었다고 봅니다</span></div>
+<div id="cap129" class="cap clip" data-start="239.550" data-duration="1.220" data-track-index="8"><span>temperature를 조절하는 것과</span></div>
+<div id="cap130" class="cap clip" data-start="240.770" data-duration="0.750" data-track-index="8"><span>인간이 의도를 가지고</span></div>
+<div id="cap131" class="cap clip" data-start="241.520" data-duration="0.710" data-track-index="8"><span>목적성을 가지고</span></div>
+<div id="cap132" class="cap clip" data-start="242.230" data-duration="1.970" data-track-index="8"><span>낮은 확률을 고르는 것은 다릅니다</span></div>
+<div id="cap133" class="cap clip" data-start="244.200" data-duration="2.380" data-track-index="8"><span>AI가 랜덤하게 낮은 확률을 고르는 것과</span></div>
+<div id="cap134" class="cap clip" data-start="246.580" data-duration="1.290" data-track-index="8"><span>인간이 자신의 의도를 가지고</span></div>
+<div id="cap135" class="cap clip" data-start="247.870" data-duration="1.020" data-track-index="8"><span>낮은 확률을 고르는 것은</span></div>
+<div id="cap136" class="cap clip" data-start="248.890" data-duration="0.960" data-track-index="8"><span>근본적으로 다릅니다</span></div>
+<div id="cap137" class="cap clip" data-start="249.850" data-duration="0.680" data-track-index="8"><span>와,</span></div>
+<div id="cap138" class="cap clip" data-start="250.530" data-duration="0.640" data-track-index="8"><span>이쯤 되니까</span></div>
+<div id="cap139" class="cap clip" data-start="251.170" data-duration="3.080" data-track-index="8"><span>저도 약간 진짜 누구랑 토론을 하는 것처럼</span></div>
+<div id="cap140" class="cap clip" data-start="254.250" data-duration="1.630" data-track-index="8"><span>약간 흥분이 되고</span></div>
+<div id="cap141" class="cap clip" data-start="255.880" data-duration="1.410" data-track-index="8"><span>그런 상황이 되더라고요</span></div>
+<div id="cap142" class="cap clip" data-start="257.290" data-duration="1.030" data-track-index="8"><span>진짜 머리를 많이 쓰고</span></div>
+<div id="cap143" class="cap clip" data-start="258.320" data-duration="0.930" data-track-index="8"><span>이 답을 했어요</span></div>
+<div id="cap144" class="cap clip" data-start="259.250" data-duration="1.530" data-track-index="8"><span>그러니까 평상시보다 AI를 쓸 때</span></div>
+<div id="cap145" class="cap clip" data-start="260.780" data-duration="1.210" data-track-index="8"><span>머리를 많이 쓰게 되더라고요</span></div>
+<div id="cap146" class="cap clip" data-start="261.990" data-duration="1.760" data-track-index="8"><span>그랬더니 훌륭한 반론입니다</span></div>
+<div id="cap147" class="cap clip" data-start="263.750" data-duration="2.540" data-track-index="8"><span>첫 번째 주관적 신념으로서의 창의성,</span></div>
+<div id="cap148" class="cap clip" data-start="266.290" data-duration="1.400" data-track-index="8"><span>두 번째 의도성</span></div>
+<div id="cap149" class="cap clip" data-start="267.690" data-duration="1.910" data-track-index="8"><span>제 얘기를 이렇게 정리를 해주고</span></div>
+<div id="cap150" class="cap clip" data-start="269.600" data-duration="2.030" data-track-index="8"><span>그런데 더 파고 들어본대요</span></div>
+<div id="cap151" class="cap clip" data-start="271.630" data-duration="0.540" data-track-index="8"><span>의도라는 것을</span></div>
+<div id="cap152" class="cap clip" data-start="272.170" data-duration="1.310" data-track-index="8"><span>우리는 어떻게 확인할 수 있을까요?</span></div>
+<div id="cap153" class="cap clip" data-start="273.480" data-duration="2.880" data-track-index="8"><span>진짜 의도와 의도의 시뮬레이션을 구별할 수 있는 기준이 있을까요?</span></div>
+<div id="cap154" class="cap clip" data-start="276.360" data-duration="1.710" data-track-index="8"><span>와 이렇게 또 파고들어요</span></div>
+<div id="cap155" class="cap clip" data-start="278.070" data-duration="2.200" data-track-index="8"><span>그래서 제가 또 아주 진지하게 답을 합니다</span></div>
+<div id="cap156" class="cap clip" data-start="280.270" data-duration="1.180" data-track-index="8"><span>어린아이에게 의도가 있었는지</span></div>
+<div id="cap157" class="cap clip" data-start="281.450" data-duration="2.680" data-track-index="8"><span>확인하는 방법은 같은 그림을 또 그릴 수 있는지로</span></div>
+<div id="cap158" class="cap clip" data-start="284.130" data-duration="1.030" data-track-index="8"><span>확인할 수 있습니다</span></div>
+<div id="cap159" class="cap clip" data-start="285.160" data-duration="0.940" data-track-index="8"><span>행복을 표현해 보라고</span></div>
+<div id="cap160" class="cap clip" data-start="286.100" data-duration="1.030" data-track-index="8"><span>어린아이에게 했을 때</span></div>
+<div id="cap161" class="cap clip" data-start="287.130" data-duration="1.230" data-track-index="8"><span>아이는 네 명의 가족을</span></div>
+<div id="cap162" class="cap clip" data-start="288.360" data-duration="2.350" data-track-index="8"><span>그리고 집을 그릴 가능성이 높습니다</span></div>
+<div id="cap163" class="cap clip" data-start="290.710" data-duration="1.650" data-track-index="8"><span>다시 행복을 표현해 보라고 해도</span></div>
+<div id="cap164" class="cap clip" data-start="292.360" data-duration="1.660" data-track-index="8"><span>비슷한 그림을 그릴 가능성이 높습니다</span></div>
+<div id="cap165" class="cap clip" data-start="294.020" data-duration="2.150" data-track-index="8"><span>하지만 AI에게 구체적인 프롬프트를 주지 않고</span></div>
+<div id="cap166" class="cap clip" data-start="296.170" data-duration="1.360" data-track-index="8"><span>행복을 표현해 보라고 하면</span></div>
+<div id="cap167" class="cap clip" data-start="297.530" data-duration="1.210" data-track-index="8"><span>어떤 그림이 나올까요?</span></div>
+<div id="cap168" class="cap clip" data-start="298.740" data-duration="1.570" data-track-index="8"><span>별의별 그림이 다 나올 겁니다</span></div>
+<div id="cap169" class="cap clip" data-start="300.310" data-duration="0.770" data-track-index="8"><span>의도가 없고</span></div>
+<div id="cap170" class="cap clip" data-start="301.080" data-duration="1.440" data-track-index="8"><span>확률적으로 답을 주기 때문입니다</span></div>
+<div id="cap171" class="cap clip" data-start="302.520" data-duration="2.560" data-track-index="8"><span>그랬더니 아주 날카로운 기준을 제시했습니다</span></div>
+<div id="cap172" class="cap clip" data-start="305.080" data-duration="1.980" data-track-index="8"><span>그렇지만 또 약간 반론을 하죠</span></div>
+<div id="cap173" class="cap clip" data-start="307.060" data-duration="2.030" data-track-index="8"><span>첫째, 아이의 일관성이 정말 의도일까요?</span></div>
+<div id="cap174" class="cap clip" data-start="309.090" data-duration="1.590" data-track-index="8"><span>아니면 경험의 한계일까요?</span></div>
+<div id="cap175" class="cap clip" data-start="310.680" data-duration="2.800" data-track-index="8"><span>둘째, 만약 일관성이 의도의 기준이라면</span></div>
+<div id="cap176" class="cap clip" data-start="313.480" data-duration="1.420" data-track-index="8"><span>흥미로운 역전이 생깁니다</span></div>
+<div id="cap177" class="cap clip" data-start="314.900" data-duration="2.290" data-track-index="8"><span>그래서 저도 여기에 대한 또 반론</span></div>
+<div id="cap178" class="cap clip" data-start="317.190" data-duration="0.670" data-track-index="8"><span>아이가 아니라</span></div>
+<div id="cap179" class="cap clip" data-start="317.860" data-duration="2.020" data-track-index="8"><span>경험이 많은 어른도 마찬가지입니다</span></div>
+<div id="cap180" class="cap clip" data-start="319.880" data-duration="1.510" data-track-index="8"><span>가장 행복한 순간을 그리라고 하면</span></div>
+<div id="cap181" class="cap clip" data-start="321.390" data-duration="1.860" data-track-index="8"><span>자신만의 하나의 순간이 있을 겁니다</span></div>
+<div id="cap182" class="cap clip" data-start="323.250" data-duration="1.410" data-track-index="8"><span>그 순간을 여러 번 그리라고 해도</span></div>
+<div id="cap183" class="cap clip" data-start="324.660" data-duration="1.260" data-track-index="8"><span>비슷한 그림을 그릴 겁니다</span></div>
+<div id="cap184" class="cap clip" data-start="325.920" data-duration="1.760" data-track-index="8"><span>2번, 피카소가 다양한 그림을 그렸지만</span></div>
+<div id="cap185" class="cap clip" data-start="327.680" data-duration="1.430" data-track-index="8"><span>일관성이 없다고 할 수 없습니다</span></div>
+<div id="cap186" class="cap clip" data-start="329.110" data-duration="2.220" data-track-index="8"><span>누가 봐도 그것은 피카소의 그림입니다</span></div>
+<div id="cap187" class="cap clip" data-start="331.330" data-duration="2.010" data-track-index="8"><span>제가 말하는 AI가 일관성이 없다는 것은</span></div>
+<div id="cap188" class="cap clip" data-start="333.340" data-duration="1.050" data-track-index="8"><span>같은 프롬프트를 넣어도</span></div>
+<div id="cap189" class="cap clip" data-start="334.390" data-duration="2.320" data-track-index="8"><span>아예 관련 없는 그림이 나올 수 있기 때문입니다</span></div>
+<div id="cap190" class="cap clip" data-start="336.710" data-duration="0.390" data-track-index="8"><span>와,</span></div>
+<div id="cap191" class="cap clip" data-start="337.100" data-duration="0.500" data-track-index="8"><span>이쯤 되니까</span></div>
+<div id="cap192" class="cap clip" data-start="337.600" data-duration="1.810" data-track-index="8"><span>저도 진짜 얼굴이 붉어지고</span></div>
+<div id="cap193" class="cap clip" data-start="339.410" data-duration="1.440" data-track-index="8"><span>머리를 엄청 쓰게 되더라고요</span></div>
+<div id="cap194" class="cap clip" data-start="340.850" data-duration="3.710" data-track-index="8"><span>그랬더니 정말 좋은 반박입니다 하면서</span></div>
+<div id="cap195" class="cap clip" data-start="344.560" data-duration="1.630" data-track-index="8"><span>이렇게 제 이야기를 정리하고</span></div>
+<div id="cap196" class="cap clip" data-start="346.190" data-duration="2.900" data-track-index="8"><span>마지막에 AI에겐 내면이 없다는 전제로</span></div>
+<div id="cap197" class="cap clip" data-start="349.090" data-duration="1.020" data-track-index="8"><span>제가 이렇게 얘기한 것 같은데</span></div>
+<div id="cap198" class="cap clip" data-start="350.110" data-duration="2.160" data-track-index="8"><span>그 우리가 그것을 확신할 수 있는 근거는 무엇인가요?</span></div>
+<div id="cap199" class="cap clip" data-start="352.270" data-duration="1.360" data-track-index="8"><span>와, 이쯤 되니까 무섭더라고요</span></div>
+<div id="cap200" class="cap clip" data-start="353.630" data-duration="2.900" data-track-index="8"><span>그러니까 AI에게 내면이 있다는 주장에 가깝죠</span></div>
+<div id="cap201" class="cap clip" data-start="356.530" data-duration="0.530" data-track-index="8"><span>이런 질문은</span></div>
+<div id="cap202" class="cap clip" data-start="357.060" data-duration="1.970" data-track-index="8"><span>그래서 제가 태생적인 차이라고 봅니다</span></div>
+<div id="cap203" class="cap clip" data-start="359.030" data-duration="0.920" data-track-index="8"><span>내면이 있는 것과</span></div>
+<div id="cap204" class="cap clip" data-start="359.950" data-duration="1.670" data-track-index="8"><span>내면이 있는 것처럼 보이는 것은</span></div>
+<div id="cap205" class="cap clip" data-start="361.620" data-duration="1.450" data-track-index="8"><span>근본적으로 다르다고 봅니다</span></div>
+<div id="cap206" class="cap clip" data-start="363.070" data-duration="0.690" data-track-index="8"><span>저도 이쯤 되니까</span></div>
+<div id="cap207" class="cap clip" data-start="363.760" data-duration="2.500" data-track-index="8"><span>진짜 누구랑 날이 선 토론을 하는 것처럼</span></div>
+<div id="cap208" class="cap clip" data-start="366.260" data-duration="1.680" data-track-index="8"><span>이렇게 답변을 하게 됐습니다</span></div>
+<div id="cap209" class="cap clip" data-start="367.940" data-duration="2.650" data-track-index="8"><span>그랬더니 결국 핵심 신념에 도달했습니다</span></div>
+<div id="cap210" class="cap clip" data-start="370.590" data-duration="3.010" data-track-index="8"><span>이것은 철학에서 말하는 존재론적 입장인데요</span></div>
+<div id="cap211" class="cap clip" data-start="373.600" data-duration="1.170" data-track-index="8"><span>AI가 긁힌 것 같아요</span></div>
+<div id="cap212" class="cap clip" data-start="374.770" data-duration="1.140" data-track-index="8"><span>화가 난 것 같아요</span></div>
+<div id="cap213" class="cap clip" data-start="375.910" data-duration="0.680" data-track-index="8"><span>내면이 있는 것과</span></div>
+<div id="cap214" class="cap clip" data-start="376.590" data-duration="1.220" data-track-index="8"><span>내면이 있는 것처럼 보이는 것은</span></div>
+<div id="cap215" class="cap clip" data-start="377.810" data-duration="2.170" data-track-index="8"><span>아무리 외부에서 구별이 불가능해져도</span></div>
+<div id="cap216" class="cap clip" data-start="379.980" data-duration="1.190" data-track-index="8"><span>본질적으로 다르다는 거죠</span></div>
+<div id="cap217" class="cap clip" data-start="381.170" data-duration="1.920" data-track-index="8"><span>이제 오늘 토론을 돌아보면</span></div>
+<div id="cap218" class="cap clip" data-start="383.090" data-duration="1.270" data-track-index="8"><span>사고력 측면에서</span></div>
+<div id="cap219" class="cap clip" data-start="384.360" data-duration="2.750" data-track-index="8"><span>제가 논리적으로, 비판적으로, 창의적으로 뭘 잘했대요</span></div>
+<div id="cap220" class="cap clip" data-start="387.110" data-duration="1.380" data-track-index="8"><span>근데 마지막에 뭐라고 하냐면</span></div>
+<div id="cap221" class="cap clip" data-start="388.490" data-duration="2.250" data-track-index="8"><span>한 가지 더 발전시킬 수 있는 점이 있다면</span></div>
+<div id="cap222" class="cap clip" data-start="390.740" data-duration="3.700" data-track-index="8"><span>자신의 입장이 반박 불가능한 영역에 있다는 것을 인식하고</span></div>
+<div id="cap223" class="cap clip" data-start="394.440" data-duration="2.190" data-track-index="8"><span>내가 틀릴 수 있는 조건은 무엇일까를</span></div>
+<div id="cap224" class="cap clip" data-start="396.630" data-duration="2.450" data-track-index="8"><span>스스로 질문해 보는 습관을 들이시면</span></div>
+<div id="cap225" class="cap clip" data-start="399.080" data-duration="2.880" data-track-index="8"><span>사고의 유연성이 한 단계 더 올라갈 수 있을 겁니다</span></div>
+<div id="cap226" class="cap clip" data-start="401.960" data-duration="2.410" data-track-index="8"><span>그러니까 약간 제가 존재론적으로 이야기하니까</span></div>
+<div id="cap227" class="cap clip" data-start="404.370" data-duration="0.810" data-track-index="8"><span>화가 난 것 같아요</span></div>
+<div id="cap228" class="cap clip" data-start="405.180" data-duration="0.930" data-track-index="8"><span>그래서 마지막에 저한테</span></div>
+<div id="cap229" class="cap clip" data-start="406.110" data-duration="2.050" data-track-index="8"><span>이러한 따끔한 충고를 하고 끝냅니다</span></div>
+<div id="cap230" class="cap clip" data-start="408.160" data-duration="2.020" data-track-index="8"><span>그래서 제가 이렇게 토론을 하고</span></div>
+<div id="cap231" class="cap clip" data-start="410.180" data-duration="1.250" data-track-index="8"><span>느낀 점은 뭐냐면</span></div>
+<div id="cap232" class="cap clip" data-start="411.430" data-duration="1.120" data-track-index="8"><span>AI를 우리가 쓸 때</span></div>
+<div id="cap233" class="cap clip" data-start="412.550" data-duration="2.170" data-track-index="8"><span>뭔가 정보를 얻으려고만 쓰잖아요</span></div>
+<div id="cap234" class="cap clip" data-start="414.720" data-duration="1.640" data-track-index="8"><span>그런데 사용법은 어렵지 않지만</span></div>
+<div id="cap235" class="cap clip" data-start="416.360" data-duration="1.480" data-track-index="8"><span>이렇게 프로젝트를 하나 만들어 놓고</span></div>
+<div id="cap236" class="cap clip" data-start="417.840" data-duration="1.400" data-track-index="8"><span>내 사고력을 향상시키도록</span></div>
+<div id="cap237" class="cap clip" data-start="419.240" data-duration="2.370" data-track-index="8"><span>이렇게 생각을 하도록 만들어 놓고</span></div>
+<div id="cap238" class="cap clip" data-start="421.610" data-duration="1.880" data-track-index="8"><span>토론을 하도록 세팅해 놓으니까</span></div>
+<div id="cap239" class="cap clip" data-start="423.490" data-duration="1.890" data-track-index="8"><span>와 생각보다</span></div>
+<div id="cap240" class="cap clip" data-start="425.380" data-duration="3.250" data-track-index="8"><span>AI와 되게 얼굴 붉어지게 토론을 하게 되고</span></div>
+<div id="cap241" class="cap clip" data-start="428.630" data-duration="1.400" data-track-index="8"><span>제 머리를 많이 쓰게 되더라고요</span></div>
+<div id="cap242" class="cap clip" data-start="430.030" data-duration="2.200" data-track-index="8"><span>그래서 지금 보고 계신 선생님들도</span></div>
+<div id="cap243" class="cap clip" data-start="432.230" data-duration="1.400" data-track-index="8"><span>이렇게 한번 써보시고</span></div>
+<div id="cap244" class="cap clip" data-start="433.630" data-duration="2.100" data-track-index="8"><span>그리고 학생들을 위해서</span></div>
+<div id="cap245" class="cap clip" data-start="435.730" data-duration="1.300" data-track-index="8"><span>어떻게 쓰면 좋을지</span></div>
+<div id="cap246" class="cap clip" data-start="437.030" data-duration="1.450" data-track-index="8"><span>한번 고민해 보시면 좋을 것 같아요</span></div>
+<div id="cap247" class="cap clip" data-start="438.480" data-duration="0.710" data-track-index="8"><span>그러니까 학생들에게</span></div>
+<div id="cap248" class="cap clip" data-start="439.190" data-duration="2.820" data-track-index="8"><span>단순히 우리가 AI 사용법만 알려주는 게 아니라</span></div>
+<div id="cap249" class="cap clip" data-start="442.010" data-duration="1.740" data-track-index="8"><span>사고력을 향상시킬 수 있는 방법으로</span></div>
+<div id="cap250" class="cap clip" data-start="443.750" data-duration="2.510" data-track-index="8"><span>AI 쓰도록 유도해 주시면 좋을 것 같습니다</span></div>
+<div id="cap251" class="cap clip" data-start="446.260" data-duration="1.730" data-track-index="8"><span>왜냐면 내비게이션이 등장한 이후로</span></div>
+<div id="cap252" class="cap clip" data-start="447.990" data-duration="2.850" data-track-index="8"><span>직접 운전할 수 있는 능력을 가진 사람이 많이 줄어든 것처럼</span></div>
+<div id="cap253" class="cap clip" data-start="450.840" data-duration="2.290" data-track-index="8"><span>AI 등장 이후로 우리들의 사고력</span></div>
+<div id="cap254" class="cap clip" data-start="453.130" data-duration="1.540" data-track-index="8"><span>그리고 글 쓰는 능력이</span></div>
+<div id="cap255" class="cap clip" data-start="454.670" data-duration="1.630" data-track-index="8"><span>점점 줄어들 것으로 보입니다</span></div>
+<div id="cap256" class="cap clip" data-start="456.300" data-duration="2.090" data-track-index="8"><span>그렇기 때문에 학생들이 AI를 활용해서</span></div>
+<div id="cap257" class="cap clip" data-start="458.390" data-duration="3.590" data-track-index="8"><span>사고력 향상 그리고 글 쓰는 능력 향상을 할 수 있도록</span></div>
+<div id="cap258" class="cap clip" data-start="461.980" data-duration="2.270" data-track-index="8"><span>우리가 안내해 주면 좋을 것 같습니다</span></div>
+<div id="cap259" class="cap clip" data-start="464.250" data-duration="1.320" data-track-index="8"><span>오늘의 영상은 여기까지입니다</span></div>
+<div id="cap260" class="cap clip" data-start="465.570" data-duration="1.010" data-track-index="8"><span>영상이 도움이 되셨다면</span></div>
+<div id="cap261" class="cap clip" data-start="466.580" data-duration="2.090" data-track-index="8"><span>좋아요와 구독을 눌러주시면 감사하겠습니다</span></div>
+<div id="cap262" class="cap clip" data-start="468.670" data-duration="0.380" data-track-index="8"><span>감사합니다</span></div>
+  <div id="startfade"></div>
+  <div id="endfade"></div>
+</div>
+<script>
+(function () {
+  const tl = gsap.timeline({ paused: true });
+  const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: .6 }, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(1.8)' }, t);
+  const up = (sel, t, dy = 30) => tl.fromTo(sel, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' }, t);
+  const rise = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 70, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .65, ease: 'expo.out' }, t);
+  const slide = (sel, t, dx = 60) => tl.fromTo(sel, { opacity: 0, x: dx }, { opacity: 1, x: 0, duration: .5, ease: 'power3.out' }, t);
+  const sweep = (sel, t) => tl.fromTo(sel, { backgroundSize: '0% 38%' }, { backgroundSize: '100% 38%', duration: .7, ease: 'power2.inOut', immediateRender: false }, t);
+  const draw = (sel, t, d) => tl.fromTo(sel, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: d, ease: 'power2.out' }, t);
+
+  tl.fromTo('#startfade', { opacity: 1 }, { opacity: 0, duration: .5, ease: 'power1.out' }, 0);
+
+  // footage split (debate)
+  
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 9.77);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 25.92);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 144.10);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 178.37);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 214.98);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 224.35);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 239.25);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 262.29);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 269.30);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 276.66);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 279.97);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 302.72);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 325.62);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 336.71);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 345.89);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 353.53);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 356.76);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 363.37);
+  tl.fromTo('#vwrap', {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)'}, {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 367.64);
+  tl.fromTo('#vwrap', {x:48, y:180, scale:0.6, clipPath:'inset(0px 0px 160px 0px round 60px)'}, {x:0, y:0, scale:1, clipPath:'inset(0px 0px 0px 0px round 0px)', duration:.6, ease:'power3.inOut', immediateRender:false}, 401.86);
+
+  // pastel stages
+  
+  tl.fromTo('#introbg', {opacity:0}, {opacity:1, duration:.5, ease:'power2.out'}, 29.10);
+  tl.to('#introbg', {opacity:0, duration:.5, ease:'power2.in'}, 118.41);
+  tl.fromTo('#introbg .blob', {scale:1, x:0}, {scale:1.12, x:40, duration:89.81, ease:'sine.inOut', stagger:.3}, 29.10);
+  tl.fromTo('#intro-wrap', {opacity:0, y:300}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, 29.25);
+  tl.to('#intro-wrap', {opacity:0, y:80, duration:.45, ease:'power2.in'}, 118.41);
+  tl.fromTo('#intro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 37.34); tl.fromTo('#intro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 48.73); tl.fromTo('#intro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 60.68); tl.fromTo('#intro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 69.80); tl.fromTo('#intro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 80.60); tl.fromTo('#intro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 90.48); tl.fromTo('#intro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 108.45);
+  { const dd = 88.41, cyc = .46, n = Math.max(0, Math.floor(dd / cyc) - 1);
+    tl.fromTo('#intro-phil', {scaleY:1, scaleX:1}, {scaleY:1.018, scaleX:.992, duration:cyc / 2, ease:'sine.inOut', yoyo:true, repeat:n * 2 + 1, immediateRender:false}, 30.10);
+    const c2 = 2.6, m = Math.max(0, Math.floor(dd / c2) - 1);
+    tl.fromTo('#intro-wrap', {rotation:-1.6}, {rotation:1.6, duration:c2 / 2, ease:'sine.inOut', yoyo:true, repeat:m * 2 + 1, immediateRender:false}, 30.10); }
+  { const dec = [{"id":"intro-dc0","ph":0.351,"amp":11.1},{"id":"intro-dc1","ph":0.561,"amp":9.9},{"id":"intro-dc2","ph":0.87,"amp":8.7},{"id":"intro-dc3","ph":0.594,"amp":11},{"id":"intro-dc4","ph":0.629,"amp":5.8},{"id":"intro-dc5","ph":0.725,"amp":6.2},{"id":"intro-dc6","ph":0.368,"amp":10.7},{"id":"intro-dc7","ph":0.389,"amp":7.8},{"id":"intro-dc8","ph":0.858,"amp":5.2},{"id":"intro-dc9","ph":0.352,"amp":10.5},{"id":"intro-dc10","ph":0.716,"amp":8.3},{"id":"intro-dc11","ph":0.324,"amp":7},{"id":"intro-dc12","ph":0.664,"amp":5.7},{"id":"intro-dc13","ph":0.899,"amp":9.9},{"id":"intro-dc14","ph":0.126,"amp":7}];
+    const els = dec.map((x) => document.getElementById(x.id)); const drv = { t: 0 };
+    tl.fromTo(drv, { t: 0 }, { t: 89.81, duration: 89.81, ease: 'none', onUpdate: () => {
+      for (let i = 0; i < dec.length; i++) { const a = (drv.t / 9 + dec[i].ph) * Math.PI * 2;
+        els[i].style.transform = 'translate(' + (Math.cos(a * .7) * dec[i].amp).toFixed(2) + 'px,' + (Math.sin(a) * dec[i].amp * 1.4).toFixed(2) + 'px) rotate(' + (45 + Math.sin(a * .5) * 30).toFixed(1) + 'deg)'; } } }, 29.10); }
+  
+  tl.fromTo('#outrobg', {opacity:0}, {opacity:1, duration:.5, ease:'power2.out'}, 408.01);
+  tl.to('#outrobg', {opacity:0, duration:.5, ease:'power2.in'}, 468.57);
+  tl.fromTo('#outrobg .blob', {scale:1, x:0}, {scale:1.12, x:40, duration:61.06, ease:'sine.inOut', stagger:.3}, 408.01);
+  tl.fromTo('#outro-wrap', {opacity:0, y:300}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, 408.16);
+  tl.to('#outro-wrap', {opacity:0, y:80, duration:.45, ease:'power2.in'}, 468.57);
+  tl.fromTo('#outro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 414.62); tl.fromTo('#outro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 429.93); tl.fromTo('#outro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 446.16); tl.fromTo('#outro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 456.20); tl.fromTo('#outro-phil', {y:0}, {y:-26, duration:.18, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 464.10);
+  { const dd = 59.66, cyc = .46, n = Math.max(0, Math.floor(dd / cyc) - 1);
+    tl.fromTo('#outro-phil', {scaleY:1, scaleX:1}, {scaleY:1.018, scaleX:.992, duration:cyc / 2, ease:'sine.inOut', yoyo:true, repeat:n * 2 + 1, immediateRender:false}, 409.01);
+    const c2 = 2.6, m = Math.max(0, Math.floor(dd / c2) - 1);
+    tl.fromTo('#outro-wrap', {rotation:-1.6}, {rotation:1.6, duration:c2 / 2, ease:'sine.inOut', yoyo:true, repeat:m * 2 + 1, immediateRender:false}, 409.01); }
+  { const dec = [{"id":"outro-dc0","ph":0.984,"amp":6.9},{"id":"outro-dc1","ph":0.804,"amp":5.7},{"id":"outro-dc2","ph":0.44,"amp":7.4},{"id":"outro-dc3","ph":0.068,"amp":11.8},{"id":"outro-dc4","ph":0.598,"amp":10.8},{"id":"outro-dc5","ph":0.241,"amp":8.3},{"id":"outro-dc6","ph":0.316,"amp":11.4},{"id":"outro-dc7","ph":0.246,"amp":11.3},{"id":"outro-dc8","ph":0.845,"amp":6.8},{"id":"outro-dc9","ph":0.146,"amp":5},{"id":"outro-dc10","ph":0.469,"amp":5.2},{"id":"outro-dc11","ph":0.896,"amp":8.9},{"id":"outro-dc12","ph":0.364,"amp":8.5},{"id":"outro-dc13","ph":0.713,"amp":10.7},{"id":"outro-dc14","ph":0.81,"amp":8.2}];
+    const els = dec.map((x) => document.getElementById(x.id)); const drv = { t: 0 };
+    tl.fromTo(drv, { t: 0 }, { t: 61.06, duration: 61.06, ease: 'none', onUpdate: () => {
+      for (let i = 0; i < dec.length; i++) { const a = (drv.t / 9 + dec[i].ph) * Math.PI * 2;
+        els[i].style.transform = 'translate(' + (Math.cos(a * .7) * dec[i].amp).toFixed(2) + 'px,' + (Math.sin(a) * dec[i].amp * 1.4).toFixed(2) + 'px) rotate(' + (45 + Math.sin(a * .5) * 30).toFixed(1) + 'deg)'; } } }, 408.01); }
+
+  // sections
+  tl.fromTo('#sec0-in', {opacity:0, x:30}, {opacity:1, x:0, duration:.5, ease:'power3.out'}, 0.30);
+  tl.fromTo('#sec1-in', {opacity:0, x:30}, {opacity:1, x:0, duration:.5, ease:'power3.out'}, 29.40);
+  tl.fromTo('#sec2-in', {opacity:0, x:30}, {opacity:1, x:0, duration:.5, ease:'power3.out'}, 128.77);
+  tl.fromTo('#sec3-in', {opacity:0, x:30}, {opacity:1, x:0, duration:.5, ease:'power3.out'}, 408.31);
+  
+  tl.fromTo('#cc0-in', {opacity:0, y:40, scale:.92}, {opacity:1, y:0, scale:1, duration:.55, ease:'power3.out'}, 128.62);
+  tl.to('#cc0-in', {opacity:0, y:-20, duration:.4, ease:'power2.in'}, 130.72);
+
+  // graphics
+
+  // g-open
+  tl.fromTo('#g-open-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 0.20);
+  tl.to('#g-open-sc', {opacity:0, duration:.35, ease:'power2.in'}, 4.23);
+  rise('#go-c', .3); up('#go-k', .6, 16); up('#go-h', .8, 34); sweep('#go-h .hl', 1.6); up('#go-s', 1.5, 16);
+
+  // g-setup
+  tl.fromTo('#g-setup-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 9.97);
+  tl.to('#g-setup-sc', {opacity:0, duration:.35, ease:'power2.in'}, 17.75);
+  rise('#gsu-c', 10.07); up('#gsu-k', 10.32, 16); slide('#gsu-1', 10.77); slide('#gsu-2', 15.00);
+
+  // g-guide
+  tl.fromTo('#g-guide-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 18.17);
+  tl.to('#g-guide-sc', {opacity:0, duration:.35, ease:'power2.in'}, 25.85);
+  rise('#ggd-c', 18.27); up('#ggd-k', 18.52, 16);
+  slide('#ggd-1', 20.75); draw('#ggd-a1 path', 21.85, .4); slide('#ggd-2', 22.15); draw('#ggd-a2 path', 23.59, .4); slide('#ggd-3', 23.89);
+
+  // g-i1
+  tl.fromTo('#g-i1-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 29.20);
+  tl.to('#g-i1-sc', {opacity:0, duration:.35, ease:'power2.in'}, 36.97);
+  rise('#gi1-c', 29.25); up('#gi1-k', 29.55, 16); pop('#gi1-a', 31.11); pop('#gi1-b', 33.50);
+  up('#gi1-h', 34.92, 26); sweep('#gi1-h .hl', 35.82);
+
+  // g-i2
+  tl.fromTo('#g-i2-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 37.39);
+  tl.to('#g-i2-sc', {opacity:0, duration:.35, ease:'power2.in'}, 48.36);
+  rise('#gi2-c', 37.44); up('#gi2-k', 37.74, 16);
+  pop('#gi2-i0', 39.33); up('#gi2-n0 .nlabel', 39.48, 16);
+  draw('#gi2-a1 path', 41.06, .45); pop('#gi2-i1', 41.41); up('#gi2-n1 .nlabel', 41.56, 16);
+  draw('#gi2-a2 path', 44.52, .45); pop('#gi2-i2', 44.87); up('#gi2-n2 .nlabel', 45.02, 16);
+  up('#gi2-h', 47.24, 24); sweep('#gi2-h .hl', 47.84);
+
+  // g-i3
+  tl.fromTo('#g-i3-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 48.78);
+  tl.to('#g-i3-sc', {opacity:0, duration:.35, ease:'power2.in'}, 60.31);
+  rise('#gi3-c', 48.83); up('#gi3-k', 49.13, 16); slide('#gi3-a', 50.69, -50);
+  draw('#gi3-ar path', 55.12, .45); slide('#gi3-b', 55.52); pop('#gi3-b .dn', 58.96);
+
+  // g-i4
+  tl.fromTo('#g-i4-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 60.73);
+  tl.to('#g-i4-sc', {opacity:0, duration:.35, ease:'power2.in'}, 69.43);
+  rise('#gi4-c', 60.78); up('#gi4-h', 60.98, 24); sweep('#gi4-h .hl', 61.68);
+  pop('#gi4-1', 63.46); pop('#gi4-2', 64.36); pop('#gi4-3', 65.53); pop('#gi4-4', 66.43); pop('#gi4-5', 66.96);
+  up('#gi4-s', 67.89, 16);
+
+  // g-i5
+  tl.fromTo('#g-i5-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 69.85);
+  tl.to('#g-i5-sc', {opacity:0, duration:.35, ease:'power2.in'}, 80.23);
+  rise('#gi5-c', 69.90); up('#gi5-k', 70.20, 16); pop('#gi5-i', 71.44); pop('#gi5-j', 73.23);
+  up('#gi5-t', 73.53, 16); up('#gi5-h', 75.78, 24); sweep('#gi5-h .hl', 78.30);
+
+  // g-i6
+  tl.fromTo('#g-i6-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 80.65);
+  tl.to('#g-i6-sc', {opacity:0, duration:.35, ease:'power2.in'}, 90.11);
+  rise('#gi6-c', 80.70); up('#gi6-k', 81.00, 16);
+  slide('#gi6-r1', 81.94); draw('#gi6-a1 path', 84.14, .4); slide('#gi6-r2', 85.22); draw('#gi6-a2 path', 88.55, .4);
+
+  // g-i7
+  tl.fromTo('#g-i7-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 90.53);
+  tl.to('#g-i7-sc', {opacity:0, duration:.35, ease:'power2.in'}, 108.08);
+  rise('#gi7-c', 90.58); up('#gi7-k', 95.92, 16); slide('#gi7-b1', 98.57); slide('#gi7-b2', 99.17);
+  tl.fromTo('#gi7-f1, #gi7-f2', {width:'100%'}, {width:'26%', duration:1.6, ease:'power2.inOut', stagger:.25, immediateRender:false}, 101.45);
+  up('#gi7-h', 105.30, 20); sweep('#gi7-h .hl', 107.27);
+
+  // g-i8
+  tl.fromTo('#g-i8-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 108.50);
+  tl.to('#g-i8-sc', {opacity:0, duration:.35, ease:'power2.in'}, 118.49);
+  rise('#gi8-c', 108.55); up('#gi8-k', 108.75, 16); pop('#gi8-a', 109.95); pop('#gi8-b', 114.94);
+  up('#gi8-h', 117.52, 22); sweep('#gi8-h .hl', 118.02);
+
+  // g-pick
+  tl.fromTo('#g-pick-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 144.30);
+  tl.to('#g-pick-sc', {opacity:0, duration:.35, ease:'power2.in'}, 154.55);
+  rise('#gpk-c', 144.40); up('#gpk-k', 146.00, 16); slide('#gpk-1', 147.38); slide('#gpk-2', 148.08); slide('#gpk-3', 148.88); pop('#gpk-ok', 151.28);
+
+  // g-topic
+  tl.fromTo('#g-topic-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 154.97);
+  tl.to('#g-topic-sc', {opacity:0, duration:.35, ease:'power2.in'}, 160.57);
+  rise('#gtp-c', 155.07); up('#gtp-k', 155.27, 16); pop('#gtp-i', 155.57); up('#gtp-h', 156.63, 24); sweep('#gtp-h .hl', 157.43);
+
+  // g-myarg
+  tl.fromTo('#g-myarg-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 160.99);
+  tl.to('#g-myarg-sc', {opacity:0, duration:.35, ease:'power2.in'}, 178.30);
+  rise('#gma-c', 161.09); up('#gma-k', 161.29, 16); up('#gma-d', 163.05, 16);
+  slide('#gma-1', 170.15); slide('#gma-2', 173.84);
+
+  // g-p-sharp
+  tl.fromTo('#g-p-sharp-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 193.93);
+  tl.to('#g-p-sharp-sc', {opacity:0, duration:.35, ease:'power2.in'}, 201.66);
+  tl.fromTo('#g-p-sharp-p', {y:420}, {y:0, duration:.6, ease:'back.out(1.3)'}, 193.98);
+  tl.to('#g-p-sharp-p', {y:420, duration:.4, ease:'power2.in'}, 201.58);
+  pop('#g-p-sharp-b', 194.28);  up('#g-p-sharp-l1', 199.52, 14);
+  tl.fromTo('#g-p-sharp-p', {rotation:0}, {rotation:-4, duration:.22, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 194.63);
+
+  // g-counter1
+  tl.fromTo('#g-counter1-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 215.18);
+  tl.to('#g-counter1-sc', {opacity:0, duration:.35, ease:'power2.in'}, 224.28);
+  rise('#gc1-c', 215.38); up('#gc1-k', 216.79, 16); slide('#gc1-1', 219.11); slide('#gc1-2', 222.82);
+
+  // g-p-blush
+  tl.fromTo('#g-p-blush-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 224.75);
+  tl.to('#g-p-blush-sc', {opacity:0, duration:.35, ease:'power2.in'}, 228.83);
+  tl.fromTo('#g-p-blush-p', {y:420}, {y:0, duration:.6, ease:'back.out(1.3)'}, 224.80);
+  tl.to('#g-p-blush-p', {y:420, duration:.4, ease:'power2.in'}, 228.75);
+  pop('#g-p-blush-b', 225.10); 
+  tl.fromTo('#g-p-blush-p', {rotation:0}, {rotation:-4, duration:.22, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 225.45);
+
+  // g-temp
+  tl.fromTo('#g-temp-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 239.45);
+  tl.to('#g-temp-sc', {opacity:0, duration:.35, ease:'power2.in'}, 249.98);
+  rise('#gtm-c', 239.55); up('#gtm-k', 239.75, 16); slide('#gtm-1', 240.15); pop('#gtm-ne', 240.77);
+  slide('#gtm-2', 241.17); up('#gtm-h', 248.89, 16); sweep('#gtm-h .hl', 249.19);
+
+  // g-brain
+  tl.fromTo('#g-brain-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 251.07);
+  tl.to('#g-brain-sc', {opacity:0, duration:.35, ease:'power2.in'}, 262.22);
+  rise('#gbr-c', 251.17); pop('#gbr-i', 251.47); up('#gbr-k', 251.67, 16); up('#gbr-h', 257.29, 24); sweep('#gbr-h .hl', 259.55);
+  tl.fromTo('#gbr-i', {scale:1}, {scale:1.08, duration:.5, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 257.79);
+
+  // g-intent
+  tl.fromTo('#g-intent-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 269.50);
+  tl.to('#g-intent-sc', {opacity:0, duration:.35, ease:'power2.in'}, 276.59);
+  rise('#gin-c', 269.60); up('#gin-k', 269.90, 16); up('#gin-h', 272.17, 20);
+  pop('#gin-a', 273.78); pop('#gin-v', 274.38); pop('#gin-b', 274.88);
+
+  // g-draw
+  tl.fromTo('#g-draw-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 280.17);
+  tl.to('#g-draw-sc', {opacity:0, duration:.35, ease:'power2.in'}, 302.65);
+  rise('#gdr-c', 280.27); up('#gdr-k', 280.57, 16); up('#gdr-p', 285.16, 16);
+  slide('#gdr-1', 287.13); pop('#gdr-i1', 287.43); slide('#gdr-2', 294.02); pop('#gdr-i2', 298.74); up('#gdr-h', 300.31, 14);
+
+  // g-picasso
+  tl.fromTo('#g-picasso-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 325.82);
+  tl.to('#g-picasso-sc', {opacity:0, duration:.35, ease:'power2.in'}, 336.64);
+  rise('#gpc-c', 325.92); up('#gpc-k', 326.12, 16); slide('#gpc-1', 326.52); slide('#gpc-2', 331.33);
+
+  // g-p-think
+  tl.fromTo('#g-p-think-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 337.30);
+  tl.to('#g-p-think-sc', {opacity:0, duration:.35, ease:'power2.in'}, 340.88);
+  tl.fromTo('#g-p-think-p', {y:420}, {y:0, duration:.6, ease:'back.out(1.3)'}, 337.35);
+  tl.to('#g-p-think-p', {y:420, duration:.4, ease:'power2.in'}, 340.80);
+  pop('#g-p-think-b', 337.65); 
+  tl.fromTo('#g-p-think-p', {rotation:0}, {rotation:-4, duration:.22, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 338.00);
+
+  // g-inner
+  tl.fromTo('#g-inner-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 346.09);
+  tl.to('#g-inner-sc', {opacity:0, duration:.35, ease:'power2.in'}, 353.46);
+  rise('#gnr-c', 346.19); up('#gnr-k', 346.49, 16); up('#gnr-h', 350.11, 20); sweep('#gnr-h .hl', 350.91); pop('#gnr-t', 352.47);
+
+  // g-seem
+  tl.fromTo('#g-seem-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 356.96);
+  tl.to('#g-seem-sc', {opacity:0, duration:.35, ease:'power2.in'}, 363.30);
+  rise('#gsm-c', 357.06); up('#gsm-k', 357.26, 16); up('#gsm-a', 359.03, 20); up('#gsm-b', 359.95, 20); pop('#gsm-ne', 361.62);
+
+  // g-onto
+  tl.fromTo('#g-onto-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 367.84);
+  tl.to('#g-onto-sc', {opacity:0, duration:.35, ease:'power2.in'}, 380.65);
+  rise('#gon-c', 367.94); up('#gon-k', 368.14, 16); up('#gon-h', 370.59, 20); sweep('#gon-h .hl', 371.59);
+  pop('#gon-r', 373.80); up('#gon-s', 377.81, 16);
+
+  // g-review
+  tl.fromTo('#g-review-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 381.07);
+  tl.to('#g-review-sc', {opacity:0, duration:.35, ease:'power2.in'}, 401.79);
+  rise('#grv-c', 381.17); up('#grv-k', 381.37, 16); pop('#grv-1', 384.96); pop('#grv-2', 385.66); pop('#grv-3', 386.36);
+  up('#grv-q', 390.74, 20); up('#grv-h', 399.08, 16);
+
+  // g-p-angry
+  tl.fromTo('#g-p-angry-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 402.26);
+  tl.to('#g-p-angry-sc', {opacity:0, duration:.35, ease:'power2.in'}, 407.89);
+  tl.fromTo('#g-p-angry-p', {y:420}, {y:0, duration:.6, ease:'back.out(1.3)'}, 402.31);
+  tl.to('#g-p-angry-p', {y:420, duration:.4, ease:'power2.in'}, 407.81);
+  pop('#g-p-angry-b', 402.61);  up('#g-p-angry-l1', 405.18, 14);
+  tl.fromTo('#g-p-angry-p', {rotation:0}, {rotation:-4, duration:.22, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 402.96);
+
+  // g-o1
+  tl.fromTo('#g-o1-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 408.11);
+  tl.to('#g-o1-sc', {opacity:0, duration:.35, ease:'power2.in'}, 414.25);
+  rise('#go1-c', 408.16); up('#go1-k', 408.46, 16); pop('#go1-i', 408.96); up('#go1-h', 411.73, 24); sweep('#go1-h .hl', 412.55);
+
+  // g-o2
+  tl.fromTo('#g-o2-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 414.67);
+  tl.to('#g-o2-sc', {opacity:0, duration:.35, ease:'power2.in'}, 429.56);
+  rise('#go2-c', 414.72); up('#go2-k', 415.02, 16);
+  pop('#go2-i0', 416.36); up('#go2-n0 .nlabel', 416.51, 16);
+  draw('#go2-a1 path', 417.79, .45); pop('#go2-i1', 418.14); up('#go2-n1 .nlabel', 418.29, 16);
+  draw('#go2-a2 path', 421.26, .45); pop('#go2-i2', 421.61); up('#go2-n2 .nlabel', 421.76, 16);
+  up('#go2-h', 425.38, 22); sweep('#go2-h .hl', 428.63);
+
+  // g-o3
+  tl.fromTo('#g-o3-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 429.98);
+  tl.to('#g-o3-sc', {opacity:0, duration:.35, ease:'power2.in'}, 445.79);
+  rise('#go3-c', 430.03); up('#go3-k', 430.33, 16); up('#go3-h', 430.93, 20);
+  pop('#go3-a', 439.59); pop('#go3-b', 442.31);
+
+  // g-o4
+  tl.fromTo('#g-o4-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 446.21);
+  tl.to('#g-o4-sc', {opacity:0, duration:.35, ease:'power2.in'}, 455.83);
+  rise('#go4-c', 446.26); up('#go4-k', 446.46, 16);
+  slide('#go4-r1', 446.86); draw('#go4-a1 path', 448.49, .4); slide('#go4-r2', 450.84); draw('#go4-a2 path', 453.13, .4);
+
+  // g-o5
+  tl.fromTo('#g-o5-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 456.25);
+  tl.to('#g-o5-sc', {opacity:0, duration:.35, ease:'power2.in'}, 463.73);
+  rise('#go5-c', 456.30); pop('#go5-i1', 456.60); pop('#go5-i2', 456.90); up('#go5-h', 458.39, 24);
+  tl.fromTo('#go5-h .hl', {backgroundSize:'0% 38%'}, {backgroundSize:'100% 38%', duration:.6, ease:'power2.inOut', stagger:.5, immediateRender:false}, 459.39);
+  pop('#go5-ok', 461.98);
+
+  // end card
+  
+  rise('#end-in', 464.25); up('#end-k', 464.45, 16); up('#end-h', 464.65, 30); sweep('#end-h .hl', 465.35);
+  pop('#end-like', 466.78); pop('#end-sub', 467.38); up('#end-t', 468.57, 14);
+  tl.fromTo('#end-like', {rotation:0}, {rotation:-12, duration:.18, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 467.38);
+  tl.fromTo('#end-sub svg', {rotation:0}, {rotation:16, duration:.12, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 467.98);
+  tl.fromTo('#outro-phil', {rotation:0}, {rotation:-5, duration:.3, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 464.55);
+  tl.fromTo('#endfade', { opacity: 0 }, { opacity: 1, duration: .7, ease: 'power1.in' }, 468.37);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+})();
+</script>
+</body>
+</html>
