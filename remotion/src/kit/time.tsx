@@ -22,22 +22,25 @@ export const timing = (cues: Cue[]): Timing => {
   return { T: (n, off = 0) => get(n).s + off, TE: (n, off = 0) => get(n).e + off };
 };
 
-/** A scene from `s` to `e` seconds: fades in over .4s, out over .35s. */
-export const Scene: React.FC<{ s: number; e: number; name?: string; children: React.ReactNode }> = ({ s, e, name, children }) => {
+/** A scene from `s` to `e` seconds; `impact` switches it to the bold white-type theme (pro.css). */
+export const Scene: React.FC<{ s: number; e: number; name?: string; impact?: boolean; children: React.ReactNode }> = ({ s, e, name, impact, children }) => {
   const { fps } = useVideoConfig();
   const from = Math.round(s * fps);
   const dur = Math.max(1, Math.round(e * fps) - from);
   return (
     <Sequence from={from} durationInFrames={dur} name={name} layout="none">
       <Offset.Provider value={from}>
-        <SceneFade s={s} e={e}>{children}</SceneFade>
+        <SceneFade s={s} e={e} impact={impact}>{children}</SceneFade>
       </Offset.Provider>
     </Sequence>
   );
 };
 
-const SceneFade: React.FC<{ s: number; e: number; children: React.ReactNode }> = ({ s, e, children }) => {
+// exit: the whole scene recedes (scale down, lift, blur) while the next one arrives
+const SceneFade: React.FC<{ s: number; e: number; impact?: boolean; children: React.ReactNode }> = ({ s, e, impact, children }) => {
   const t = useT();
-  const o = prog(t, s, 0.4, E.p2) * (1 - prog(t, e - 0.37, 0.35, E.p2in));
-  return <AbsoluteFill className="scene" style={{ opacity: o }}>{children}</AbsoluteFill>;
+  const out = prog(t, e - 0.4, 0.38, E.p2in);
+  const o = prog(t, s, 0.25, E.p2) * (1 - out);
+  return <AbsoluteFill className={`scene${impact ? ' impact' : ''}`}
+    style={{ opacity: o, transform: out ? `translateY(${-24 * out}px) scale(${1 - 0.05 * out})` : undefined, filter: out > 0.02 ? `blur(${(10 * out).toFixed(2)}px)` : undefined }}>{children}</AbsoluteFill>;
 };

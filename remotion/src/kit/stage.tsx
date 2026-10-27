@@ -1,6 +1,6 @@
 import React from 'react';
 import { AbsoluteFill, Img, random, staticFile } from 'remotion';
-import { E, mx, pop, prog, rise, spin, sweep, up, yoyo } from './anim';
+import { E, mx, pop, prog, rise, spin, spr, sweep, up, yoyo } from './anim';
 import type { Cue } from './srt';
 import { Hl, Pill, Svg, C } from './ui';
 
@@ -36,14 +36,14 @@ export const StageBg: React.FC<{ t: number }> = ({ t }) => (
 export type Kind = 'say' | 'full';
 
 /** The character walks in for 'say' scenes and out for 'full' scenes; hops on every new card, waves at the end. */
-export const Character: React.FC<{ t: number; scenes: { s: number; kind: Kind }[]; waveAt?: number }> = ({ t, scenes, waveAt }) => {
+export const Character: React.FC<{ t: number; scenes: { s: number; kind: Kind }[]; waveAt?: number; children?: React.ReactNode }> = ({ t, scenes, waveAt, children }) => {
   let v = 0;
   let hop = 0;
   scenes.forEach((g, i) => {
     const prev = i ? scenes[i - 1].kind : 'full';
     if (g.kind !== prev) {
-      if (g.kind === 'say' && t >= g.s + 0.05) v += (1 - v) * prog(t, g.s + 0.05, 0.7, E.back(1.3));
-      if (g.kind === 'full' && t >= g.s - 0.2) v += (0 - v) * prog(t, g.s - 0.2, 0.5, E.p2in);
+      if (g.kind === 'say' && t >= g.s + 0.1) v += (1 - v) * spr(t, g.s + 0.1, 0.62, 9).v;
+      if (g.kind === 'full' && t >= g.s - 0.25) v += (0 - v) * prog(t, g.s - 0.25, 0.4, E.p2in);
     } else if (g.kind === 'say') hop = Math.max(hop, yoyo(t, g.s, 0.18, 1, E.p2));
   });
   const breathe = (1 - Math.cos((2 * Math.PI * Math.max(0, t - 1)) / 0.46)) / 2;
@@ -51,7 +51,8 @@ export const Character: React.FC<{ t: number; scenes: { s: number; kind: Kind }[
   const wave = waveAt === undefined ? '' : mx(spin(t, waveAt, 0.3, 5, -5)).transform;
   return (
     <AbsoluteFill className="charclip">
-      <div className="cwrap" style={{ opacity: Math.min(1, Math.max(0, v)), transform: `translateX(${-620 * (1 - v)}px) rotate(${sway}deg)` }}>
+      {children}
+      <div className="cwrap" style={{ opacity: Math.min(1, Math.max(0, v * 3)), transform: `translateX(${-620 * (1 - v)}px) rotate(${sway + 14 * (1 - v)}deg)` }}>
         <Img className="cphil" src={staticFile('characters/philosophy.png')}
           style={{ transform: `translateY(${-26 * hop}px) scale(${1 - 0.008 * breathe}, ${1 + 0.018 * breathe}) ${wave ?? ''}` }} />
         <div className="ctag"><Pill dot={C.coral} soft={false}>필로소피</Pill></div>
@@ -67,13 +68,37 @@ export const Brand: React.FC<{ name?: string; sub?: string }> = ({ name = '필�
 export const ChapterChip: React.FC<{ t: number; sections: [number, number, string, string][] }> = ({ t, sections }) => {
   const sec = sections.find(([s, e]) => t >= s && t < e);
   if (!sec) return null;
-  const p = prog(t, sec[0] + 0.3, 0.5, E.p3);
-  return <div className="chapter"><div className="chip-in" style={{ opacity: p, transform: `translateX(${30 * (1 - p)}px)` }}><b>{sec[2]}</b><span>{sec[3]}</span></div></div>;
+  const p = spr(t, sec[0] + 0.3, 0.6, 12).v;
+  return <div className="chapter"><div className="chip-in" style={{ opacity: Math.min(1, p * 2), transform: `translateX(${60 * (1 - p)}px)` }}><b>{sec[2]}</b><span>{sec[3]}</span>
+    <i className="chip-prog" style={{ transform: `scaleX(${prog(t, sec[0], sec[1] - sec[0])})` }} /></div></div>;
 };
 
-/** Cream caption band with the active SRT cue. */
-export const Captions: React.FC<{ t: number; cues: Cue[] }> = ({ t, cues }) => {
+/**
+ * Karaoke caption band: words light up as they are spoken. SRT has cue-level timing only, so word
+ * times are spread across the cue by character count. `kw` colours key terms.
+ */
+export const Captions: React.FC<{ t: number; cues: Cue[]; kw?: RegExp }> = ({ t, cues, kw }) => {
   const cue = cues.find((c) => t >= c.s && t < c.e);
+  let line: React.ReactNode = null;
+  if (cue) {
+    const words = cue.text.split(' ');
+    const w = words.map((x) => x.length + 1);
+    const total = w.reduce((a, b) => a + b, 0);
+    const span = (cue.e - cue.s) * 0.9;
+    let acc = 0;
+    const p = spr(t, cue.s, 0.7, 16).v;
+    line = (
+      <span className="capl" style={{ transform: `translateY(${12 * (1 - p)}px)`, opacity: Math.min(1, p * 1.6) }}>
+        {words.map((x, i) => {
+          const ws = cue.s + (acc / total) * span;
+          acc += w[i];
+          const we = cue.s + (acc / total) * span;
+          const state = t < ws ? 'next' : t < we ? 'now' : 'done';
+          return <React.Fragment key={i}>{i > 0 && ' '}<span className={`w ${state}${kw && kw.test(x) ? ' kw' : ''}`}>{x}</span></React.Fragment>;
+        })}
+      </span>
+    );
+  }
   return (
     <>
       <div id="band">
@@ -82,7 +107,7 @@ export const Captions: React.FC<{ t: number; cues: Cue[] }> = ({ t, cues }) => {
         <span className="bdot" style={{ right: 46, top: 66, width: 14, height: 14, background: '#cfc3ff' }} />
         <span className="bdot" style={{ right: 72, top: 96, width: 10, height: 10, background: '#ffe39c' }} />
       </div>
-      {cue && <div className="cap"><span>{cue.text}</span></div>}
+      {line && <div className="cap"><span>{line}</span></div>}
     </>
   );
 };

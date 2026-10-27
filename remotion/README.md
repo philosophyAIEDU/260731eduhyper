@@ -1,7 +1,17 @@
 # Remotion 키트
 
-HyperFrames 키트(저장소 루트)와 **같은 영상을 Remotion(React)으로 만드는** 키트입니다.
-파스텔 카드 디자인 · 필로소피 캐릭터 · 자막 밴드 · Pretendard 폰트를 그대로 씁니다.
+HyperFrames 키트(저장소 루트)와 같은 디자인(파스텔 카드 · 필로소피 캐릭터 · Pretendard)을 쓰되,
+React 로만 쉽게 할 수 있는 **시네마틱 연출**을 더한 키트입니다.
+
+- 살아 있는 배경 — 움직이는 오로라 그라데이션, 깊이감 있는 보케, 필름 그레인, 비네트
+- 카메라 — 영상 전체의 느린 핸드헬드 드리프트, 임팩트 순간의 펀치 인 + 흔들림
+- 임팩트 씬 — 보라→코랄 그라데이션 무대 + 흰 글씨, 한 글자씩 스프링으로 떨어지는 키네틱 타이포,
+  쇼크웨이브 링 · 파티클 버스트 · 반짝이 · 플래시
+- 전환 — 대각선 컬러 와이프, 카드는 3D로 스윙해 들어오고 블러로 빠짐, 등장 순간 광택(sheen)
+- 물리 스프링 — 모든 팝/슬라이드가 감쇠 스프링으로 튕기고, 빠르게 움직일 때 모션 블러
+- 노래방 자막 — 말하는 단어에 불이 들어오고, 핵심 단어(AI · SWOT · 과제 …)는 색으로
+- 캐릭터 리액션 — 머리 위에 ? ! 💡 같은 말풍선이 튀어나옴
+- 효과음 — whoosh · hit · ding · pop · tick (ffmpeg 로 합성, `public/sfx/`), `sfx: false` 로 끌 수 있음
 
 > Remotion 은 개인·직원 3명 이하 회사는 무료, 그 이상의 회사는 유료 라이선스가 필요합니다.
 > https://www.remotion.dev/license
@@ -13,13 +23,17 @@ remotion/
 ├─ public/                       ← staticFile() 로 읽는 파일
 │  ├─ fonts/PretendardVariable.woff2
 │  ├─ characters/philosophy.png
+│  ├─ sfx/                       whoosh · hit · ding · pop · tick (합성 효과음)
 │  └─ ai-era-assignment/         ← 영상마다 폴더 하나
 │     ├─ captions.srt
 │     └─ narration.m4a           (저장소에 없음 — 아래 '오디오 준비')
 └─ src/
    ├─ Root.tsx                   ← 영상(Composition) 등록
    ├─ kit/                       ← 모든 영상이 같이 쓰는 부품
-   │  ├─ anim.ts                 pop · up · rise · slide · slam · stamp · sweep · draw · grow · count
+   │  ├─ anim.ts                 스프링 기반 pop · up · rise · slide · slam · stamp · sweep · draw · grow · count
+   │  ├─ fx.tsx                  Backdrop · Bokeh · Grain · ImpactBackdrop · Wipe · Flash · Burst · Ring · Sparkles
+   │  │                          camera() · Kinetic(한 글자씩) · Emote · SfxTrack
+   │  ├─ pro.css                 시네마틱 테마 (유리 카드, 임팩트 흰 글씨, 노래방 자막)
    │  ├─ time.tsx                Scene(시작~끝 초) · useT() · T(큐 번호)
    │  ├─ srt.ts                  SRT 읽기 + 표기 교정
    │  ├─ stage.tsx               배경 · 캐릭터 · 브랜드/챕터 칩 · 자막 밴드 · 엔드카드
@@ -38,7 +52,8 @@ cd remotion
 npm install                       # 처음 한 번
 npm run studio                    # 브라우저 미리보기 (타임라인에 씬이 블록으로 보임)
 npx remotion render ai-era-assignment out/ai-era-assignment.mp4
-npx remotion still  ai-era-assignment out/check.png --frame=900    # 30초 지점 한 장
+node scripts/stills.mjs ai-era-assignment 30,91.2,181.6 out/stills    # 여러 시점 스틸 (번들 1번)
+npx remotion render ai-era-assignment out/x.mp4 --props='{"sfx":false}'  # 효과음 없이
 npm run check                     # 타입 검사
 ```
 
@@ -65,5 +80,6 @@ ffmpeg -i "완성영상.mp4" -vn -t 435 -af "afade=t=out:st=433.3:d=1.7" -c:a aa
   난수는 `random('seed')`(remotion) 만.
 - CSS `transition` / `animation` 금지 — 렌더러가 프레임을 건너뛰며 찍으므로 전부 `kit/anim.ts` 로.
 - 이미지는 `<Img>`, 오디오는 `<Audio>`, 파일 경로는 `staticFile()` 로.
+- 임팩트(펀치 인 · 효과음)는 `index.tsx` 의 `kicks` · `stamps` · `emotes` 목록에서 시각만 고치면 됩니다.
 - 렌더 후에는 결과 MP4 에서 프레임을 뽑아 눈으로 확인합니다
   (`ffmpeg -ss 30 -i out/x.mp4 -frames:v 1 check.png`).

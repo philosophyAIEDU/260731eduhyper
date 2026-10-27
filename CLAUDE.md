@@ -229,3 +229,9 @@ Remotion 작업 규칙:
 - 자막(SRT)은 `calculateMetadata` 에서 `loadSrt()` 로 읽어 props 로 넘긴다. 표기 교정은 `FIX`.
 - 오디오(`public/<영상>/narration.m4a`)는 저장소에 올리지 않는다 (`remotion/README.md` 의 ffmpeg 명령).
 - 렌더 후 MP4 에서 프레임을 뽑아 눈으로 확인하는 건 HyperFrames 와 똑같이 한다 (6번).
+- Remotion 쪽은 시네마틱 판이다 (`kit/fx.tsx` · `kit/pro.css`: 오로라 배경 · 보케 · 그레인 · 카메라 펀치 인 ·
+  임팩트 그라데이션 무대 · 키네틱 타이포 · 와이프 · 파티클 · 노래방 자막 · 캐릭터 리액션 · 효과음).
+  'full' 씬은 자동으로 임팩트 무대(흰 글씨)가 되고, 컷은 와이프가 가린다.
+- 여러 시점 확인은 `node scripts/stills.mjs <id> 30,91.2,181.6 out/stills` (번들 한 번으로 스틸 여러 장).
+- 렌더 시간: 7분 15초 영상 약 18분. 그레인 때문에 원본이 크다(약 450MB) — 배포용은
+  `ffmpeg -i out/x.mp4 -c:v libx264 -preset slow -crf 20 -c:a copy out/x-final.mp4` 로 다시 인코딩(약 250MB).

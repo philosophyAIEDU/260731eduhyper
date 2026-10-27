@@ -1,6 +1,7 @@
 import React from 'react';
 import { draw, grow, count, mx, pop, pulse, rise, shake, slam, slide, spin, stamp, sweep, up, prog, yoyo, E } from '../../kit/anim';
 import { useT, type Timing } from '../../kit/time';
+import { Burst, Flash, Kinetic, kineticEnd, Ring, Sparkles } from '../../kit/fx';
 import type { Kind } from '../../kit/stage';
 import { Arrow, BG, C, Chip, Flow, HL, Hl, Ico, Ok, Pill, Svg } from '../../kit/ui';
 
@@ -28,9 +29,10 @@ const Open: S = ({ T }) => {
   return (
     <div className="mega">
       <Pill dot={C.coral} style={mx(up(t, 0.3, 16))}>AI 시대의 과제</Pill>
-      <div className="mt" style={mx(up(t, T(3), 50))}>과제를 <Hl style={sweep(t, T(3, 0.6))}>AI로</Hl> 한다면</div>
-      <div className="mt" style={mx(up(t, T(4), 50))}>평가는 <span className="ink2">어떻게</span> 해야 할까요<span className="qm" style={mx(stamp(t, T(4, 1.2)))}>?</span></div>
+      <Kinetic t={t} at={T(3)} parts={['과제를 ', { hl: 'AI로' }, ' 한다면']} />
+      <div className="mt"><Kinetic inline className="" t={t} at={T(4)} parts={['평가는 ', { em: '어떻게' }, ' 해야 할까요']} /><span className="qm" style={mx(stamp(t, T(4, 1.2)))}>?</span></div>
       <div className="sub" style={mx(up(t, 1.0, 16))}>요즘 교수님들의 가장 큰 고민</div>
+      <Ring t={t} at={T(4, 1.25)} x={1520} y={560} r={300} color="rgba(255,224,138,.95)" />
     </div>
   );
 };
@@ -74,6 +76,10 @@ const ThreeQ: S = ({ T }) => {
         <div className="qline" style={mx(slam(t, T(21)))}><Ico name="x" color={C.pink} bg={BG.pink} size="xs" /><span>AI를 <b>안 쓰게 할 수</b> 있을까?</span></div>
         <div className="qline hot" style={mx(slam(t, T(22)), shake(t, T(23), 0.06, 5, 10))}><Ico name="question" color={C.lav} bg={BG.lav} size="xs" /><span>안 쓰게 하는 게 <b>맞을까?</b></span></div>
       </div>
+      <Ring t={t} at={T(20, 0.05)} x={960} y={360} r={520} />
+      <Ring t={t} at={T(21, 0.05)} x={960} y={490} r={560} />
+      <Ring t={t} at={T(22, 0.05)} x={960} y={620} r={640} color="rgba(255,224,138,.95)" />
+      <Flash t={t} at={T(22, 0.02)} strength={0.35} />
     </div>
   );
 };
@@ -149,7 +155,10 @@ const NewWay: S = ({ T }) => {
   return (
     <div className="mega">
       <Ico name="bulb" color={C.yellow} bg={BG.yellow} style={mx(pop(t, T(43, 0.1)), spin(t, T(43, 1.8), 0.15, 3, 12))} />
-      <div className="mt xl" style={mx(slam(t, T(43, 0.9)))}><Hl style={sweep(t, T(43, 1.6))}>새로운 방식</Hl>이<br />필요합니다</div>
+      <Kinetic className="mt xl" t={t} at={T(43, 0.9)} stagger={0.05} parts={[{ hl: '새로운 방식' }, '이\n필요합니다']} />
+      <Burst t={t} at={T(43, 0.95)} x={960} y={520} n={34} seed="nw" />
+      <Ring t={t} at={T(43, 0.95)} x={960} y={520} r={700} />
+      <Sparkles t={t} at={T(43, 1.6)} x={960} y={500} spread={560} seed="nw" />
     </div>
   );
 };
@@ -161,7 +170,11 @@ const UseIt: S = ({ T }) => {
     <div className="mega">
       <div className="sub" style={mx(up(t, T(44, 0.1), 20))}>AI 쓰는 것을 막기 어렵다면?</div>
       <div className="mt xxl"><span style={mx(slam(t, T(46, 0.9)))}>AI,</span> <span style={mx(slam(t, T(47, 0.2)))}>최대한</span><br />
-        <span style={mx(slam(t, T(47, 0.7)))}><Hl c={HL.m} style={sweep(t, T(47, 1.3))}>잘 써봐라</Hl></span></div>
+        <Kinetic inline className="" t={t} at={T(47, 0.7)} stagger={0.07} parts={[{ hl: '잘 써봐라' }]} /></div>
+      <Ring t={t} at={T(46, 0.95)} x={700} y={380} r={360} />
+      <Ring t={t} at={T(47, 0.25)} x={1150} y={380} r={360} />
+      <Burst t={t} at={T(47, 1.0)} x={960} y={560} n={40} power={1.2} seed="ui" />
+      <Flash t={t} at={T(47, 0.95)} strength={0.4} />
       <div className="note" style={mx(up(t, T(48, 0.2), 16))}>물론 이것도 정답은 아닙니다 · 여러 방안 중 하나</div>
     </div>
   );
@@ -187,11 +200,11 @@ const Old: S = ({ T }) => {
     <div className="card scard say" style={mx(rise(t, T(52)))}>
       <Pill dot={C.grey} style={mx(up(t, T(52, 0.3), 16))}>예를 들어, 과거의 과제</Pill>
       <div className="paper">
-        <div className="pline" style={mx(slide(t, T(54)))}><span className="nb">1</span><span><b>SWOT 분석</b>의 개념을 설명하고</span></div>
-        <div className="pline" style={mx(slide(t, T(55)))}><span className="nb">2</span><span><b>엔비디아 vs AMD</b>를 SWOT 관점에서 비교하는 리포트</span></div>
-        <div className="pline" style={mx(slide(t, T(57)))}><span className="nb">3</span><span>A4 5쪽 이내 · <b>워드</b>로 제출</span></div>
+        <div className="pline" style={mx(slide(t, T(53)))}><span className="nb">1</span><span><b>SWOT 분석</b>의 개념을 설명하고</span></div>
+        <div className="pline" style={mx(slide(t, T(54)))}><span className="nb">2</span><span><b>엔비디아 vs AMD</b>를 SWOT 관점에서 비교하는 리포트</span></div>
+        <div className="pline" style={mx(slide(t, T(56)))}><span className="nb">3</span><span>A4 5쪽 이내 · <b>워드</b>로 제출</span></div>
       </div>
-      <Swot t={t} at={T(54, 0.5)} />
+      <Swot t={t} at={T(53, 0.5)} />
     </div>
   );
 };
@@ -246,7 +259,7 @@ const Detect: S = ({ T }) => {
     <div className="card scard say" style={mx(rise(t, T(75)))}>
       <Pill dot={C.coral} style={mx(up(t, T(75, 0.3), 16))}>이런 과제는 평가하기 어렵다</Pill>
       <div className="row gap">
-        <div className="dcol sm2" style={mx(slide(t, T(79, 0.3), -50))}><Svg name="doc" color="#9a8be6" /><span>톤만 살짝 다른 과제</span><b>AI 썼을까? 안 썼을까?</b></div>
+        <div className="dcol sm2" style={mx(slide(t, T(76, 0.2), -50))}><Svg name="doc" color="#9a8be6" /><span>톤만 살짝 다른 과제</span><b>AI 썼을까? 안 썼을까?</b></div>
         <div className="gauge" style={mx(up(t, T(84), 24))}>
           <svg viewBox="0 0 220 130" fill="none"><path d="M20 120a90 90 0 0 1 180 0" stroke="#efe9f6" strokeWidth={22} strokeLinecap="round" />
             <path pathLength={1} d="M20 120a90 90 0 0 1 180 0" stroke="#f3c25b" strokeWidth={22} strokeLinecap="round" style={{ strokeDasharray: 1, strokeDashoffset: 1 - 0.5 * prog(t, T(84, 0.3), 0.8, E.p2) }} />
@@ -265,8 +278,12 @@ const Chap: S = ({ T }) => {
   return (
     <div className="mega">
       <div className="cc-n" style={mx(up(t, T(87, 0.3), 16))}>제가 생각해 본</div>
-      <div className="mt xxl" style={mx(slam(t, T(87, 0.6)))}>AI <Hl style={sweep(t, T(87, 1.3))}>시대</Hl>의 과제</div>
+      <Kinetic className="mt xxl" t={t} at={T(87, 0.6)} stagger={0.06} parts={['AI ', { hl: '시대' }, '의 과제']} />
       <div className="sub" style={mx(up(t, T(89), 16))}>이런 식으로 과제를 내주면 어떨까요?</div>
+      <Flash t={t} at={T(87, 0.6)} strength={0.5} />
+      <Ring t={t} at={T(87, 0.62)} x={960} y={450} r={820} />
+      <Burst t={t} at={T(87, 1.0)} x={960} y={450} n={44} power={1.3} seed="ch" />
+      <Sparkles t={t} at={T(87, 1.4)} x={960} y={440} spread={700} seed="ch" />
     </div>
   );
 };
@@ -308,6 +325,7 @@ const Rule: S = ({ T }) => {
       <div className="advice" style={mx(up(t, T(100, 0.5), 20))}><span className="adk">단,</span><b>AI를 사용한 과정은 전부 캡처해서 제출</b></div>
       <div className="meter" style={mx(up(t, T(102), 20))}><span className="mlab">과정이 자세할수록 점수</span>
         <div className="mbar"><span className="mfill mint" style={grow(t, [[T(102, 0.3), 0.95, 2.2]])} /></div><b className="mup mint" style={mx(stamp(t, T(103, 0.8)))}>A+</b></div>
+      <Sparkles t={t} at={T(103, 0.9)} x={1150} y={180} spread={260} seed="ap" />
     </div>
   );
 };
@@ -362,6 +380,7 @@ const E3: S = ({ T }) => {
         const g = prog(t, T(131, i * 0.08), 0.4);
         return <span key={i} className="cdot" style={{ left: 30 + i * 98, background: `rgb(${154 + (79 - 154) * g},${139 + (180 - 139) * g},${230 + (137 - 230) * g})`, ...mx(pop(t, T(124, 0.2 + i * 0.26))) }} />; })}</div>
       <div className="mini" style={mx(pop(t, T(126)))}><Svg name="git" color="#9a6a12" /><span>GitHub 커밋 기록 제출 → 진짜 AI로 수정했는지 확인</span></div>
+      <Sparkles t={t} at={T(124, 2.8)} x={500} y={130} spread={160} seed="ten" />
     </div>
   );
 };
@@ -404,8 +423,9 @@ const Sure: S = ({ T }) => {
   const t = useT();
   return (
     <div className="mega">
-      <div className="mt xl" style={mx(slam(t, T(146, 0.1)))}>AI 쓸 거면 <span><Hl style={sweep(t, T(146, 1.0))}>확실하게</Hl></span></div>
-      <div className="mt md" style={mx(up(t, T(147, 0.2), 30))}>그리고 고민 많이 해보기</div>
+      <Kinetic className="mt xl" t={t} at={T(146, 0.1)} stagger={0.045} parts={['AI 쓸 거면 ', { hl: '확실하게' }]} />
+      <Kinetic className="mt md" t={t} at={T(147, 0.2)} parts={['그리고 고민 많이 해보기']} />
+      <Ring t={t} at={kineticEnd(T(146, 0.1), ['AI 쓸 거면 ', { hl: '확실하게' }], 0.045)} x={1180} y={400} r={420} color="rgba(255,224,138,.95)" />
     </div>
   );
 };
@@ -436,8 +456,10 @@ const Paradox: S = ({ T }) => {
     <div className="mega">
       <div className="qbub wide" style={mx(up(t, T(156), 20), { o: 1 - 0.55 * dim, tf: `scale(${1 - 0.06 * dim})` })}>학생들이 사고력·논리력을 키워야 하는데 <b>AI 때문에 어렵다</b></div>
       <div className="cc-n" style={mx(up(t, T(158, 1.0), 16))}>그렇다면 역설적으로</div>
-      <div className="mt xl" style={mx(slam(t, T(158, 2.2)))}>AI를 <Hl style={sweep(t, T(158, 3.0))}>최대한</Hl> 써서<br />뭔가를 만들어봐라</div>
+      <Kinetic className="mt xl" t={t} at={T(158, 2.2)} stagger={0.045} parts={['AI를 ', { hl: '최대한' }, ' 써서\n뭔가를 만들어봐라']} />
       <div className="sub" style={mx(up(t, T(159), 16))}>그 과정에서 <b>머리를 써보도록</b></div>
+      <Flash t={t} at={T(158, 2.2)} strength={0.3} />
+      <Sparkles t={t} at={T(158, 3.0)} x={960} y={520} spread={640} seed="px" />
     </div>
   );
 };
@@ -492,7 +514,9 @@ const Thanks: S = ({ T }) => {
     <div className="mega">
       <Ico name="heart" color={C.pink} bg={BG.pink} style={mx(pop(t, T(179, 0.2)), pulse(t, T(180, 1.2), 0.3, 5, 0.15))} />
       <div className="sub" style={mx(up(t, T(179, 0.4), 16))}>우리 교수님들, 선생님들</div>
-      <div className="mt xl" style={mx(slam(t, T(180)))}>AI 시대에<br /><Hl c={HL.p} style={sweep(t, T(180, 0.7))}>고생 많으십니다</Hl></div>
+      <Kinetic className="mt xl" t={t} at={T(180)} stagger={0.05} parts={['AI 시대에\n', { hl: '고생 많으십니다', c: HL.p }]} />
+      <Sparkles t={t} at={T(180, 0.9)} x={960} y={560} spread={620} seed="th" />
+      <Burst t={t} at={T(180, 0.8)} x={960} y={600} n={30} power={0.8} seed="th" />
     </div>
   );
 };
