@@ -1,0 +1,4 @@
+node_modules/
+out/
+# 원본 영상에서 뽑은 오디오 — 각자 추출 (README 참고)
+public/*/narration.*

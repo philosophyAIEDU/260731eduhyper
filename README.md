@@ -43,6 +43,22 @@ Whisper 가 "말 → 초" 대응표를 만들어 주니까, *"'사실이 아닙�
 
 ---
 
+## HyperFrames 또는 Remotion — 골라 쓰기
+
+이 저장소에는 영상 엔진이 두 개 들어 있습니다. 원리(코드 → 프레임 스크린샷 → MP4)는 같고,
+디자인(파스텔 카드 · 필로소피 캐릭터 · 자막 밴드 · Pretendard)도 같습니다.
+
+| | **HyperFrames** (기본) | **Remotion** (`remotion/`) |
+| --- | --- | --- |
+| 쓰는 말 | HTML + GSAP 타임라인 | React 컴포넌트 (TypeScript) |
+| 좋은 점 | 가볍고 빠름, 파일 하나로 끝 | 부품 재사용, 강력한 미리보기(Studio) |
+| 주의 | 한글 경로에서 크래시 | 직원 4명 이상 회사는 유료 라이선스 |
+| 예시 | `videos/ai-era-assignment/` | `remotion/src/videos/ai-era-assignment/` |
+
+Claude 에게 **"Remotion 으로 만들어 주세요"** 라고 하면 Remotion 으로, 아무 말이 없으면 HyperFrames 로 만듭니다.
+
+---
+
 ## 준비물 (처음 한 번만)
 
 **전부 미리 설치해 두세요.** Claude 에게 맡겨도 되지만, 설치 도중 권한 창이
@@ -352,6 +368,9 @@ docs/
   tutorial-script/     기획서 작성 실제 예시 (이 키트 소개 영상 대본)
   claude-project/       기획서 3장을 자동으로 써 주는 Claude 프로젝트 지침 + 사용법
 scripts/               터미널에서 쓰는 경우용 (데스크탑 앱에서는 불필요)
+videos/                완성한 영상 프로젝트들 (HyperFrames)
+remotion/              같은 영상을 Remotion(React)으로 만드는 키트 — remotion/README.md
+upload-videos/         완성 MP4 (Git LFS)
 ```
 
 `CLAUDE.md` 가 이 키트의 핵심입니다. Claude 가 이 파일을 읽고 함정을 미리 알기 때문에,

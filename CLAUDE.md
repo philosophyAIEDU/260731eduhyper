@@ -205,3 +205,27 @@ for f in glob.glob('scripts/*.ps1'):
 - **렌더 시간**: 1080p 30fps 기준 대략 **영상 길이의 1.5배** (83초 → 2분 4초).
 - **Chrome Headless Shell** 이 없으면 렌더가 실패합니다.
   `npx hyperframes browser ensure` 로 설치 (약 115MB, 최초 1회).
+
+---
+
+## 10. 엔진 선택 — HyperFrames 또는 Remotion
+
+이 저장소는 영상 엔진 두 개를 지원합니다. **사용자가 "Remotion"이라고 말하면 Remotion,
+아니면 HyperFrames(기본)** 로 만듭니다. 디자인 시스템은 둘이 같습니다
+(`remotion/src/kit/pastel.css` = `videos/*/assets/base.css` + `extra.css`).
+
+| | HyperFrames | Remotion |
+| --- | --- | --- |
+| 위치 | `videos/<영상>/` (build.mjs → index.html) | `remotion/src/videos/<영상>/` + `remotion/public/<영상>/` |
+| 예시 | `videos/ai-era-assignment/` | `remotion/src/videos/ai-era-assignment/` |
+| 검증 | `npx hyperframes check` / `snapshot` | `npm run check`(tsc) / `npx remotion still <id> out/x.png --frame=N` |
+| 렌더 | `npx hyperframes render -o out/x.mp4` | `npx remotion render <id> out/x.mp4` (`remotion/` 안에서) |
+
+Remotion 작업 규칙:
+
+- 새 영상은 `remotion/src/videos/ai-era-assignment/` 를 복사해서 시작하고 `src/Root.tsx` 에 등록한다.
+- 씬은 `SCENES` 배열(큐 번호 `from` + `kind: 'say' | 'full'`)로 쓰고, 애니메이션은 `kit/anim.ts`
+  헬퍼만 쓴다 (`mx(pop(t, T(12)))` 처럼). CSS transition/animation, `Math.random()` 금지 — `random('seed')`.
+- 자막(SRT)은 `calculateMetadata` 에서 `loadSrt()` 로 읽어 props 로 넘긴다. 표기 교정은 `FIX`.
+- 오디오(`public/<영상>/narration.m4a`)는 저장소에 올리지 않는다 (`remotion/README.md` 의 ffmpeg 명령).
+- 렌더 후 MP4 에서 프레임을 뽑아 눈으로 확인하는 건 HyperFrames 와 똑같이 한다 (6번).
