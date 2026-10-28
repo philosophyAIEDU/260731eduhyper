@@ -65,6 +65,25 @@ npm run check                     # 타입 검사
 ffmpeg -i "완성영상.mp4" -vn -t 435 -af "afade=t=out:st=433.3:d=1.7" -c:a aac -b:a 192k public/ai-era-assignment/narration.m4a
 ```
 
+`ai-era-assignment-practice` (AI 시대의 과제 — 직접 해보기 편, 16:23):
+
+```bash
+ffmpeg -i "AI 시대의 과제 영상.mp4" -vn -t 983 -c:a aac -b:a 192k public/ai-era-assignment-practice/narration.m4a
+```
+
+## 영상 목록
+
+| id | 내용 | 스타일 |
+| --- | --- | --- |
+| `ai-era-assignment` | AI 시대의 과제 (7:15) | 파스텔 시네마틱 |
+| `ai-era-assignment-practice` | AI 시대의 과제 — 직접 해보기 편 (16:23) | **미드나이트 테마** (`theme.css`, `.dark-root` 안에서만) |
+
+`ai-era-assignment-practice` 는 실습 화면이 대부분이라 `shot.tsx` 가 따로 있습니다.
+PPT 에서 뽑은 캡처(`public/ai-era-assignment-practice/shots/`)를 기울어진 모니터에 띄우고,
+`shots.json` 의 키프레임대로 카메라가 이동/확대하며, 하이라이트마다 스포트라이트 + 커서 클릭이 들어갑니다.
+`shots.json` 은 HyperFrames 판(`videos/ai-era-assignment-practice/shots.json`)과 같은 파일입니다 — 고치면 둘 다 복사하세요.
+실습 화면끼리는 `Scene` 의 `tail` / `fadeIn` 으로 크로스 디졸브합니다.
+
 ## 새 영상 만들기
 
 1. `public/<새영상>/` 에 `captions.srt` 와 `narration.m4a` 를 둔다.

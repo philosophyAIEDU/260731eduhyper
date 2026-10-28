@@ -22,25 +22,28 @@ export const timing = (cues: Cue[]): Timing => {
   return { T: (n, off = 0) => get(n).s + off, TE: (n, off = 0) => get(n).e + off };
 };
 
-/** A scene from `s` to `e` seconds; `impact` switches it to the bold white-type theme (pro.css). */
-export const Scene: React.FC<{ s: number; e: number; name?: string; impact?: boolean; children: React.ReactNode }> = ({ s, e, name, impact, children }) => {
+/**
+ * A scene from `s` to `e` seconds; `impact` switches it to the bold white-type theme (pro.css).
+ * `fadeIn` overrides the 0.25s fade-in. `tail` > 0: the scene lingers `tail` seconds past `e` without its exit, so the next scene can cross-dissolve over it.
+ */
+export const Scene: React.FC<{ s: number; e: number; name?: string; impact?: boolean; tail?: number; fadeIn?: number; children: React.ReactNode }> = ({ s, e, name, impact, tail = 0, fadeIn, children }) => {
   const { fps } = useVideoConfig();
   const from = Math.round(s * fps);
-  const dur = Math.max(1, Math.round(e * fps) - from);
+  const dur = Math.max(1, Math.round((e + tail) * fps) - from);
   return (
     <Sequence from={from} durationInFrames={dur} name={name} layout="none">
       <Offset.Provider value={from}>
-        <SceneFade s={s} e={e} impact={impact}>{children}</SceneFade>
+        <SceneFade s={s} e={tail ? Infinity : e} impact={impact} fadeIn={fadeIn}>{children}</SceneFade>
       </Offset.Provider>
     </Sequence>
   );
 };
 
 // exit: the whole scene recedes (scale down, lift, blur) while the next one arrives
-const SceneFade: React.FC<{ s: number; e: number; impact?: boolean; children: React.ReactNode }> = ({ s, e, impact, children }) => {
+const SceneFade: React.FC<{ s: number; e: number; impact?: boolean; fadeIn?: number; children: React.ReactNode }> = ({ s, e, impact, fadeIn = 0.25, children }) => {
   const t = useT();
-  const out = prog(t, e - 0.4, 0.38, E.p2in);
-  const o = prog(t, s, 0.25, E.p2) * (1 - out);
+  const out = Number.isFinite(e) ? prog(t, e - 0.4, 0.38, E.p2in) : 0;
+  const o = prog(t, s, fadeIn, E.p2) * (1 - out);
   return <AbsoluteFill className={`scene${impact ? ' impact' : ''}`}
     style={{ opacity: o, transform: out ? `translateY(${-24 * out}px) scale(${1 - 0.05 * out})` : undefined, filter: out > 0.02 ? `blur(${(10 * out).toFixed(2)}px)` : undefined }}>{children}</AbsoluteFill>;
 };

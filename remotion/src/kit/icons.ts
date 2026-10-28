@@ -42,7 +42,10 @@ export const ICONS = {
   "wave": "<svg viewBox=\"0 0 64 64\" fill=\"none\" stroke=\"__C__\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M6 40c8-10 14-10 22 0s14 10 22 0 10-8 10-8\"/><path d=\"M6 26c8-10 14-10 22 0s14 10 22 0 10-8 10-8\"/></svg>",
   "wind": "<svg viewBox=\"0 0 64 64\" fill=\"none\" stroke=\"__C__\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 24h30a7 7 0 1 0-7-7\"/><path d=\"M8 34h42a7 7 0 1 1-7 7\"/><path d=\"M8 44h20\"/></svg>",
   "bulb": "<svg viewBox=\"0 0 64 64\" fill=\"none\" stroke=\"__C__\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M24 44c0-6-8-10-8-20a16 16 0 0 1 32 0c0 10-8 14-8 20z\"/><path d=\"M25 52h14M28 58h8\"/></svg>",
-  "up": "<svg viewBox=\"0 0 64 64\" fill=\"none\" stroke=\"__C__\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M32 54V12M16 28l16-16 16 16\"/></svg>"
+  "up": "<svg viewBox=\"0 0 64 64\" fill=\"none\" stroke=\"__C__\" stroke-width=\"6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M32 54V12M16 28l16-16 16 16\"/></svg>",
+  "key": "<svg viewBox=\"0 0 64 64\" fill=\"none\" stroke=\"__C__\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"22\" cy=\"40\" r=\"12\"/><path d=\"M31 32l22-22M44 18l7 7M38 24l5 5\"/></svg>",
+  "image": "<svg viewBox=\"0 0 64 64\" fill=\"none\" stroke=\"__C__\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"8\" y=\"12\" width=\"48\" height=\"40\" rx=\"6\"/><circle cx=\"23\" cy=\"26\" r=\"5\"/><path d=\"M8 46l14-12 10 8 10-10 14 12\"/></svg>",
+  "merge": "<svg viewBox=\"0 0 64 64\" fill=\"none\" stroke=\"__C__\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"18\" cy=\"12\" r=\"6\"/><circle cx=\"18\" cy=\"52\" r=\"6\"/><circle cx=\"46\" cy=\"22\" r=\"6\"/><path d=\"M18 18v28M46 28c0 12-14 14-26 22\"/></svg>",
 } as const;
 
 export type IconName = keyof typeof ICONS;
