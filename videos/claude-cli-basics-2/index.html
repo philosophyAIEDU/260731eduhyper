@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>교수님들을 위한 Claude Code CLI 2편 (기초)</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+@font-face { font-family: "Pretendard"; src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations"); font-weight: 45 920; font-style: normal; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #fdf6ee; }
+:root {
+  --ink: #34314a; --ink-soft: #5b5873; --cream: #fdf6ee;
+  --hl-y: rgba(255, 220, 120, .85); --hl-m: rgba(140, 222, 190, .75); --hl-p: rgba(248, 180, 200, .8);
+}
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Pretendard", sans-serif; color: var(--ink); background: #000; }
+#vwrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+#vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#endfade { position: absolute; inset: 0; z-index: 20; background: #000; opacity: 0; pointer-events: none; }
+
+/* cover (motion-graphics-only spans) */
+.cover { position: absolute; inset: 0; z-index: 2; }
+.cov-in { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, #fff6ee 0%, #fdf1f4 45%, #f1f0ff 100%); }
+.blob { position: absolute; border-radius: 50%; opacity: .75; filter: blur(30px); }
+.dc { position: absolute; display: block; }
+.dc-dot { border-radius: 50%; background: var(--c); opacity: .75; }
+.dc-ring { border-radius: 50%; border: 4px solid var(--c); opacity: .8; }
+.dc-dia { background: var(--c); opacity: .7; border-radius: 4px; transform: rotate(45deg); }
+
+/* captions in covered spans — same look as the burned-in captions */
+.cap { position: absolute; left: 0; right: 0; bottom: 56px; z-index: 8; display: flex; justify-content: center; pointer-events: none; }
+.cap span { display: block; max-width: 1500px; padding: 6px 22px 10px; background: #000; color: #fff;
+  font-size: 54px; font-weight: 700; line-height: 1.3; text-align: center; word-break: keep-all; letter-spacing: -.01em; }
+
+.scene { position: absolute; inset: 0; }
+.scene.full { z-index: 3; }
+.scene.ov { z-index: 4; }
+.sc { position: absolute; inset: 0; opacity: 0; }
+
+/* shared pieces */
+.card { position: absolute; display: block; background: rgba(255, 255, 255, .95); border: 2px solid #fff; border-radius: 44px;
+  box-shadow: 0 30px 70px rgba(80, 60, 70, .2), 0 6px 18px rgba(80, 60, 70, .08); }
+.center-col { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+.pill { display: inline-flex; align-items: center; gap: 14px; padding: 14px 28px; border-radius: 999px; background: #fff;
+  box-shadow: 0 8px 22px rgba(120, 92, 80, .12); font-size: 30px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.pill-soft { background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e8da; }
+.pill-sm { font-size: 24px; padding: 10px 20px; gap: 10px; align-self: flex-start; }
+.pill-sm .pdot { width: 12px; height: 12px; }
+.pill-glass { background: rgba(255, 255, 255, .16); color: #fff; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .3); }
+.pdot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; }
+.okpill { display: inline-flex; align-items: center; gap: 16px; padding: 14px 30px 14px 16px; border-radius: 999px; background: #e3f6ec;
+  font-size: 34px; font-weight: 750; color: #24533f; box-shadow: 0 10px 24px rgba(60, 140, 100, .14); white-space: nowrap; }
+.okc { display: block; width: 48px; height: 48px; border-radius: 50%; background: #3fa877; padding: 7px; }
+.okc svg { display: block; width: 100%; height: 100%; }
+.nopill { background: #fde8ec; color: #8a3550; box-shadow: 0 10px 24px rgba(200, 80, 110, .12); }
+.nopill .okc { background: #e0607f; }
+.ok-xs { font-size: 25px; padding: 8px 20px 8px 8px; gap: 12px; align-self: flex-start; }
+.ok-xs .okc { width: 36px; height: 36px; padding: 5px; }
+.h1 { font-size: 104px; font-weight: 900; line-height: 1.12; letter-spacing: -.035em; word-break: keep-all; }
+.h1.center { text-align: center; }
+.h2 { font-size: 70px; font-weight: 850; line-height: 1.22; letter-spacing: -.03em; word-break: keep-all; text-align: center; }
+.h2.big { font-size: 92px; }
+.hl { background-image: linear-gradient(var(--hlc), var(--hlc)); background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 38%; padding: 0 4px; }
+.ico { display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; border-radius: 50%; padding: 34px; flex: 0 0 auto;
+  box-shadow: 0 12px 26px rgba(120, 92, 80, .12), inset 0 0 0 6px rgba(255, 255, 255, .7); }
+.ico svg { display: block; width: 100%; height: 100%; }
+.ico.sm { width: 120px; height: 120px; padding: 27px; }
+.ico.xs { width: 76px; height: 76px; padding: 17px; }
+.ico.xxs { width: 50px; height: 50px; padding: 11px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .7); }
+.arrow { display: block; width: 90px; height: 24px; flex: 0 0 auto; }
+.arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.arrow-sm { width: 70px; }
+.tagc { display: inline-block; margin-top: 10px; padding: 8px 20px; border-radius: 999px; background: #eef4ff; box-shadow: inset 0 0 0 2px #cfe0fb; font-size: 26px; font-weight: 800; color: #3d64a8; white-space: nowrap; }
+
+/* title */
+.phwrap { position: absolute; left: 110px; top: 170px; width: 480px; }
+.phimg { display: block; width: 480px; height: auto; filter: drop-shadow(0 24px 30px rgba(80, 60, 90, .22)); }
+.titlecard { left: 660px; top: 130px; width: 1120px; display: flex; flex-direction: column; align-items: center; gap: 30px; padding: 56px 60px 60px; }
+.term { display: flex; align-items: center; gap: 16px; min-width: 420px; padding: 18px 30px; border-radius: 20px; background: #2c2a3d;
+  font-family: Consolas, "Courier New", monospace; font-size: 40px; font-weight: 700; color: #f4efe6; box-shadow: 0 14px 30px rgba(44, 42, 61, .3); }
+.tprompt { color: #ef8a6f; }
+.tcur { display: inline-block; width: 18px; height: 40px; background: #f4efe6; }
+.ep { display: flex; align-items: center; gap: 18px; padding: 14px 34px; border-radius: 999px; background: #ffe6dc; font-size: 40px; font-weight: 700; color: #9a4f35; }
+.ep b { font-weight: 900; color: #d0603f; }
+
+/* roadmap */
+.road { position: absolute; left: 0; right: 0; top: 400px; display: flex; justify-content: center; align-items: center; gap: 22px; }
+.rcard { position: relative; width: 330px; height: 330px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  background: rgba(255, 255, 255, .95); border-radius: 40px; box-shadow: 0 24px 56px rgba(80, 60, 70, .16); }
+.rcard.first { box-shadow: 0 0 0 8px rgba(255, 199, 180, .55), 0 26px 60px rgba(239, 138, 111, .25); }
+.rn { font-size: 32px; font-weight: 850; letter-spacing: .04em; }
+.rt { font-size: 50px; font-weight: 900; letter-spacing: -.03em; }
+.rarrow { width: 56px; }
+.nowtag { position: absolute; top: -26px; right: -14px; padding: 8px 22px; border-radius: 999px; background: #e7a92c; color: #fff; font-size: 28px; font-weight: 850; }
+
+/* duo cards */
+.duo2 { position: absolute; left: 0; right: 0; top: 220px; display: flex; justify-content: center; align-items: center; gap: 46px; }
+.dcard { position: relative; width: 640px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 30px; }
+.dcard.glow { box-shadow: 0 0 0 10px rgba(255, 228, 160, .6), 0 30px 70px rgba(231, 169, 44, .22); }
+.dt { font-size: 52px; font-weight: 750; letter-spacing: -.03em; }
+.dt b { font-weight: 900; }
+.ds { font-size: 32px; font-weight: 600; color: var(--ink-soft); text-align: center; line-height: 1.3; }
+.bigop { font-size: 70px; font-weight: 900; color: #c9a8e8; }
+.bigop.vs { font-size: 54px; color: #7d62c0; }
+.meter { width: 460px; height: 30px; border-radius: 999px; background: #f3eee4; overflow: hidden; }
+.mfill { display: block; height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, #ffd27a, #ef8a6f); }
+.ribbon { position: absolute; left: -22px; top: 28px; padding: 10px 26px; border-radius: 14px; background: #ef8a6f; color: #fff; font-size: 34px; font-weight: 900; box-shadow: 0 10px 22px rgba(239, 138, 111, .35); }
+.bars { left: 410px; top: 680px; width: 1100px; padding: 26px 46px; border-radius: 34px; display: flex; flex-direction: column; gap: 14px; }
+.bhead { font-size: 26px; font-weight: 800; color: var(--ink-soft); letter-spacing: .08em; }
+.brow { display: flex; align-items: center; gap: 22px; }
+.bl { width: 200px; font-size: 30px; font-weight: 700; }
+.bl b { font-weight: 900; }
+.btrack { flex: 1 1 auto; height: 26px; border-radius: 999px; background: #f2eff6; overflow: hidden; }
+.bfill { display: block; height: 100%; width: 0%; border-radius: 999px; }
+.bmax { font-size: 28px; font-weight: 900; color: #d0603f; }
+
+/* list of pros */
+.listcard { left: 330px; top: 80px; width: 1260px; padding: 50px 64px; display: flex; flex-direction: column; gap: 26px; }
+.listcard .pill { align-self: flex-start; }
+.plist { display: flex; flex-direction: column; gap: 18px; }
+.pro { display: flex; align-items: center; gap: 26px; padding: 14px 26px; border-radius: 28px; background: #faf8fd; box-shadow: inset 0 0 0 2px #efebf5; }
+.pnum { font-size: 40px; font-weight: 900; width: 30px; text-align: center; }
+.ptxt { font-size: 42px; font-weight: 600; letter-spacing: -.02em; }
+.ptxt b { font-weight: 900; }
+
+/* inside folder */
+.inside { position: absolute; left: 0; right: 0; top: 400px; display: flex; justify-content: center; align-items: center; gap: 30px; }
+.ibox { position: relative; width: 400px; height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+.ibox.big { width: 460px; height: 420px; }
+.ibl { font-size: 38px; font-weight: 850; }
+.stamp { position: absolute; right: 40px; top: 40px; width: 74px; height: 74px; border-radius: 50%; background: #e0607f; padding: 14px; box-shadow: 0 10px 22px rgba(224, 96, 127, .35); }
+.stamp svg { display: block; width: 100%; height: 100%; }
+.fold { position: relative; width: 220px; height: 200px; }
+.fold > svg { display: block; width: 100%; height: 100%; }
+.clin { position: absolute; left: 72px; top: 70px; }
+.outfiles { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.fchip { display: inline-block; padding: 10px 24px; border-radius: 16px; background: #f1f8f4; box-shadow: inset 0 0 0 2px #cfeedd; font-size: 30px; font-weight: 750; color: #2d6b51; }
+
+/* more + quote */
+.burst { display: flex; gap: 26px; margin-top: 10px; }
+.quote { left: 360px; top: 480px; width: 1200px; padding: 40px 70px 46px; display: flex; flex-direction: column; gap: 12px; }
+.qmark { position: absolute; right: 54px; top: -10px; font-size: 200px; line-height: 1; font-weight: 900; color: #f6dccf; }
+.qpre { font-size: 32px; font-weight: 600; color: var(--ink-soft); }
+.qbody { font-size: 62px; font-weight: 900; line-height: 1.25; letter-spacing: -.03em; }
+
+/* plans */
+.plans { position: absolute; left: 0; right: 0; top: 380px; display: flex; justify-content: center; gap: 60px; }
+.plan { position: relative; width: 460px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+.plan .ok-xs { align-self: center; font-size: 30px; }
+.plan.hot { box-shadow: 0 0 0 10px rgba(255, 199, 180, .55), 0 30px 70px rgba(239, 138, 111, .25); }
+.pname { font-size: 44px; font-weight: 900; color: var(--ink-soft); letter-spacing: .02em; }
+.pprice { font-size: 64px; font-weight: 700; }
+.pprice b { font-size: 96px; font-weight: 900; color: #d0603f; }
+
+/* warnings */
+.warns { position: absolute; left: 0; right: 0; top: 210px; display: flex; justify-content: center; gap: 50px; }
+.wcard { position: relative; width: 700px; height: 560px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 40px; }
+.wnum { position: absolute; left: 34px; top: 26px; width: 66px; height: 66px; border-radius: 50%; background: #ffe3ea; color: #c4486c; font-size: 38px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.wicons { display: flex; gap: 20px; }
+.wt { font-size: 46px; font-weight: 700; line-height: 1.3; text-align: center; letter-spacing: -.02em; }
+.wt b { font-weight: 900; color: #c4486c; }
+.ws { font-size: 30px; font-weight: 700; color: var(--ink-soft); text-align: center; }
+
+/* overlay cards on the practice screen */
+.ovc { position: absolute; display: flex; flex-direction: column; gap: 16px; padding: 26px 32px; border-radius: 30px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 2px #f3ebe2; }
+.ovc.row { flex-direction: row; align-items: center; gap: 22px; }
+.ovc.lowleft { left: 70px; top: 610px; max-width: 780px; }
+.ovc.side { right: 50px; top: 340px; width: 540px; }
+.ovc.side.wide { width: 780px; }
+.ovc.done { box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 3px #9fdcbc; }
+.ovt { display: block; font-size: 36px; font-weight: 650; line-height: 1.28; letter-spacing: -.02em; word-break: keep-all; }
+.ovt b { font-weight: 900; }
+.ovs { display: block; margin-top: 6px; font-size: 24px; font-weight: 600; color: var(--ink-soft); }
+.ovs2 { font-size: 26px; font-weight: 600; color: var(--ink-soft); line-height: 1.35; }
+.ovs2 b { color: var(--ink); font-weight: 850; }
+.ovbig { font-size: 50px; font-weight: 650; letter-spacing: -.03em; }
+.ovbig b { font-weight: 900; color: #7d62c0; }
+.ovhead { display: flex; align-items: center; gap: 18px; }
+.abbr { padding: 6px 18px; border-radius: 14px; color: #fff; font-size: 40px; font-weight: 900; letter-spacing: .04em; }
+.full { font-size: 30px; font-weight: 500; color: var(--ink-soft); }
+.full b { font-weight: 900; color: var(--ink); }
+.ovd { font-size: 36px; font-weight: 700; letter-spacing: -.02em; }
+.ovrow { display: flex; gap: 12px; flex-wrap: wrap; }
+.row { display: flex; align-items: center; gap: 18px; }
+.cmdrow { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 18px; background: #2c2a3d; }
+.cmdrow code { font-family: Consolas, "Courier New", monospace; font-size: 20px; font-weight: 700; color: #f4efe6; min-width: 0; word-break: break-all; }
+.os { flex: 0 0 auto; padding: 4px 14px; border-radius: 10px; background: #e9e4f7; color: #5a4aa8; font-size: 22px; font-weight: 850; }
+.os.win { background: #dceaff; color: #2f5fa8; }
+.stephead { display: flex; align-items: center; gap: 16px; }
+.stepn { padding: 6px 16px; border-radius: 12px; background: #d2603f; color: #fff; font-size: 24px; font-weight: 900; letter-spacing: .06em; }
+.stept { font-size: 38px; font-weight: 900; letter-spacing: -.03em; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.crumb { padding: 8px 18px; border-radius: 14px; background: #f4f1fa; box-shadow: inset 0 0 0 2px #e4def0; font-size: 26px; font-weight: 800; white-space: nowrap; }
+.cg { font-size: 30px; font-weight: 900; color: #b4a9d3; }
+.namebox { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 16px; background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e2cc; font-size: 24px; font-weight: 700; color: var(--ink-soft); align-self: flex-start; }
+.namebox code { font-family: Consolas, "Courier New", monospace; font-size: 28px; font-weight: 700; color: #9a4f35; }
+.bigcmd { display: flex; align-items: center; gap: 14px; padding: 14px 24px; border-radius: 18px; background: #2c2a3d; align-self: flex-start;
+  font-family: Consolas, "Courier New", monospace; font-size: 40px; font-weight: 700; color: #f4efe6; }
+.bigcmd code { font-family: inherit; }
+.bigcmd .tcur { height: 34px; width: 16px; }
+.rolelist { display: flex; flex-direction: column; gap: 10px; }
+.role { display: flex; align-items: center; gap: 14px; font-size: 28px; font-weight: 800; }
+.series { display: flex; flex-direction: column; gap: 12px; }
+.sitem { position: relative; display: flex; align-items: center; gap: 18px; padding: 14px 20px; border-radius: 20px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.sitem.done { background: #f0faf5; box-shadow: inset 0 0 0 2px #bfe6d1; }
+.sn { font-size: 26px; font-weight: 900; color: #7d62c0; width: 50px; }
+.st { display: flex; flex-direction: column; gap: 2px; font-size: 32px; }
+.st b { font-weight: 900; }
+.st small { font-size: 22px; font-weight: 600; color: var(--ink-soft); }
+.tick { position: absolute; right: 18px; top: 50%; margin-top: -21px; display: block; width: 42px; height: 42px; border-radius: 50%; background: #3fa877; padding: 7px; }
+.tick svg { display: block; width: 100%; height: 100%; }
+.subrow { position: absolute; right: 50px; top: 330px; display: flex; align-items: center; gap: 12px; padding: 14px 26px; border-radius: 999px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 22px 50px rgba(30, 24, 40, .32); font-size: 30px; font-weight: 850; }
+.cf { position: absolute; display: block; width: 14px; height: 14px; border-radius: 3px; opacity: 0; }
+
+/* episode 2 — card slots + pieces */
+.ovc.tr { right: 50px; top: 74px; width: 540px; gap: 14px; padding: 24px 28px; }
+.ovc.lane { left: 46px; top: 520px; width: 380px; gap: 12px; padding: 22px 24px; border-radius: 26px; }
+.ovc.lane .pill-sm { font-size: 22px; padding: 8px 16px; }
+.ovc.lane .stept { font-size: 32px; }
+.ovc.lane .stepn { font-size: 20px; padding: 5px 12px; }
+.ovc.lane .ovt { font-size: 32px; }
+.ovc.lane .ovs2 { font-size: 24px; }
+.ovc.lane .ok-xs { font-size: 22px; white-space: normal; }
+.ovt.sm { font-size: 30px; }
+.ovc .ok-xs { white-space: normal; }
+.pathc { align-self: flex-start; padding: 10px 16px; border-radius: 14px; background: #2c2a3d; color: #f4efe6;
+  font-family: Consolas, "Courier New", monospace; font-size: 26px; font-weight: 700; }
+.pathc b { font-weight: 700; color: #f4efe6; }
+.bigcmd i { font-style: normal; color: #ffd27a; }
+.bigcmd.sm { font-size: 32px; }
+.ovc.lane .bigcmd { font-size: 34px; padding: 12px 20px; }
+.nextrow { display: flex; align-items: center; gap: 12px; align-self: flex-start; font-size: 24px; font-weight: 800; color: var(--ink-soft); }
+.nextrow code { padding: 6px 16px; border-radius: 12px; background: #2c2a3d; color: #f4efe6; font-family: Consolas, "Courier New", monospace; font-size: 28px; font-weight: 700; }
+.kv { display: flex; align-items: center; gap: 14px; padding: 8px 10px; border-radius: 16px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.kv code { flex: 0 0 auto; padding: 6px 14px; border-radius: 12px; background: #2c2a3d; color: #f4efe6; font-family: Consolas, "Courier New", monospace; font-size: 26px; font-weight: 700; }
+.kv span { font-size: 26px; font-weight: 850; }
+.fitem { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 58px 10px 14px; border-radius: 18px; background: #fbf8ef; box-shadow: inset 0 0 0 2px #f1e7cc; }
+.fn { display: flex; flex-direction: column; gap: 2px; }
+.fn code { font-family: Consolas, "Courier New", monospace; font-size: 24px; font-weight: 700; color: var(--ink); }
+.fn small { font-size: 20px; font-weight: 700; color: var(--ink-soft); }
+.fitem .tick { width: 36px; height: 36px; margin-top: -18px; right: 14px; padding: 6px; }
+.mbtn { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 16px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; font-size: 24px; font-weight: 850; }
+.mbtn svg { display: block; width: 34px; height: 34px; }
+.nest { display: flex; flex-direction: column; gap: 8px; }
+.nrow { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 700; }
+.nrow svg { display: block; width: 34px; height: 34px; }
+.nrow.in { margin-left: 34px; padding: 6px 12px; border-radius: 14px; background: #fff1ea; box-shadow: inset 0 0 0 2px #f6cdbd; }
+.nrow em { font-style: normal; font-size: 18px; font-weight: 850; color: #fff; background: #ef8a6f; padding: 3px 10px; border-radius: 999px; }
+.mdname { font-family: Consolas, "Courier New", monospace; font-size: 34px; font-weight: 700; color: #2d6b51; }
+.qrow { display: flex; align-items: center; gap: 12px; font-size: 26px; font-weight: 750; }
+.qk { flex: 0 0 auto; min-width: 72px; text-align: center; padding: 4px 10px; border-radius: 10px; background: #ffe6dc; color: #9a4f35; font-size: 20px; font-weight: 900; }
+.flow { display: flex; align-items: center; gap: 12px; font-size: 26px; font-weight: 650; }
+.flow b { font-weight: 900; }
+.fnum { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; background: #ebe6ff; color: #7d62c0; font-size: 22px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 6px 14px; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 2px var(--cc); color: var(--ink); font-size: 23px; font-weight: 850; white-space: nowrap; }
+.grow { display: flex; align-items: center; gap: 10px; font-size: 25px; font-weight: 650; }
+.grow b { font-weight: 900; }
+.gk { flex: 0 0 auto; min-width: 128px; padding: 4px 10px; border-radius: 10px; background: #fff1cc; color: #8a6414; font-size: 20px; font-weight: 900; text-align: center; }
+.warnrow { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px; background: #fde8ec; color: #8a3550; font-size: 21px; font-weight: 800; }
+.warnrow svg { display: block; flex: 0 0 auto; width: 30px; height: 30px; }
+.todaycard { left: 360px; top: 470px; width: 1200px; padding: 40px 50px; display: flex; flex-direction: column; gap: 26px; }
+.todaycard .pill { align-self: flex-start; }
+.today { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.tditem { display: flex; align-items: center; gap: 20px; padding: 14px 22px; border-radius: 26px; background: #faf8fd; box-shadow: inset 0 0 0 2px #efebf5; font-size: 40px; font-weight: 850; letter-spacing: -.02em; }
+
+/* end card over the aurora */
+.endbig { font-size: 110px; font-weight: 900; letter-spacing: -.04em; color: #fff; text-shadow: 0 10px 40px rgba(0, 0, 0, .45); }
+.endok { color: #9ff0c8; }
+.endnext { display: flex; align-items: center; gap: 22px; padding: 22px 44px; border-radius: 999px; background: rgba(255, 255, 255, .95); box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+  font-size: 34px; font-weight: 650; color: var(--ink-soft); }
+.endnext b { font-size: 48px; font-weight: 900; color: var(--ink); }
+.endarr { font-size: 44px; font-weight: 900; color: #ef8a6f; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="747" data-width="1920" data-height="1080">
+  <div id="vwrap"><video id="vid" class="clip" src="assets/media/src.mp4" playsinline data-has-audio="true" data-start="0" data-duration="747" data-track-index="0"></video></div>
+
+<div id="cov1" class="cover clip" data-start="0.000" data-duration="38.700" data-track-index="2"><div id="cov1-in" class="cov-in"><span id="cov1-bl0" class="blob" style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cov1-bl1" class="blob" style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cov1-bl2" class="blob" style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cov1-bl3" class="blob" style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cov1-bl4" class="blob" style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span><span id="cov1-d0" class="dc dc-dot" style="--c:#ef8a6f;width:18px;height:18px;left:140px;top:140px"></span><span id="cov1-d1" class="dc dc-ring" style="--c:#9a8be6;width:34px;height:34px;left:1740px;top:120px"></span><span id="cov1-d2" class="dc dc-dia" style="--c:#4fb489;width:22px;height:22px;left:1680px;top:820px"></span><span id="cov1-d3" class="dc dc-dot" style="--c:#e7a92c;width:14px;height:14px;left:260px;top:860px"></span><span id="cov1-d4" class="dc dc-ring" style="--c:#e8708f;width:26px;height:26px;left:90px;top:520px"></span><span id="cov1-d5" class="dc dc-dia" style="--c:#6aa3e6;width:18px;height:18px;left:1820px;top:470px"></span><span id="cov1-d6" class="dc dc-dot" style="--c:#4fb489;width:12px;height:12px;left:960px;top:60px"></span></div></div>
+
+<div id="s-title" class="scene full clip" data-start="0.000" data-duration="7.770" data-track-index="3">
+  <div id="s-title-sc" class="sc">
+  <div id="st-ph" class="phwrap"><img id="st-img" class="phimg" src="assets/media/philosophy.png" alt="필로소피 캐릭터"></div>
+  <div id="st-c" class="card titlecard">
+    <div id="st-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>필로소피 AI 교육 · 교수님들을 위한</span></div>
+    <h1 id="st-h" class="h1 center"><span class="hl" style="--hlc:var(--hl-p)">Claude Code</span><br>CLI 수업</h1>
+    <div id="st-term" class="term"><span class="tprompt">&gt;</span><span id="st-tt">claude</span><span id="st-cur" class="tcur"></span></div>
+    <div id="st-s" class="ep"><b>2편</b><span>기초</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="s-room" class="scene full clip" data-start="7.770" data-duration="10.840" data-track-index="3">
+  <div id="s-room-sc" class="sc">
+  <div id="sr-q" class="center-col" style="top:400px">
+    <h2 id="sr-qh" class="h2 big">왜 <span class="hl" style="--hlc:var(--hl-p)">기초편</span>부터 할까요?</h2>
+  </div>
+  <div class="center-col" style="top:110px">
+    <div id="sr-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>왜 기초편부터 할까요?</span></div>
+    <h2 id="sr-h" class="h2">Claude Code는 <span class="hl" style="--hlc:var(--hl-y)">터미널을 연 폴더</span>를<br>자기 작업실로 생각해요</h2>
+  </div>
+  <div class="inside" style="top:470px">
+    <div id="sr-term" class="card ibox">
+      <div id="sr-ti" class="ico " style="background:#34314a"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="40" rx="6"/><path d="M18 26l8 6-8 6M30 40h14"/></svg></div>
+      <div class="ibl">터미널 실행</div>
+    </div>
+    <svg id="sr-a1" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="sr-fold" class="card ibox big">
+      <div class="fold"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg><div id="sr-cl" class="clin"><div id="sr-ci" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#ef8a6f" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#ef8a6f" stroke-width="1.5"/></svg></div></div></div>
+      <div class="ibl">그 폴더 = 작업실</div>
+    </div>
+    <svg id="sr-a2" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="sr-out" class="card ibox">
+      <div class="outfiles"><span id="sr-f0" class="fchip">과제.docx</span><span id="sr-f1" class="fchip">논문.md</span><span id="sr-f2" class="fchip">정리.xlsx</span></div>
+      <div class="ibl">만든 파일이 여기에</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="s-pick" class="scene full clip" data-start="18.610" data-duration="13.090" data-track-index="3">
+  <div id="s-pick-sc" class="sc">
+  <div class="center-col" style="top:120px">
+    <h2 id="sp-h" class="h2">그래서 처음에<br><span class="hl" style="--hlc:var(--hl-m)">작업할 폴더를 지정</span>해 주는 게 좋아요</h2>
+  </div>
+  <div class="duo2" style="top:430px">
+    <div id="sp-a" class="card dcard" style="height:360px">
+      <div id="sp-ai" class="ico " style="background:#34314a"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="40" rx="6"/><path d="M18 26l8 6-8 6M30 40h14"/></svg></div>
+      <div class="dt">CLI가 처음이면</div>
+      <div class="ds">조금 <b>낯설</b> 수 있어요</div>
+    </div>
+    <div id="sp-op" class="bigop">→</div>
+    <div id="sp-b" class="card dcard glow" style="height:360px">
+      <div id="sp-bi" class="ico " style="background:#3fa877"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></div>
+      <div class="dt">하지만</div>
+      <div class="ds"><b>어려운 개념은 아니에요</b></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="s-easy" class="scene full clip" data-start="31.700" data-duration="7.000" data-track-index="3">
+  <div id="s-easy-sc" class="sc">
+  <div class="center-col" style="top:120px">
+    <h2 id="se-h" class="h2">안 해본 건 낯설 뿐,<br><span class="hl" style="--hlc:var(--hl-y)">해보면 어렵지 않아요</span></h2>
+  </div>
+  <div id="se-c" class="card todaycard">
+    <div id="se-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>오늘 배울 것</span></div>
+    <div class="today"><div id="se-0" class="tditem"><div id="se-i0" class="ico xs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg></div><span>작업 폴더 지정</span></div><div id="se-1" class="tditem"><div id="se-i1" class="ico xs" style="background:#34314a"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="40" rx="6"/><path d="M18 26l8 6-8 6M30 40h14"/></svg></div><span>cd · cd .. · mkdir</span></div><div id="se-2" class="tditem"><div id="se-i2" class="ico xs" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></div><span>claude.md</span></div><div id="se-3" class="tditem"><div id="se-i3" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#9a8be6" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#9a8be6" stroke-width="1.5"/></svg></div><span>/model · /help</span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-s1" class="scene ov clip" data-start="40.920" data-duration="14.990" data-track-index="4">
+  <div id="o-s1-sc" class="sc">
+  <div id="o1-c" class="ovc tr">
+    <div class="stephead"><span class="stepn">STEP 1</span><span id="o1-t" class="stept">Antigravity IDE 열기</span></div>
+    <div id="o1-d" class="ovs2">오른쪽 <b>AI 에이전트 패널</b>은<br>Claude Code를 쓸 거라 밀어서 닫았어요</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-s2" class="scene ov clip" data-start="64.800" data-duration="22.970" data-track-index="4">
+  <div id="o-s2-sc" class="sc">
+  <div id="o-s2-c" class="ovc tr">
+    <div class="stephead"><span class="stepn">STEP 2</span><span id="o-s2-t" class="stept">작업 폴더 지정</span></div>
+    <div class="crumbs"><span id="o-s2-b0" class="crumb">File</span><span id="o-s2-g1" class="cg">›</span><span id="o-s2-b1" class="crumb">Open Folder</span><span id="o-s2-g2" class="cg">›</span><span id="o-s2-b2" class="crumb">새 폴더</span><span id="o-s2-g3" class="cg">›</span><span id="o-s2-b3" class="crumb">Select Folder</span></div>
+    <div id="o-s2-n" class="namebox"><span>왼쪽 위 폴더명</span><code>261030claude</code></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-s3" class="scene ov clip" data-start="87.970" data-duration="6.960" data-track-index="4">
+  <div id="o-s3-sc" class="sc">
+  <div id="o-s3-c" class="ovc tr">
+    <div class="stephead"><span class="stepn">STEP 3</span><span id="o-s3-t" class="stept">터미널 열기</span></div>
+    <div class="crumbs"><span id="o-s3-b0" class="crumb">Terminal</span><span id="o-s3-g1" class="cg">›</span><span id="o-s3-b1" class="crumb">New Terminal</span></div>
+    <div id="o-s3-n" class="ovs2">아래쪽에 작업할 공간이 열려요</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-where" class="scene ov clip" data-start="95.130" data-duration="24.410" data-track-index="4">
+  <div id="o-where-sc" class="sc">
+  <div id="ow-c" class="ovc tr">
+    <div id="ow-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>여기를 주목! · 지금 내 위치</span></div>
+    <div id="ow-p" class="pathc">C:\Users\user\<b id="ow-pb">261030claude</b></div>
+    <div id="ow-t" class="ovt sm">이 방에서 claude를 시작해야<br>만든 파일이 <span class="hl" style="--hlc:var(--hl-y)">이 방에</span> 쌓여요</div>
+    <div id="ow-n" class="okpill nopill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><span>더 윗단(user)에서 시작하면 뒤섞여요</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-key" class="scene ov clip" data-start="119.740" data-duration="16.260" data-track-index="4">
+  <div id="o-key-sc" class="sc">
+  <div id="ok-c" class="ovc tr done">
+    <div class="row"><div id="ok-i" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 56s18-17 18-30a18 18 0 0 0-36 0c0 13 18 30 18 30z"/><circle cx="32" cy="26" r="6"/></svg></div><div class="ovt">오늘 제일 중요한 것<br><b>작업할 방(폴더) 지정하기</b></div></div>
+    <div id="ok-s" class="ovs2">File › Open Folder 로 지정 → 터미널에 <b>claude</b> 입력</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-ps" class="scene ov clip" data-start="136.400" data-duration="22.530" data-track-index="4">
+  <div id="o-ps-sc" class="sc">
+  <div id="op-c" class="ovc lane">
+    <div id="op-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#6aa3e6"></span><span>PowerShell · Mac 터미널</span></div>
+    <div id="op-p" class="pathc">C:\Users\user&gt;</div>
+    <div id="op-t" class="ovs2">지금 위치 = <b>user 폴더</b><br>파일이 아주 많은 곳이에요</div>
+    <div id="op-n" class="okpill nopill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><span>여기서 바로 claude</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-exit" class="scene ov clip" data-start="159.130" data-duration="8.080" data-track-index="4">
+  <div id="o-exit-sc" class="sc">
+  <div id="ox-c" class="ovc lane">
+    <div id="ox-cmd" class="bigcmd"><span class="tprompt">&gt;</span><code>/exit</code></div>
+    <div id="ox-s" class="ovs2">Claude Code에서 <b>나가기</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-mkdir" class="scene ov clip" data-start="169.910" data-duration="19.710" data-track-index="4">
+  <div id="o-mkdir-sc" class="sc">
+  <div id="om-c" class="ovc lane">
+    <div class="stephead"><span class="stepn">명령어 1</span><span class="stept">폴더 만들기</span></div>
+    <div id="om-cmd" class="bigcmd"><code>mkdir <i>폴더명</i></code></div>
+    <div id="om-e" class="ovs2">예) mkdir <b>261030claude2</b><br>mkdir 다음에 <b>한 칸 띄우기</b></div>
+    <div id="om-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>폴더명은 숫자 + 영어로</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-cd" class="scene ov clip" data-start="189.820" data-duration="25.180" data-track-index="4">
+  <div id="o-cd-sc" class="sc">
+  <div id="od-c" class="ovc lane">
+    <div class="stephead"><span class="stepn">명령어 2</span><span class="stept">폴더 들어가기</span></div>
+    <div id="od-cmd" class="bigcmd"><code>cd <i>폴더명</i></code></div>
+    <div id="od-e" class="ovs2">예) cd <b>261030claude2</b></div>
+    <div id="od-n" class="nextrow"><span>그 다음</span><code>claude</code></div>
+    <div id="od-s" class="ovs2">→ 만든 파일이 이 폴더로!</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-out" class="scene ov clip" data-start="219.180" data-duration="14.910" data-track-index="4">
+  <div id="o-out-sc" class="sc">
+  <div id="oo-c" class="ovc lane">
+    <div id="oo-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>나왔다 · 들어갔다</span></div>
+    <div id="oo-1" class="kv"><code>cd ..</code><span>밖으로 나오기</span></div>
+    <div id="oo-2" class="kv"><code>cd 폴더명</code><span>다시 들어가기</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-mk3" class="scene ov clip" data-start="246.040" data-duration="51.230" data-track-index="4">
+  <div id="o-mk3-sc" class="sc">
+  <div id="o3-c" class="ovc lane">
+    <div id="o3-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#4fb489"></span><span>다음 시간을 위한 폴더 3개</span></div>
+    <div class="series"><div id="o3-0" class="fitem"><div id="o3-i0" class="ico xxs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg></div><span class="fn"><code>01practice</code><small>실습</small></span><span id="o3-t0" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="o3-1" class="fitem"><div id="o3-i1" class="ico xxs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg></div><span class="fn"><code>02foldercleanup</code><small>폴더 정리</small></span><span id="o3-t1" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="o3-2" class="fitem"><div id="o3-i2" class="ico xxs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg></div><span class="fn"><code>03auto</code><small>자동화</small></span><span id="o3-t2" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-plus" class="scene ov clip" data-start="297.470" data-duration="38.310" data-track-index="4">
+  <div id="o-plus-sc" class="sc">
+  <div id="ou-c" class="ovc lane">
+    <div id="ou-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>명령어 대신 마우스로도 OK</span></div>
+    <div id="ou-d" class="ovs2">폴더명에 마우스를 올리면<br><b>+ 버튼</b>이 나와요</div>
+    <div class="ovrow">
+      <div id="ou-f" class="mbtn"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg><span>① 새 파일</span></div>
+      <div id="ou-g" class="mbtn"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg><span>② 새 폴더</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-nest" class="scene ov clip" data-start="342.660" data-duration="19.710" data-track-index="4">
+  <div id="o-nest-sc" class="sc">
+  <div id="on-c" class="ovc lane">
+    <div id="on-cmd" class="bigcmd sm"><code>cd 01practice</code></div>
+    <div class="nest">
+      <div id="on-1" class="nrow"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg><span>261030claude</span></div>
+      <div id="on-2" class="nrow in"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg><span><b>01practice</b></span><em>지금 여기</em></div>
+    </div>
+    <div id="on-s" class="ovs2">폴더 안의 폴더로 들어갔어요</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-cheat" class="scene ov clip" data-start="369.810" data-duration="22.170" data-track-index="4">
+  <div id="o-cheat-sc" class="sc">
+  <div id="oc-c" class="ovc lane">
+    <div id="oc-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>이 정도만 알면 충분해요</span></div>
+    <div id="oc-1" class="kv"><code>cd ..</code><span>나오기</span></div>
+    <div id="oc-2" class="kv"><code>cd 폴더명</code><span>들어가기</span></div>
+    <div id="oc-3" class="kv"><code>mkdir 폴더명</code><span>만들기</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-claude" class="scene ov clip" data-start="392.180" data-duration="14.790" data-track-index="4">
+  <div id="o-claude-sc" class="sc">
+  <div id="ol-c" class="ovc lane">
+    <div class="stephead"><span class="stepn">START</span><span class="stept">Claude 부르기</span></div>
+    <div id="ol-cmd" class="bigcmd"><span class="tprompt">&gt;</span><code id="ol-tt">claude</code><span id="ol-cur" class="tcur"></span></div>
+    <div id="ol-s" class="ovs2">01practice 안에서 시작<br>MCP 질문 → 일단 <b>없이</b> 시작</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-md" class="scene ov clip" data-start="413.150" data-duration="28.000" data-track-index="4">
+  <div id="o-md-sc" class="sc">
+  <div id="oh-c" class="ovc lane">
+    <div class="ovhead"><div id="oh-i" class="ico xxs" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></div><code class="mdname">claude.md</code></div>
+    <div id="oh-t" class="ovt">Claude에게는<br><span class="hl" style="--hlc:var(--hl-p)">헌법</span>과도 같은 파일</div>
+    <div id="oh-1" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>작업 전에 꼭 읽어요</span></div>
+    <div id="oh-2" class="ovs2">내가 <b>어떤 사람</b>인지,<br><b>무엇이 필요한지</b> 적어 두기</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-prompt" class="scene ov clip" data-start="441.350" data-duration="33.130" data-track-index="4">
+  <div id="o-prompt-sc" class="sc">
+  <div id="oq-c" class="ovc lane">
+    <div id="oq-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>claude.md 만들기 · 예시</span></div>
+    <div id="oq-1" class="qrow"><span class="qk">나</span><span>교육학과 교수</span></div>
+    <div id="oq-2" class="qrow"><span class="qk">할 일</span><span>과제 · 논문 작성</span></div>
+    <div id="oq-3" class="qrow"><span class="qk">톤</span><span>부드럽고 프로페셔널</span></div>
+    <div id="oq-s" class="ovs2">한국어로 그대로 써도 돼요</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-made" class="scene ov clip" data-start="474.680" data-duration="30.770" data-track-index="4">
+  <div id="o-made-sc" class="sc">
+  <div id="oa-c" class="ovc lane done">
+    <div class="row"><div id="oa-i" class="ico xs" style="background:#3fa877"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></div><div class="ovt"><b>CLAUDE.md</b><br>완성!</div></div>
+    <div class="crumbs"><span id="oa-b0" class="crumb">01practice</span><span id="oa-g" class="cg">›</span><span id="oa-b1" class="crumb">CLAUDE.md</span></div>
+    <div id="oa-s" class="ovs2">사용자 소개 · 할 일 · 톤<br>Claude가 따를 <b>기본 지침</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-ide" class="scene ov clip" data-start="508.960" data-duration="9.710" data-track-index="4">
+  <div id="o-ide-sc" class="sc">
+  <div id="oi-c" class="ovc lane">
+    <div id="oi-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>IDE를 쓰는 이유</span></div>
+    <div id="oi-t" class="ovt sm">Claude가 만든 파일을<br><span class="hl" style="--hlc:var(--hl-y)">눈으로 바로</span> 확인해요</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-promise" class="scene ov clip" data-start="523.570" data-duration="19.240" data-track-index="4">
+  <div id="o-promise-sc" class="sc">
+  <div id="or-c" class="ovc lane">
+    <div id="or-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>Claude의 장점</span></div>
+    <div id="or-1" class="flow"><span class="fnum">1</span><span>사용자와 <b>약속</b>을 잘 세팅</span></div>
+    <div id="or-2" class="flow"><span class="fnum">2</span><span>약속에 <b>기반해서</b> 답해요</span></div>
+    <div id="or-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>만족스러운 결과</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-model" class="scene ov clip" data-start="546.530" data-duration="14.440" data-track-index="4">
+  <div id="o-model-sc" class="sc">
+  <div id="oy-c" class="ovc lane">
+    <div id="oy-cmd" class="bigcmd"><span class="tprompt">&gt;</span><code>/model</code></div>
+    <div id="oy-s" class="ovs2">모델을 골라요</div>
+    <div class="chips"><span id="oy-0" class="chip" style="--cc:#ef8a6f">Opus 5.5</span><span id="oy-1" class="chip" style="--cc:#6aa3e6">Sonnet 5.5</span><span id="oy-2" class="chip" style="--cc:#9a8be6">Fable 5.1</span><span id="oy-3" class="chip" style="--cc:#4fb489">Haiku 5.5</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-plan" class="scene ov clip" data-start="561.170" data-duration="26.320" data-track-index="4">
+  <div id="o-plan-sc" class="sc">
+  <div id="oz-c" class="ovc lane">
+    <div id="oz-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#e7a92c"></span><span>요금제별 모델 고르기</span></div>
+    <div id="oz-1" class="grow"><span class="gk">Pro $20</span><span>→ <b>Sonnet 5.5</b></span></div>
+    <div id="oz-2" class="grow"><span class="gk">Pro · 가볍게</span><span>→ <b>Opus 5.5</b></span></div>
+    <div id="oz-3" class="grow"><span class="gk">Max</span><span>→ <b>Opus 5.5</b></span></div>
+    <div id="oz-w" class="warnrow"><svg viewBox="0 0 64 64" fill="none" stroke="#c4486c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#c4486c"/></svg><span>토큰이 빨리 닳아요 · 관리하며 쓰기</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-help" class="scene ov clip" data-start="587.690" data-duration="19.710" data-track-index="4">
+  <div id="o-help-sc" class="sc">
+  <div id="oe2-c" class="ovc lane">
+    <div id="oe2-cmd" class="bigcmd"><span class="tprompt">&gt;</span><code>/help</code></div>
+    <div id="oe2-s" class="ovs2">사용할 수 있는 <b>명령어 목록</b></div>
+    <div class="chips">
+      <span id="oe2-0" class="chip" style="--cc:#6aa3e6">General</span>
+      <span id="oe2-1" class="chip" style="--cc:#ef8a6f">Commands</span>
+      <span id="oe2-2" class="chip" style="--cc:#9a8be6">Custom commands</span>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-nl" class="scene ov clip" data-start="607.600" data-duration="21.190" data-track-index="4">
+  <div id="o-nl-sc" class="sc">
+  <div id="ov-c" class="ovc lane">
+    <div class="row"><div id="ov-i" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><div id="ov-t" class="ovt sm">명령어를 다<br>외우지 않아도 돼요</div></div>
+    <div id="ov-d" class="ovs2"><span class="hl" style="--hlc:var(--hl-y)">자연어(한국어)</span>로 요청해도<br>Claude가 알아들어요</div>
+    <div id="ov-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>부담 없이 CLI 쓰기가 먼저</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-skill" class="scene ov clip" data-start="628.990" data-duration="27.210" data-track-index="4">
+  <div id="o-skill-sc" class="sc">
+  <div id="os-c" class="ovc lane">
+    <div id="os-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>Custom commands = 스킬</span></div>
+    <div id="os-d" class="ovs2">Anthropic 스킬 + <b>내가 만든 스킬</b><br>CLI에서도 그대로 써요</div>
+    <div id="os-t" class="ovt sm">자주 하는 반복 작업을<br><span class="hl" style="--hlc:var(--hl-p)">약속</span>해 둔 것</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-grow" class="scene ov clip" data-start="664.520" data-duration="19.630" data-track-index="4">
+  <div id="o-grow-sc" class="sc">
+  <div id="og-c" class="ovc lane">
+    <div id="og-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#4fb489"></span><span>명령어는 천천히 늘려가요</span></div>
+    <div id="og-0" class="flow"><span class="fnum">1</span><span>자연어(한국어)로 많이</span></div><div id="og-1" class="flow"><span class="fnum">2</span><span>명령어 몇 개 더</span></div><div id="og-2" class="flow"><span class="fnum">3</span><span>스킬도 불러서</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-sum" class="scene ov clip" data-start="684.350" data-duration="37.210" data-track-index="4">
+  <div id="o-sum-sc" class="sc">
+  <div id="om2-c" class="ovc tr">
+    <div id="om2-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>오늘 배운 것</span></div>
+    <div id="om2-1" class="kv"><code>cd 폴더명</code><span>들어가기</span></div>
+    <div id="om2-2" class="kv"><code>cd ..</code><span>나오기</span></div>
+    <div id="om2-3" class="kv"><code>mkdir 폴더명</code><span>만들기</span></div>
+    <div id="om2-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>새 작업 = 새 폴더 → 그 안에서 claude</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-end" class="scene ov clip" data-start="729.450" data-duration="17.550" data-track-index="4">
+  <div id="o-end-sc" class="sc">
+  <div class="center-col" style="top:250px">
+    <div id="oe-k" class="pill pill-glass"><span class="pdot" style="background:#9a8be6"></span><span>필로소피 AI 교육 · 교수님들을 위한 Claude Code CLI</span></div>
+    <div id="oe-h" class="endbig">2편 · 기초 <span class="endok">완료</span></div>
+    <div id="oe-n" class="endnext"><span>다음 편</span><b>3편 · 중급 실습</b><span class="endarr">→</span></div>
+  </div>
+  </div>
+</div>
+<div id="cap0" class="cap clip" data-start="0.000" data-duration="1.850" data-track-index="8"><span>안녕하세요 필로소피입니다</span></div>
+<div id="cap1" class="cap clip" data-start="1.850" data-duration="3.930" data-track-index="8"><span>이번에는 교수님들께 클로드 코드 CLI 기초 편을</span></div>
+<div id="cap2" class="cap clip" data-start="5.780" data-duration="1.990" data-track-index="8"><span>알려드리려고 하는데요</span></div>
+<div id="cap3" class="cap clip" data-start="7.770" data-duration="3.160" data-track-index="8"><span>이 기초 편을 우리가 다루는 이유는 뭐냐면</span></div>
+<div id="cap4" class="cap clip" data-start="10.930" data-duration="1.840" data-track-index="8"><span>이 클로드 코드는</span></div>
+<div id="cap5" class="cap clip" data-start="12.770" data-duration="2.600" data-track-index="8"><span>터미널을 실행한 그 폴더를</span></div>
+<div id="cap6" class="cap clip" data-start="15.370" data-duration="3.240" data-track-index="8"><span>자기 작업실로 생각하고 하고 싶은 걸 다 합니다</span></div>
+<div id="cap7" class="cap clip" data-start="18.610" data-duration="3.190" data-track-index="8"><span>그래서 처음에 이 폴더를 지정해 주는 게 좋아요</span></div>
+<div id="cap8" class="cap clip" data-start="21.800" data-duration="3.200" data-track-index="8"><span>그런데 이 CLI가 처음이신 교수님들은</span></div>
+<div id="cap9" class="cap clip" data-start="25.000" data-duration="1.330" data-track-index="8"><span>그게 조금 낯서실 수 있어요</span></div>
+<div id="cap10" class="cap clip" data-start="26.330" data-duration="1.510" data-track-index="8"><span>하지만 어려운 개념은 아닙니다</span></div>
+<div id="cap11" class="cap clip" data-start="27.840" data-duration="3.860" data-track-index="8"><span>그래서 그 과정을 간단하게 좀 알려드리려고 하는데요</span></div>
+<div id="cap12" class="cap clip" data-start="31.700" data-duration="1.850" data-track-index="8"><span>교수님들은 다들 아시다시피</span></div>
+<div id="cap13" class="cap clip" data-start="33.550" data-duration="1.340" data-track-index="8"><span>우리가 안 해본 건 낯설어요</span></div>
+<div id="cap14" class="cap clip" data-start="34.890" data-duration="1.170" data-track-index="8"><span>그래서 어렵게 느껴지지만</span></div>
+<div id="cap15" class="cap clip" data-start="36.060" data-duration="2.640" data-track-index="8"><span>해보면 막상 어렵지 않습니다</span></div>
+  <div id="endfade"></div>
+</div>
+<script>
+(function () {
+  const tl = gsap.timeline({ paused: true });
+  const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: .6 }, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(1.8)' }, t);
+  const up = (sel, t, dy = 30) => tl.fromTo(sel, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' }, t);
+  const rise = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 60, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .6, ease: 'expo.out' }, t);
+  const slide = (sel, t, dx = 60) => tl.fromTo(sel, { opacity: 0, x: dx }, { opacity: 1, x: 0, duration: .5, ease: 'power3.out' }, t);
+  const sweep = (sel, t) => tl.fromTo(sel, { backgroundSize: '0% 38%' }, { backgroundSize: '100% 38%', duration: .7, ease: 'power2.inOut', immediateRender: false }, t);
+  const draw = (sel, t, d) => tl.fromTo(sel, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: d, ease: 'power2.out' }, t);
+  const ok2 = (sel, t) => tl.to(sel, { backgroundColor: '#e3f6ec', boxShadow: 'inset 0 0 0 2px #9fdcbc', duration: .4, ease: 'power2.out' }, t);
+  const type = (sel, text, t, d) => {
+    const el = document.querySelector(sel); const st = { n: 0 };
+    tl.fromTo(st, { n: 0 }, { n: text.length, duration: d, ease: 'none', onUpdate: () => { el.textContent = text.slice(0, Math.round(st.n)); } }, t);
+  };
+  const blink = (sel, t0, t1) => {
+    const cyc = .9, n = Math.max(0, Math.floor((t1 - t0) / cyc) - 1);
+    tl.fromTo(sel, { opacity: 1 }, { opacity: 0, duration: cyc / 2, ease: 'steps(1)', yoyo: true, repeat: n * 2 + 1, immediateRender: false }, t0);
+  };
+  const confetti = (pre, t) => {
+    const host = document.getElementById(pre + '-c'); const cols = ['#ef8a6f', '#e7a92c', '#4fb489', '#9a8be6', '#e8708f', '#6aa3e6'];
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('span'); p.className = 'cf'; p.style.background = cols[i % 6];
+      p.style.left = '60px'; p.style.top = '60px'; host.appendChild(p);
+      const a = (i / 18) * Math.PI * 2, r = 90 + (i % 4) * 30;
+      tl.fromTo(p, { opacity: 1, x: 0, y: 0, rotation: 0 }, { opacity: 0, x: Math.cos(a) * r, y: Math.sin(a) * r, rotation: 200 + i * 20, duration: 1.1, ease: 'power3.out', immediateRender: false }, t);
+    }
+  };
+
+  // cover backgrounds
+  
+  
+  tl.to('#cov1-in', {opacity:0, duration:0.45, ease:'power2.in'}, 38.25);
+  tl.fromTo('#cov1-bl0', {x:0, y:0}, {x:60, y:40, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 0.00);
+  tl.fromTo('#cov1-bl1', {x:0, y:0}, {x:-70, y:-50, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 0.00);
+  tl.fromTo('#cov1-bl2', {x:0, y:0}, {x:-50, y:60, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 0.00);
+  tl.fromTo('#cov1-bl3', {x:0, y:0}, {x:70, y:-40, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 0.00);
+  tl.fromTo('#cov1-bl4', {x:0, y:0}, {x:40, y:-60, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 0.00);
+  tl.fromTo('#cov1-d0', {y:0, rotation:0}, {y:-22, rotation:-40, duration:3.5, ease:'sine.inOut', yoyo:true, repeat:10}, 0.00);
+  tl.fromTo('#cov1-d1', {y:0, rotation:0}, {y:22, rotation:40, duration:3.8, ease:'sine.inOut', yoyo:true, repeat:9}, 0.00);
+  tl.fromTo('#cov1-d2', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.1, ease:'sine.inOut', yoyo:true, repeat:8}, 0.00);
+  tl.fromTo('#cov1-d3', {y:0, rotation:0}, {y:22, rotation:40, duration:4.4, ease:'sine.inOut', yoyo:true, repeat:7}, 0.00);
+  tl.fromTo('#cov1-d4', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.7, ease:'sine.inOut', yoyo:true, repeat:7}, 0.00);
+  tl.fromTo('#cov1-d5', {y:0, rotation:0}, {y:22, rotation:40, duration:5, ease:'sine.inOut', yoyo:true, repeat:6}, 0.00);
+  tl.fromTo('#cov1-d6', {y:0, rotation:0}, {y:-22, rotation:-40, duration:5.3, ease:'sine.inOut', yoyo:true, repeat:6}, 0.00);
+
+  // graphics
+
+  // s-title
+  tl.fromTo('#s-title-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 0.00);
+  tl.to('#s-title-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 7.450);
+  tl.fromTo('#st-ph', {opacity:0, y:220}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, .15);
+  rise('#st-c', .3); up('#st-k', .55, 16); up('#st-h', .7, 34); sweep('#st-h .hl', 1.35);
+  up('#st-term', 1.85, 20); type('#st-tt', 'claude', 2.10, .6); blink('#st-cur', 1.85, 7.77);
+  pop('#st-s', 2.85);
+
+  // s-room
+  tl.fromTo('#s-room-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 7.77);
+  tl.to('#s-room-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 18.290);
+  up('#sr-q', 7.87, 30); sweep('#sr-qh .hl', 8.47);
+  tl.to('#sr-q', {opacity:0, y:-30, duration:.35, ease:'power2.in'}, 10.53);
+  up('#sr-k', 10.83, 16); up('#sr-h', 10.93, 30); sweep('#sr-h .hl', 12.97);
+  rise('#sr-term', 12.77); pop('#sr-ti', 12.97);
+  draw('#sr-a1 path', 13.67, .4); rise('#sr-fold', 13.97);
+  tl.fromTo('#sr-cl', {opacity:0, y:-120, scale:.6}, {opacity:1, y:0, scale:1, duration:.7, ease:'back.out(1.6)'}, 15.57);
+  tl.fromTo('#sr-cl', {rotation:0}, {rotation:12, duration:.3, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 16.37);
+  draw('#sr-a2 path', 16.77, .4); rise('#sr-out', 16.97);
+  pop('#sr-f0', 17.27); pop('#sr-f1', 17.52); pop('#sr-f2', 17.77);
+
+  // s-pick
+  tl.fromTo('#s-pick-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 18.61);
+  tl.to('#s-pick-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 31.380);
+  up('#sp-h', 18.71, 30); sweep('#sp-h .hl', 19.61);
+  rise('#sp-a', 21.80); pop('#sp-ai', 22.00);
+  pop('#sp-op', 26.13); rise('#sp-b', 26.33); pop('#sp-bi', 26.53);
+
+  // s-easy
+  tl.fromTo('#s-easy-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 31.70);
+  tl.to('#s-easy-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 38.380);
+  up('#se-h', 31.80, 30); sweep('#se-h .hl', 36.16);
+  rise('#se-c', 33.55); up('#se-k', 33.75, 14);
+  up('#se-0', 34.05, 24); up('#se-1', 34.40, 24); up('#se-2', 34.75, 24); up('#se-3', 35.10, 24);
+
+  // o-s1
+  tl.fromTo('#o-s1-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 40.92);
+  tl.to('#o-s1-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 55.540);
+  rise('#o1-c', 40.97); up('#o1-t', 41.17, 12); up('#o1-d', 46.78, 12);
+
+  // o-s2
+  tl.fromTo('#o-s2-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 64.80);
+  tl.to('#o-s2-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 87.400);
+  rise('#o-s2-c', 64.85); up('#o-s2-t', 65.05, 12);
+  pop('#o-s2-b0', 68.40); pop('#o-s2-g1', 70.08); pop('#o-s2-b1', 70.18); pop('#o-s2-g2', 73.29); pop('#o-s2-b2', 73.39); pop('#o-s2-g3', 77.14); pop('#o-s2-b3', 77.24); up('#o-s2-n', 84.62, 14); ok2('#o-s2-n', 87.15);
+
+  // o-s3
+  tl.fromTo('#o-s3-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 87.97);
+  tl.to('#o-s3-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 94.560);
+  rise('#o-s3-c', 88.02); up('#o-s3-t', 88.22, 12);
+  pop('#o-s3-b0', 90.07); pop('#o-s3-g1', 91.67); pop('#o-s3-b1', 91.77); up('#o-s3-n', 92.72, 12);
+
+  // o-where
+  tl.fromTo('#o-where-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 95.13);
+  tl.to('#o-where-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 119.170);
+  rise('#ow-c', 95.23); up('#ow-k', 95.43, 12); up('#ow-p', 98.00, 14);
+  tl.fromTo('#ow-pb', {color:'#f4efe6'}, {color:'#ffd27a', duration:.4, ease:'power2.out', immediateRender:false}, 100.48);
+  up('#ow-t', 104.36, 14); sweep('#ow-t .hl', 108.32); pop('#ow-n', 111.62);
+
+  // o-key
+  tl.fromTo('#o-key-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 119.74);
+  tl.to('#o-key-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 135.630);
+  rise('#ok-c', 119.84); pop('#ok-i', 120.04); up('#ok-s', 126.55, 12);
+
+  // o-ps
+  tl.fromTo('#o-ps-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 136.40);
+  tl.to('#o-ps-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 158.560);
+  rise('#op-c', 136.50); up('#op-k', 136.70, 12); up('#op-p', 141.83, 14); up('#op-t', 146.57, 12); pop('#op-n', 149.08);
+
+  // o-exit
+  tl.fromTo('#o-exit-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 159.13);
+  tl.to('#o-exit-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 166.840);
+  rise('#ox-c', 159.23); up('#ox-cmd', 159.43, 12); up('#ox-s', 159.73, 12);
+
+  // o-mkdir
+  tl.fromTo('#o-mkdir-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 169.91);
+  tl.to('#o-mkdir-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 189.250);
+  rise('#om-c', 170.01); up('#om-cmd', 171.94, 14); up('#om-e', 174.28, 12); pop('#om-ok', 184.16);
+
+  // o-cd
+  tl.fromTo('#o-cd-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 189.82);
+  tl.to('#o-cd-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 214.630);
+  rise('#od-c', 189.92); up('#od-cmd', 190.22, 14); up('#od-e', 196.00, 12); pop('#od-n', 206.89); up('#od-s', 210.06, 12);
+
+  // o-out
+  tl.fromTo('#o-out-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 219.18);
+  tl.to('#o-out-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 233.720);
+  rise('#oo-c', 219.28); up('#oo-k', 219.48, 12); slide('#oo-1', 221.76, -30); slide('#oo-2', 226.79, -30);
+
+  // o-mk3
+  tl.fromTo('#o-mk3-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 246.04);
+  tl.to('#o-mk3-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 296.900);
+  rise('#o3-c', 246.14); up('#o3-k', 246.34, 12);
+  slide('#o3-0', 249.60, -30); slide('#o3-1', 264.97, -30); slide('#o3-2', 274.77, -30);
+  pop('#o3-t0', 285.89); pop('#o3-t1', 286.09); pop('#o3-t2', 286.29);
+
+  // o-plus
+  tl.fromTo('#o-plus-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 297.47);
+  tl.to('#o-plus-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 335.410);
+  rise('#ou-c', 297.57); up('#ou-k', 297.77, 12); up('#ou-d', 303.85, 12);
+  pop('#ou-f', 307.34); pop('#ou-g', 307.54);
+  tl.to('#ou-g', {backgroundColor:'#fff4d6', boxShadow:'inset 0 0 0 3px #f2c75c', duration:.35, ease:'power2.out'}, 328.02);
+  tl.to('#ou-f', {backgroundColor:'#e6f0ff', boxShadow:'inset 0 0 0 3px #8fb6ee', duration:.35, ease:'power2.out'}, 329.82);
+
+  // o-nest
+  tl.fromTo('#o-nest-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 342.66);
+  tl.to('#o-nest-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 362.000);
+  rise('#on-c', 342.76); up('#on-cmd', 345.58, 12); slide('#on-1', 352.15, -24); slide('#on-2', 356.25, -24); up('#on-s', 356.85, 12);
+
+  // o-cheat
+  tl.fromTo('#o-cheat-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 369.81);
+  tl.to('#o-cheat-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 391.610);
+  rise('#oc-c', 369.91); up('#oc-k', 370.11, 12); slide('#oc-1', 377.01, -30); slide('#oc-2', 378.47, -30); slide('#oc-3', 381.61, -30);
+
+  // o-claude
+  tl.fromTo('#o-claude-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 392.18);
+  tl.to('#o-claude-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 406.600);
+  rise('#ol-c', 392.28); up('#ol-cmd', 396.39, 12); type('#ol-tt', 'claude', 396.69, .6); blink('#ol-cur', 396.39, 398.88); up('#ol-s', 398.98, 12);
+
+  // o-md
+  tl.fromTo('#o-md-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 413.15);
+  tl.to('#o-md-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 440.780);
+  rise('#oh-c', 413.25); pop('#oh-i', 414.97); up('#oh-t', 416.39, 14); sweep('#oh-t .hl', 416.99); pop('#oh-1', 422.13); up('#oh-2', 424.31, 12);
+
+  // o-prompt
+  tl.fromTo('#o-prompt-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 441.35);
+  tl.to('#o-prompt-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 474.110);
+  rise('#oq-c', 441.45); up('#oq-k', 441.65, 12); slide('#oq-1', 447.52, -30); slide('#oq-2', 451.17, -30); slide('#oq-3', 464.19, -30); up('#oq-s', 470.27, 12);
+
+  // o-made
+  tl.fromTo('#o-made-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 474.68);
+  tl.to('#o-made-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 505.080);
+  rise('#oa-c', 474.78); tl.fromTo('#oa-i', {opacity:0, scale:.3, rotation:-90}, {opacity:1, scale:1, rotation:0, duration:.6, ease:'back.out(2)'}, 474.98);
+  up('#oa-s', 487.15, 12); pop('#oa-b0', 494.27); pop('#oa-g', 494.47); pop('#oa-b1', 496.07); confetti('oa', 496.37);
+
+  // o-ide
+  tl.fromTo('#o-ide-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 508.96);
+  tl.to('#o-ide-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 518.300);
+  rise('#oi-c', 509.06); up('#oi-k', 509.26, 12); up('#oi-t', 511.19, 14); sweep('#oi-t .hl', 512.67);
+
+  // o-promise
+  tl.fromTo('#o-promise-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 523.57);
+  tl.to('#o-promise-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 542.440);
+  rise('#or-c', 523.67); up('#or-k', 523.87, 12); slide('#or-1', 526.25, -30); slide('#or-2', 533.48, -30); pop('#or-ok', 535.56);
+
+  // o-model
+  tl.fromTo('#o-model-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 546.53);
+  tl.to('#o-model-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 560.600);
+  rise('#oy-c', 546.63); up('#oy-cmd', 546.83, 12); up('#oy-s', 549.18, 12);
+  pop('#oy-0', 552.77); pop('#oy-1', 554.07); pop('#oy-2', 555.33); pop('#oy-3', 556.13);
+
+  // o-plan
+  tl.fromTo('#o-plan-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 561.17);
+  tl.to('#o-plan-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 587.120);
+  rise('#oz-c', 561.27); up('#oz-k', 561.47, 12); slide('#oz-1', 564.69, -30); slide('#oz-2', 568.66, -30); slide('#oz-3', 573.58, -30); up('#oz-w', 577.47, 12);
+
+  // o-help
+  tl.fromTo('#o-help-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 587.69);
+  tl.to('#o-help-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 607.030);
+  rise('#oe2-c', 587.79); up('#oe2-cmd', 587.99, 12); up('#oe2-s', 592.98, 12);
+  pop('#oe2-0', 593.98); pop('#oe2-1', 595.78); pop('#oe2-2', 599.12);
+
+  // o-nl
+  tl.fromTo('#o-nl-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 607.60);
+  tl.to('#o-nl-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 628.420);
+  rise('#ov-c', 607.70); pop('#ov-i', 607.90); up('#ov-d', 612.19, 12); sweep('#ov-d .hl', 613.81); pop('#ov-ok', 622.07);
+
+  // o-skill
+  tl.fromTo('#o-skill-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 628.99);
+  tl.to('#o-skill-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 655.830);
+  rise('#os-c', 629.09); up('#os-k', 629.29, 12); up('#os-d', 632.97, 12); up('#os-t', 642.20, 14); sweep('#os-t .hl', 643.00);
+
+  // o-grow
+  tl.fromTo('#o-grow-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 664.52);
+  tl.to('#o-grow-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 683.780);
+  rise('#og-c', 664.62); up('#og-k', 664.82, 12); slide('#og-0', 668.30, -30); slide('#og-1', 672.75, -30); slide('#og-2', 675.04, -30);
+
+  // o-sum
+  tl.fromTo('#o-sum-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 684.35);
+  tl.to('#o-sum-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 721.190);
+  rise('#om2-c', 684.45); up('#om2-k', 684.65, 12);
+  slide('#om2-1', 686.10, 30); slide('#om2-2', 686.90, 30); slide('#om2-3', 688.03, 30); pop('#om2-ok', 713.73);
+
+  // o-end
+  tl.fromTo('#o-end-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 729.45);
+  
+  up('#oe-k', 729.85, 16); up('#oe-h', 730.15, 30); rise('#oe-n', 731.05);
+
+  tl.fromTo('#endfade', { opacity: 0 }, { opacity: 1, duration: .8, ease: 'power1.in' }, 746.200);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+})();
+</script>
+</body>
+</html>
