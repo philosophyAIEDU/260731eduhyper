@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>교수님들을 위한 Claude Code CLI 3편 (폴더 정리 실습)</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+@font-face { font-family: "Pretendard"; src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations"); font-weight: 45 920; font-style: normal; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #fdf6ee; }
+:root {
+  --ink: #34314a; --ink-soft: #5b5873; --cream: #fdf6ee;
+  --hl-y: rgba(255, 220, 120, .85); --hl-m: rgba(140, 222, 190, .75); --hl-p: rgba(248, 180, 200, .8);
+}
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Pretendard", sans-serif; color: var(--ink); background: #000; }
+#vwrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+#vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#endfade { position: absolute; inset: 0; z-index: 20; background: #000; opacity: 0; pointer-events: none; }
+
+/* cover (motion-graphics-only spans) */
+.cover { position: absolute; inset: 0; z-index: 2; }
+.cov-in { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, #fff6ee 0%, #fdf1f4 45%, #f1f0ff 100%); }
+.blob { position: absolute; border-radius: 50%; opacity: .75; filter: blur(30px); }
+.dc { position: absolute; display: block; }
+.dc-dot { border-radius: 50%; background: var(--c); opacity: .75; }
+.dc-ring { border-radius: 50%; border: 4px solid var(--c); opacity: .8; }
+.dc-dia { background: var(--c); opacity: .7; border-radius: 4px; transform: rotate(45deg); }
+
+/* captions in covered spans — same look as the burned-in captions */
+.cap { position: absolute; left: 0; right: 0; bottom: 56px; z-index: 8; display: flex; justify-content: center; pointer-events: none; }
+.cap span { display: block; max-width: 1500px; padding: 6px 22px 10px; background: #000; color: #fff;
+  font-size: 54px; font-weight: 700; line-height: 1.3; text-align: center; word-break: keep-all; letter-spacing: -.01em; }
+
+.scene { position: absolute; inset: 0; }
+.scene.full { z-index: 3; }
+.scene.ov { z-index: 4; }
+.sc { position: absolute; inset: 0; opacity: 0; }
+
+/* shared pieces */
+.card { position: absolute; display: block; background: rgba(255, 255, 255, .95); border: 2px solid #fff; border-radius: 44px;
+  box-shadow: 0 30px 70px rgba(80, 60, 70, .2), 0 6px 18px rgba(80, 60, 70, .08); }
+.center-col { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+.pill { display: inline-flex; align-items: center; gap: 14px; padding: 14px 28px; border-radius: 999px; background: #fff;
+  box-shadow: 0 8px 22px rgba(120, 92, 80, .12); font-size: 30px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.pill-soft { background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e8da; }
+.pill-sm { font-size: 24px; padding: 10px 20px; gap: 10px; align-self: flex-start; }
+.pill-sm .pdot { width: 12px; height: 12px; }
+.pill-glass { background: rgba(255, 255, 255, .16); color: #fff; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .3); }
+.pdot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; }
+.okpill { display: inline-flex; align-items: center; gap: 16px; padding: 14px 30px 14px 16px; border-radius: 999px; background: #e3f6ec;
+  font-size: 34px; font-weight: 750; color: #24533f; box-shadow: 0 10px 24px rgba(60, 140, 100, .14); white-space: nowrap; }
+.okc { display: block; width: 48px; height: 48px; border-radius: 50%; background: #3fa877; padding: 7px; }
+.okc svg { display: block; width: 100%; height: 100%; }
+.nopill { background: #fde8ec; color: #8a3550; box-shadow: 0 10px 24px rgba(200, 80, 110, .12); }
+.nopill .okc { background: #e0607f; }
+.ok-xs { font-size: 25px; padding: 8px 20px 8px 8px; gap: 12px; align-self: flex-start; }
+.ok-xs .okc { width: 36px; height: 36px; padding: 5px; }
+.h1 { font-size: 104px; font-weight: 900; line-height: 1.12; letter-spacing: -.035em; word-break: keep-all; }
+.h1.center { text-align: center; }
+.h2 { font-size: 70px; font-weight: 850; line-height: 1.22; letter-spacing: -.03em; word-break: keep-all; text-align: center; }
+.h2.big { font-size: 92px; }
+.hl { background-image: linear-gradient(var(--hlc), var(--hlc)); background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 38%; padding: 0 4px; }
+.ico { display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; border-radius: 50%; padding: 34px; flex: 0 0 auto;
+  box-shadow: 0 12px 26px rgba(120, 92, 80, .12), inset 0 0 0 6px rgba(255, 255, 255, .7); }
+.ico svg { display: block; width: 100%; height: 100%; }
+.ico.sm { width: 120px; height: 120px; padding: 27px; }
+.ico.xs { width: 76px; height: 76px; padding: 17px; }
+.ico.xxs { width: 50px; height: 50px; padding: 11px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .7); }
+.arrow { display: block; width: 90px; height: 24px; flex: 0 0 auto; }
+.arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.arrow-sm { width: 70px; }
+.tagc { display: inline-block; margin-top: 10px; padding: 8px 20px; border-radius: 999px; background: #eef4ff; box-shadow: inset 0 0 0 2px #cfe0fb; font-size: 26px; font-weight: 800; color: #3d64a8; white-space: nowrap; }
+
+/* title */
+.phwrap { position: absolute; left: 110px; top: 170px; width: 480px; }
+.phimg { display: block; width: 480px; height: auto; filter: drop-shadow(0 24px 30px rgba(80, 60, 90, .22)); }
+.titlecard { left: 660px; top: 130px; width: 1120px; display: flex; flex-direction: column; align-items: center; gap: 30px; padding: 56px 60px 60px; }
+.term { display: flex; align-items: center; gap: 16px; min-width: 420px; padding: 18px 30px; border-radius: 20px; background: #2c2a3d;
+  font-family: Consolas, "Courier New", monospace; font-size: 40px; font-weight: 700; color: #f4efe6; box-shadow: 0 14px 30px rgba(44, 42, 61, .3); }
+.tprompt { color: #ef8a6f; }
+.tcur { display: inline-block; width: 18px; height: 40px; background: #f4efe6; }
+.ep { display: flex; align-items: center; gap: 18px; padding: 14px 34px; border-radius: 999px; background: #ffe6dc; font-size: 40px; font-weight: 700; color: #9a4f35; }
+.ep b { font-weight: 900; color: #d0603f; }
+
+/* roadmap */
+.road { position: absolute; left: 0; right: 0; top: 400px; display: flex; justify-content: center; align-items: center; gap: 22px; }
+.rcard { position: relative; width: 330px; height: 330px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  background: rgba(255, 255, 255, .95); border-radius: 40px; box-shadow: 0 24px 56px rgba(80, 60, 70, .16); }
+.rcard.first { box-shadow: 0 0 0 8px rgba(255, 199, 180, .55), 0 26px 60px rgba(239, 138, 111, .25); }
+.rn { font-size: 32px; font-weight: 850; letter-spacing: .04em; }
+.rt { font-size: 50px; font-weight: 900; letter-spacing: -.03em; }
+.rarrow { width: 56px; }
+.nowtag { position: absolute; top: -26px; right: -14px; padding: 8px 22px; border-radius: 999px; background: #e7a92c; color: #fff; font-size: 28px; font-weight: 850; }
+
+/* duo cards */
+.duo2 { position: absolute; left: 0; right: 0; top: 220px; display: flex; justify-content: center; align-items: center; gap: 46px; }
+.dcard { position: relative; width: 640px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 30px; }
+.dcard.glow { box-shadow: 0 0 0 10px rgba(255, 228, 160, .6), 0 30px 70px rgba(231, 169, 44, .22); }
+.dt { font-size: 52px; font-weight: 750; letter-spacing: -.03em; }
+.dt b { font-weight: 900; }
+.ds { font-size: 32px; font-weight: 600; color: var(--ink-soft); text-align: center; line-height: 1.3; }
+.bigop { font-size: 70px; font-weight: 900; color: #c9a8e8; }
+.bigop.vs { font-size: 54px; color: #7d62c0; }
+.meter { width: 460px; height: 30px; border-radius: 999px; background: #f3eee4; overflow: hidden; }
+.mfill { display: block; height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, #ffd27a, #ef8a6f); }
+.ribbon { position: absolute; left: -22px; top: 28px; padding: 10px 26px; border-radius: 14px; background: #ef8a6f; color: #fff; font-size: 34px; font-weight: 900; box-shadow: 0 10px 22px rgba(239, 138, 111, .35); }
+.bars { left: 410px; top: 680px; width: 1100px; padding: 26px 46px; border-radius: 34px; display: flex; flex-direction: column; gap: 14px; }
+.bhead { font-size: 26px; font-weight: 800; color: var(--ink-soft); letter-spacing: .08em; }
+.brow { display: flex; align-items: center; gap: 22px; }
+.bl { width: 200px; font-size: 30px; font-weight: 700; }
+.bl b { font-weight: 900; }
+.btrack { flex: 1 1 auto; height: 26px; border-radius: 999px; background: #f2eff6; overflow: hidden; }
+.bfill { display: block; height: 100%; width: 0%; border-radius: 999px; }
+.bmax { font-size: 28px; font-weight: 900; color: #d0603f; }
+
+/* list of pros */
+.listcard { left: 330px; top: 80px; width: 1260px; padding: 50px 64px; display: flex; flex-direction: column; gap: 26px; }
+.listcard .pill { align-self: flex-start; }
+.plist { display: flex; flex-direction: column; gap: 18px; }
+.pro { display: flex; align-items: center; gap: 26px; padding: 14px 26px; border-radius: 28px; background: #faf8fd; box-shadow: inset 0 0 0 2px #efebf5; }
+.pnum { font-size: 40px; font-weight: 900; width: 30px; text-align: center; }
+.ptxt { font-size: 42px; font-weight: 600; letter-spacing: -.02em; }
+.ptxt b { font-weight: 900; }
+
+/* inside folder */
+.inside { position: absolute; left: 0; right: 0; top: 400px; display: flex; justify-content: center; align-items: center; gap: 30px; }
+.ibox { position: relative; width: 400px; height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+.ibox.big { width: 460px; height: 420px; }
+.ibl { font-size: 38px; font-weight: 850; }
+.stamp { position: absolute; right: 40px; top: 40px; width: 74px; height: 74px; border-radius: 50%; background: #e0607f; padding: 14px; box-shadow: 0 10px 22px rgba(224, 96, 127, .35); }
+.stamp svg { display: block; width: 100%; height: 100%; }
+.fold { position: relative; width: 220px; height: 200px; }
+.fold > svg { display: block; width: 100%; height: 100%; }
+.clin { position: absolute; left: 72px; top: 70px; }
+.outfiles { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.fchip { display: inline-block; padding: 10px 24px; border-radius: 16px; background: #f1f8f4; box-shadow: inset 0 0 0 2px #cfeedd; font-size: 30px; font-weight: 750; color: #2d6b51; }
+
+/* more + quote */
+.burst { display: flex; gap: 26px; margin-top: 10px; }
+.quote { left: 360px; top: 480px; width: 1200px; padding: 40px 70px 46px; display: flex; flex-direction: column; gap: 12px; }
+.qmark { position: absolute; right: 54px; top: -10px; font-size: 200px; line-height: 1; font-weight: 900; color: #f6dccf; }
+.qpre { font-size: 32px; font-weight: 600; color: var(--ink-soft); }
+.qbody { font-size: 62px; font-weight: 900; line-height: 1.25; letter-spacing: -.03em; }
+
+/* plans */
+.plans { position: absolute; left: 0; right: 0; top: 380px; display: flex; justify-content: center; gap: 60px; }
+.plan { position: relative; width: 460px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; }
+.plan .ok-xs { align-self: center; font-size: 30px; }
+.plan.hot { box-shadow: 0 0 0 10px rgba(255, 199, 180, .55), 0 30px 70px rgba(239, 138, 111, .25); }
+.pname { font-size: 44px; font-weight: 900; color: var(--ink-soft); letter-spacing: .02em; }
+.pprice { font-size: 64px; font-weight: 700; }
+.pprice b { font-size: 96px; font-weight: 900; color: #d0603f; }
+
+/* warnings */
+.warns { position: absolute; left: 0; right: 0; top: 210px; display: flex; justify-content: center; gap: 50px; }
+.wcard { position: relative; width: 700px; height: 560px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 40px; }
+.wnum { position: absolute; left: 34px; top: 26px; width: 66px; height: 66px; border-radius: 50%; background: #ffe3ea; color: #c4486c; font-size: 38px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.wicons { display: flex; gap: 20px; }
+.wt { font-size: 46px; font-weight: 700; line-height: 1.3; text-align: center; letter-spacing: -.02em; }
+.wt b { font-weight: 900; color: #c4486c; }
+.ws { font-size: 30px; font-weight: 700; color: var(--ink-soft); text-align: center; }
+
+/* overlay cards on the practice screen */
+.ovc { position: absolute; display: flex; flex-direction: column; gap: 16px; padding: 26px 32px; border-radius: 30px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 2px #f3ebe2; }
+.ovc.row { flex-direction: row; align-items: center; gap: 22px; }
+.ovc.lowleft { left: 70px; top: 610px; max-width: 780px; }
+.ovc.side { right: 50px; top: 340px; width: 540px; }
+.ovc.side.wide { width: 780px; }
+.ovc.done { box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 3px #9fdcbc; }
+.ovt { display: block; font-size: 36px; font-weight: 650; line-height: 1.28; letter-spacing: -.02em; word-break: keep-all; }
+.ovt b { font-weight: 900; }
+.ovs { display: block; margin-top: 6px; font-size: 24px; font-weight: 600; color: var(--ink-soft); }
+.ovs2 { font-size: 26px; font-weight: 600; color: var(--ink-soft); line-height: 1.35; }
+.ovs2 b { color: var(--ink); font-weight: 850; }
+.ovbig { font-size: 50px; font-weight: 650; letter-spacing: -.03em; }
+.ovbig b { font-weight: 900; color: #7d62c0; }
+.ovhead { display: flex; align-items: center; gap: 18px; }
+.abbr { padding: 6px 18px; border-radius: 14px; color: #fff; font-size: 40px; font-weight: 900; letter-spacing: .04em; }
+.full { font-size: 30px; font-weight: 500; color: var(--ink-soft); }
+.full b { font-weight: 900; color: var(--ink); }
+.ovd { font-size: 36px; font-weight: 700; letter-spacing: -.02em; }
+.ovrow { display: flex; gap: 12px; flex-wrap: wrap; }
+.row { display: flex; align-items: center; gap: 18px; }
+.cmdrow { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 18px; background: #2c2a3d; }
+.cmdrow code { font-family: Consolas, "Courier New", monospace; font-size: 20px; font-weight: 700; color: #f4efe6; min-width: 0; word-break: break-all; }
+.os { flex: 0 0 auto; padding: 4px 14px; border-radius: 10px; background: #e9e4f7; color: #5a4aa8; font-size: 22px; font-weight: 850; }
+.os.win { background: #dceaff; color: #2f5fa8; }
+.stephead { display: flex; align-items: center; gap: 16px; }
+.stepn { padding: 6px 16px; border-radius: 12px; background: #d2603f; color: #fff; font-size: 24px; font-weight: 900; letter-spacing: .06em; }
+.stept { font-size: 38px; font-weight: 900; letter-spacing: -.03em; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.crumb { padding: 8px 18px; border-radius: 14px; background: #f4f1fa; box-shadow: inset 0 0 0 2px #e4def0; font-size: 26px; font-weight: 800; white-space: nowrap; }
+.cg { font-size: 30px; font-weight: 900; color: #b4a9d3; }
+.namebox { display: flex; align-items: center; gap: 14px; padding: 10px 16px; border-radius: 16px; background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e2cc; font-size: 24px; font-weight: 700; color: var(--ink-soft); align-self: flex-start; }
+.namebox code { font-family: Consolas, "Courier New", monospace; font-size: 28px; font-weight: 700; color: #9a4f35; }
+.bigcmd { display: flex; align-items: center; gap: 14px; padding: 14px 24px; border-radius: 18px; background: #2c2a3d; align-self: flex-start;
+  font-family: Consolas, "Courier New", monospace; font-size: 40px; font-weight: 700; color: #f4efe6; }
+.bigcmd code { font-family: inherit; }
+.bigcmd .tcur { height: 34px; width: 16px; }
+.rolelist { display: flex; flex-direction: column; gap: 10px; }
+.role { display: flex; align-items: center; gap: 14px; font-size: 28px; font-weight: 800; }
+.series { display: flex; flex-direction: column; gap: 12px; }
+.sitem { position: relative; display: flex; align-items: center; gap: 18px; padding: 14px 20px; border-radius: 20px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.sitem.done { background: #f0faf5; box-shadow: inset 0 0 0 2px #bfe6d1; }
+.sn { font-size: 26px; font-weight: 900; color: #7d62c0; width: 50px; }
+.st { display: flex; flex-direction: column; gap: 2px; font-size: 32px; }
+.st b { font-weight: 900; }
+.st small { font-size: 22px; font-weight: 600; color: var(--ink-soft); }
+.tick { position: absolute; right: 18px; top: 50%; margin-top: -21px; display: block; width: 42px; height: 42px; border-radius: 50%; background: #3fa877; padding: 7px; }
+.tick svg { display: block; width: 100%; height: 100%; }
+.subrow { position: absolute; right: 50px; top: 330px; display: flex; align-items: center; gap: 12px; padding: 14px 26px; border-radius: 999px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 22px 50px rgba(30, 24, 40, .32); font-size: 30px; font-weight: 850; }
+.cf { position: absolute; display: block; width: 14px; height: 14px; border-radius: 3px; opacity: 0; }
+
+/* episode 2 — card slots + pieces */
+.ovc.tr { right: 50px; top: 74px; width: 540px; gap: 14px; padding: 24px 28px; }
+.ovc.lane { left: 46px; top: 520px; width: 380px; gap: 12px; padding: 22px 24px; border-radius: 26px; }
+.ovc.lane .pill-sm { font-size: 22px; padding: 8px 16px; }
+.ovc.lane .stept { font-size: 32px; }
+.ovc.lane .stepn { font-size: 20px; padding: 5px 12px; }
+.ovc.lane .ovt { font-size: 32px; }
+.ovc.lane .ovs2 { font-size: 24px; }
+.ovc.lane .ok-xs { font-size: 22px; white-space: normal; }
+.ovt.sm { font-size: 30px; }
+.ovc .ok-xs { white-space: normal; }
+.pathc { align-self: flex-start; padding: 10px 16px; border-radius: 14px; background: #2c2a3d; color: #f4efe6;
+  font-family: Consolas, "Courier New", monospace; font-size: 26px; font-weight: 700; }
+.pathc b { font-weight: 700; color: #f4efe6; }
+.bigcmd i { font-style: normal; color: #ffd27a; }
+.bigcmd.sm { font-size: 32px; }
+.ovc.lane .bigcmd { font-size: 34px; padding: 12px 20px; }
+.nextrow { display: flex; align-items: center; gap: 12px; align-self: flex-start; font-size: 24px; font-weight: 800; color: var(--ink-soft); }
+.nextrow code { padding: 6px 16px; border-radius: 12px; background: #2c2a3d; color: #f4efe6; font-family: Consolas, "Courier New", monospace; font-size: 28px; font-weight: 700; }
+.kv { display: flex; align-items: center; gap: 14px; padding: 8px 10px; border-radius: 16px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.kv code { flex: 0 0 auto; padding: 6px 14px; border-radius: 12px; background: #2c2a3d; color: #f4efe6; font-family: Consolas, "Courier New", monospace; font-size: 26px; font-weight: 700; }
+.kv span { font-size: 26px; font-weight: 850; }
+.fitem { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 58px 10px 14px; border-radius: 18px; background: #fbf8ef; box-shadow: inset 0 0 0 2px #f1e7cc; }
+.fn { display: flex; flex-direction: column; gap: 2px; }
+.fn code { font-family: Consolas, "Courier New", monospace; font-size: 24px; font-weight: 700; color: var(--ink); }
+.fn small { font-size: 20px; font-weight: 700; color: var(--ink-soft); }
+.fitem .tick { width: 36px; height: 36px; margin-top: -18px; right: 14px; padding: 6px; }
+.mbtn { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: 16px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; font-size: 24px; font-weight: 850; }
+.mbtn svg { display: block; width: 34px; height: 34px; }
+.nest { display: flex; flex-direction: column; gap: 8px; }
+.nrow { display: flex; align-items: center; gap: 10px; font-size: 26px; font-weight: 700; }
+.nrow svg { display: block; width: 34px; height: 34px; }
+.nrow.in { margin-left: 34px; padding: 6px 12px; border-radius: 14px; background: #fff1ea; box-shadow: inset 0 0 0 2px #f6cdbd; }
+.nrow em { font-style: normal; font-size: 18px; font-weight: 850; color: #fff; background: #ef8a6f; padding: 3px 10px; border-radius: 999px; }
+.mdname { font-family: Consolas, "Courier New", monospace; font-size: 34px; font-weight: 700; color: #2d6b51; }
+.qrow { display: flex; align-items: center; gap: 12px; font-size: 26px; font-weight: 750; }
+.qk { flex: 0 0 auto; min-width: 72px; text-align: center; padding: 4px 10px; border-radius: 10px; background: #ffe6dc; color: #9a4f35; font-size: 20px; font-weight: 900; }
+.flow { display: flex; align-items: center; gap: 12px; font-size: 26px; font-weight: 650; }
+.flow b { font-weight: 900; }
+.fnum { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; background: #ebe6ff; color: #7d62c0; font-size: 22px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 6px 14px; border-radius: 12px; background: #fff; box-shadow: inset 0 0 0 2px var(--cc); color: var(--ink); font-size: 23px; font-weight: 850; white-space: nowrap; }
+.grow { display: flex; align-items: center; gap: 10px; font-size: 25px; font-weight: 650; }
+.grow b { font-weight: 900; }
+.gk { flex: 0 0 auto; min-width: 128px; padding: 4px 10px; border-radius: 10px; background: #fff1cc; color: #8a6414; font-size: 20px; font-weight: 900; text-align: center; }
+.warnrow { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px; background: #fde8ec; color: #8a3550; font-size: 21px; font-weight: 800; }
+.warnrow svg { display: block; flex: 0 0 auto; width: 30px; height: 30px; }
+.todaycard { left: 360px; top: 470px; width: 1200px; padding: 40px 50px; display: flex; flex-direction: column; gap: 26px; }
+.todaycard .pill { align-self: flex-start; }
+.today { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.tditem { display: flex; align-items: center; gap: 20px; padding: 14px 22px; border-radius: 26px; background: #faf8fd; box-shadow: inset 0 0 0 2px #efebf5; font-size: 40px; font-weight: 850; letter-spacing: -.02em; }
+
+/* end card over the aurora */
+.endbig { font-size: 110px; font-weight: 900; letter-spacing: -.04em; color: #fff; text-shadow: 0 10px 40px rgba(0, 0, 0, .45); }
+.endok { color: #9ff0c8; }
+.endnext { display: flex; align-items: center; gap: 22px; padding: 22px 44px; border-radius: 999px; background: rgba(255, 255, 255, .95); box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+  font-size: 34px; font-weight: 650; color: var(--ink-soft); }
+.endnext b { font-size: 48px; font-weight: 900; color: var(--ink); }
+.endarr { font-size: 44px; font-weight: 900; color: #ef8a6f; }
+
+/* episode 3 — intro scrim, step tracker, slots, pieces */
+.scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(18,16,30,.82) 0%, rgba(18,16,30,.8) 80%, rgba(18,16,30,0) 87%); }
+.phwrap { left: 120px; top: 210px; width: 440px; }
+.phimg { width: 440px; filter: drop-shadow(0 24px 40px rgba(0, 0, 0, .45)); }
+.titlecard { left: 640px; top: 150px; width: 1160px; gap: 28px; padding: 50px 56px 54px; }
+.miniflow { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; }
+.mf { padding: 10px 18px; border-radius: 14px; background: #f4f1fa; box-shadow: inset 0 0 0 2px #e4def0; font-size: 28px; font-weight: 800; white-space: nowrap; }
+.mfa { font-size: 30px; font-weight: 900; color: #b4a9d3; }
+.trk { position: absolute; left: 650px; top: 8px; height: 56px; display: flex; align-items: center; gap: 6px; padding: 6px 10px 6px 18px; border-radius: 999px;
+  background: rgba(255, 255, 255, .97); box-shadow: 0 10px 26px rgba(0, 0, 0, .35); }
+.tkh { font-size: 19px; font-weight: 850; color: #7d62c0; margin-right: 6px; white-space: nowrap; }
+.tks { display: flex; align-items: center; gap: 7px; padding: 6px 13px 6px 7px; border-radius: 999px; font-size: 20px; font-weight: 800; color: #8d89a3; white-space: nowrap; background: rgba(255,255,255,0); }
+.tks i { font-style: normal; width: 26px; height: 26px; border-radius: 50%; background: rgba(0, 0, 0, .08); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 900; }
+.ovc.lane { left: 52px; top: 470px; width: 390px; }
+.ovc.lane.key { box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 3px #f2b49e; }
+.ovc.br { right: 40px; bottom: 140px; width: 480px; gap: 12px; padding: 22px 26px; border-radius: 26px; }
+.ovc.tr { right: 46px; top: 84px; width: 540px; gap: 12px; padding: 22px 26px; border-radius: 26px; }
+.ovc.br .ovs2, .ovc.tr .ovs2 { font-size: 24px; }
+.bigcmd.xs { font-size: 26px; padding: 10px 16px; }
+.ovc.lane .bigcmd.xs { font-size: 23px; white-space: nowrap; }
+.warnrow b { font-weight: 900; }
+.fbox { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 18px; background: #fbf8ef; box-shadow: inset 0 0 0 2px #f1e7cc; }
+.fbt { display: flex; flex-direction: column; gap: 2px; }
+.fbt code { font-family: Consolas, "Courier New", monospace; font-size: 24px; font-weight: 700; }
+.fbt span { font-size: 22px; font-weight: 700; color: var(--ink-soft); }
+.fbt b { font-size: 30px; font-weight: 900; color: #d0603f; }
+.mess { position: relative; height: 262px; border-radius: 18px; background: #f7f5fa; box-shadow: inset 0 0 0 2px #ece8f3; overflow: hidden; }
+.mchip { position: absolute; padding: 6px 12px; border-radius: 10px; background: #fff; box-shadow: 0 4px 10px rgba(60, 50, 80, .14); font-size: 19px; font-weight: 750; white-space: nowrap; }
+.nrow.sub { margin-left: 30px; font-size: 24px; }
+.fname { position: relative; align-self: flex-start; padding: 8px 14px; border-radius: 12px; font-size: 22px; font-weight: 800; white-space: nowrap; }
+.fname.before { background: #fde8ec; color: #8a3550; }
+.fname.before s { position: absolute; left: 10px; top: 50%; height: 3px; width: 0%; max-width: calc(100% - 20px); background: #e0607f; display: block; }
+.fname.after { background: #e3f6ec; color: #24533f; box-shadow: inset 0 0 0 2px #9fdcbc; font-size: 21px; }
+.downar { align-self: flex-start; margin-left: 20px; font-size: 28px; font-weight: 900; color: #4fb489; line-height: 1; }
+.csvrow { display: flex; align-items: center; gap: 12px; }
+.cl { flex: 0 0 auto; min-width: 96px; text-align: center; padding: 4px 10px; border-radius: 10px; background: #fde8ec; color: #8a3550; font-size: 19px; font-weight: 900; }
+.cl.new { background: #e3f6ec; color: #24533f; }
+.cv { font-family: Consolas, "Courier New", monospace; font-size: 22px; font-weight: 700; white-space: nowrap; }
+.ovhead .tagc { margin-top: 0; font-size: 20px; padding: 5px 14px; }
+.chk { display: flex; align-items: center; gap: 14px; padding: 8px 12px; border-radius: 16px; background: #f8f6fb; font-size: 26px; font-weight: 800; }
+.cbox { position: relative; flex: 0 0 auto; width: 36px; height: 36px; border-radius: 10px; box-shadow: inset 0 0 0 3px #cfc8e0; }
+.chk .tick { right: 0; top: 0; margin-top: 0; width: 36px; height: 36px; padding: 6px; }
+.res { position: relative; display: flex; align-items: baseline; justify-content: center; gap: 12px; padding: 10px 16px; border-radius: 18px; background: #2c2a3d; color: #f4efe6; font-size: 24px; font-weight: 700; }
+.res b { font-size: 46px; font-weight: 900; color: #9ff0c8; }
+.res em { font-style: normal; font-size: 40px; font-weight: 900; color: #ffd27a; }
+.mdflow { display: flex; align-items: center; gap: 10px; }
+.mdchip { padding: 8px 14px; border-radius: 14px; background: #ebe6ff; color: #5a4aa8; font-size: 22px; font-weight: 850; white-space: nowrap; }
+.mdchip.main { background: #2c2a3d; color: #9ff0c8; font-family: Consolas, "Courier New", monospace; font-size: 26px; }
+.qline { font-size: 25px; font-weight: 650; }
+.qline b { font-weight: 900; color: #d0603f; }
+.gk.hot { background: #ffe6dc; color: #9a4f35; }
+.endph { width: 230px; height: auto; filter: drop-shadow(0 20px 36px rgba(0, 0, 0, .5)); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="352.76" data-width="1920" data-height="1080">
+  <div id="vwrap"><video id="vid" class="clip" src="assets/media/src.mp4" playsinline data-has-audio="true" data-start="0" data-duration="352.76" data-track-index="0"></video></div>
+
+
+<div id="s-title" class="scene full clip" data-start="0.000" data-duration="7.730" data-track-index="3">
+  <div id="s-title-sc" class="sc">
+  <div id="st-scrim" class="scrim"></div>
+  <div id="st-ph" class="phwrap"><img id="st-img" class="phimg" src="assets/media/philosophy.png" alt="필로소피 캐릭터"></div>
+  <div id="st-c" class="card titlecard">
+    <div id="st-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>필로소피 AI 교육 · 교수님들을 위한</span></div>
+    <h1 id="st-h" class="h1 center"><span class="hl" style="--hlc:var(--hl-p)">Claude Code</span><br>CLI 수업</h1>
+    <div id="st-s" class="ep"><b>3편</b><span>폴더 정리 실습</span></div>
+    <div id="st-fl" class="miniflow">
+      <span id="st-f0" class="mf">가상 자료</span><span id="st-a1" class="mfa">›</span><span id="st-f1" class="mf">/plan 계획</span><span id="st-a2" class="mfa">›</span><span id="st-f2" class="mf">정리</span><span id="st-a3" class="mfa">›</span><span id="st-f3" class="mf">검증</span><span id="st-a4" class="mfa">›</span><span id="st-f4" class="mf">기록</span><span id="st-a5" class="mfa">›</span><span id="st-f5" class="mf">CLAUDE.md</span>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="trk" class="scene ov clip" data-start="43.260" data-duration="283.840" data-track-index="4">
+  <div id="trk-sc" class="sc">
+  <div id="tk" class="trk">
+    <span id="tk-h" class="tkh">폴더 정리 순서</span>
+    <span id="tk-0" class="tks"><i>1</i>가상 자료</span><span id="tk-1" class="tks"><i>2</i>/plan 계획</span><span id="tk-2" class="tks"><i>3</i>정리</span><span id="tk-3" class="tks"><i>4</i>검증</span><span id="tk-4" class="tks"><i>5</i>정리 로그</span><span id="tk-5" class="tks"><i>6</i>CLAUDE.md</span>
+  </div>
+  </div>
+</div>
+
+<div id="o-go" class="scene ov clip" data-start="18.460" data-duration="21.990" data-track-index="4">
+  <div id="o-go-sc" class="sc">
+  <div id="og-c" class="ovc lane">
+    <div class="stephead"><span class="stepn">START</span><span class="stept">작업 폴더로 이동</span></div>
+    <div id="og-cmd" class="bigcmd xs"><span class="tprompt">&gt;</span><code>cd 02foldercleanup</code></div>
+    <div id="og-n" class="nextrow"><span>그 다음</span><code>claude</code></div>
+    <div id="og-p" class="pathc">~\<b id="og-pb">02foldercleanup</b></div>
+    <div id="og-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>처음에 폴더 지정이 가장 중요!</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-fake" class="scene ov clip" data-start="43.260" data-duration="24.220" data-track-index="4">
+  <div id="o-fake-sc" class="sc">
+  <div id="of-c" class="ovc lane">
+    <div id="of-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>프롬프트 ① 실습용 가상 자료</span></div>
+    <div id="of-w" class="warnrow"><svg viewBox="0 0 64 64" fill="none" stroke="#c4486c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#c4486c"/></svg><span>Claude는 파일을 실제로<br><b>삭제·수정</b>할 수 있어요</span></div>
+    <div id="of-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>그래서 가짜 자료로 연습</span></div>
+    <div id="of-f" class="fbox"><div id="of-i" class="ico xxs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg></div><div class="fbt"><code>lecture-materials/</code><span>강의자료 <b id="of-n">0</b>개</span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-cafe" class="scene ov clip" data-start="67.680" data-duration="18.580" data-track-index="4">
+  <div id="o-cafe-sc" class="sc">
+  <div id="oc-c" class="ovc lane">
+    <div id="oc-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>프롬프트 텍스트 파일 제공</span></div>
+    <div class="row"><div id="oc-i" class="ico xs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></div><div id="oc-t" class="ovt sm">고정 댓글 링크 →<br><b>필로소피 AI 교육</b><br>네이버 카페</div></div>
+    <div id="oc-s" class="ovs2">아래 요청을 <b>그대로 붙여 넣기</b></div>
+    <div id="oc-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>다른 프롬프트도 파일 안에</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-mess" class="scene ov clip" data-start="91.460" data-duration="20.010" data-track-index="4">
+  <div id="o-mess-sc" class="sc">
+  <div id="om-c" class="ovc lane">
+    <div id="om-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#e8708f"></span><span>정리 전 · 한 폴더에 40개</span></div>
+    <div id="om-box" class="mess"><span id="om-0" class="mchip" style="left:8px;top:12px;transform:rotate(-5deg)">최종_진짜최종_5주.txt</span><span id="om-1" class="mchip" style="left:70px;top:50px;transform:rotate(4deg)">week3_slides_final_v2.txt</span><span id="om-2" class="mchip" style="left:4px;top:96px;transform:rotate(3deg)">새 텍스트 문서 (2).txt</span><span id="om-3" class="mchip" style="left:130px;top:138px;transform:rotate(-5deg)">6주차강의안.hwp.txt</span><span id="om-4" class="mchip" style="left:20px;top:180px;transform:rotate(6deg)">4wk_quiz_answers.txt</span><span id="om-5" class="mchip" style="left:110px;top:222px;transform:rotate(-3deg)">공리주의 퀴즈(수정).txt</span></div>
+    <div id="om-t" class="ovt sm">살짝 <b>정신이 없죠?</b></div>
+    <div class="chips"><span id="om-d0" class="chip" style="--cc:#ef8a6f">내용 같은 중복</span><span id="om-d1" class="chip" style="--cc:#9a8be6">내용 다른 비슷한 이름</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-plan" class="scene ov clip" data-start="111.670" data-duration="15.650" data-track-index="4">
+  <div id="o-plan-sc" class="sc">
+  <div id="op-c" class="ovc lane key">
+    <div class="stephead"><span class="stepn">KEY</span><span class="stept">계획부터 세우기</span></div>
+    <div id="op-cmd" class="bigcmd"><span class="tprompt">&gt;</span><code id="op-tt">/plan</code><span id="op-cur" class="tcur"></span></div>
+    <div id="op-s" class="ovs2">한 칸 띄우고 →<br>"정리 <b>계획을 먼저</b> 세워 주세요"</div>
+    <div id="op-n" class="okpill nopill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><span>바로 "정리해 줘" → 알아서 삭제·수정할 수도</span></div>
+    <div id="op-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>계획을 보고 → 그다음 허락</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-rule" class="scene ov clip" data-start="129.440" data-duration="19.050" data-track-index="4">
+  <div id="o-rule-sc" class="sc">
+  <div id="or-c" class="ovc lane">
+    <div id="or-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#4fb489"></span><span>Claude가 세운 정리 계획</span></div>
+    <div id="or-s" class="ovs2">15주 수업 자료 <b>40개</b>가<br>한 폴더에 섞여 있음</div>
+    <div id="or-0" class="flow"><span class="fnum">1</span><span><b>주차별</b>로 정리</span></div><div id="or-1" class="flow"><span class="fnum">2</span><span><b>이름 규칙</b> 통일</span></div><div id="or-2" class="flow"><span class="fnum">3</span><span>중복·옛 버전은 <b>지우지 않고</b> 보관</span></div><div id="or-3" class="flow"><span class="fnum">4</span><span>되돌릴 수 있게 <b>기록</b> 남기기</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-tree" class="scene ov clip" data-start="148.690" data-duration="12.790" data-track-index="4">
+  <div id="o-tree-sc" class="sc">
+  <div id="ot-c" class="ovc lane">
+    <div id="ot-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#6aa3e6"></span><span>정리 후 구조</span></div>
+    <div class="nest">
+      <div id="ot-r" class="nrow"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg><span><b>lecture-materials</b></span></div>
+      <div id="ot-0" class="nrow sub"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg><span>01주차 … 15주차</span></div><div id="ot-1" class="nrow sub"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg><span>_중복보관/</span></div><div id="ot-2" class="nrow sub"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg><span>_이전버전/</span></div><div id="ot-3" class="nrow sub"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg><span>정리기록.csv</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-name" class="scene ov clip" data-start="161.680" data-duration="10.780" data-track-index="4">
+  <div id="o-name-sc" class="sc">
+  <div id="on-c" class="ovc lane">
+    <div id="on-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#e7a92c"></span><span>파일 이름 규칙</span></div>
+    <div id="on-cmd" class="bigcmd xs"><code><i>NN주차</i>_자료종류_주제.txt</code></div>
+    <div id="on-b" class="fname before"><span>최종_진짜최종_5주.txt</span><s></s></div>
+    <div id="on-ar" class="downar">↓</div>
+    <div id="on-a" class="fname after">05주차_강의안_비형식적오류1.txt</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-csv" class="scene ov clip" data-start="188.670" data-duration="15.930" data-track-index="4">
+  <div id="o-csv-sc" class="sc">
+  <div id="ov-c" class="ovc br">
+    <div class="ovhead"><div id="ov-i" class="ico xxs" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></div><code class="mdname">정리기록.csv</code><span id="ov-tag" class="tagc">되돌리기 장부</span></div>
+    <div id="ov-r" class="csvrow"><span class="cl">원래 이름</span><span class="cv">week3_slides_final_v2.txt</span></div>
+    <div id="ov-r2" class="csvrow"><span class="cl new">새 경로</span><span class="cv">03주차/03주차_슬라이드_….txt</span></div>
+    <div id="ov-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>"원래대로 돌려 줘" → 이름 복구 가능</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-check" class="scene ov clip" data-start="205.410" data-duration="21.580" data-track-index="4">
+  <div id="o-check-sc" class="sc">
+  <div id="ok-c" class="ovc br">
+    <div id="ok-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#6aa3e6"></span><span>정리 결과 검증하기</span></div>
+    <div id="ok-0" class="chk"><span class="cbox"><span id="ok-t0" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></span><span>파일 개수가 같은가?</span></div><div id="ok-1" class="chk"><span class="cbox"><span id="ok-t1" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></span><span>사라진 파일은 없는가?</span></div><div id="ok-2" class="chk"><span class="cbox"><span id="ok-t2" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></span><span>이름 규칙을 지켰는가?</span></div>
+    <div id="ok-res" class="res"><span>백업</span><b>40</b><em>=</em><span>정리 후</span><b>40</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-log" class="scene ov clip" data-start="227.190" data-duration="17.080" data-track-index="4">
+  <div id="o-log-sc" class="sc">
+  <div id="ol-c" class="ovc br">
+    <div class="ovhead"><div id="ol-i" class="ico xxs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></div><code class="mdname">cleanup-log.md</code></div>
+    <div id="ol-s" class="ovs2">이번 정리 내역을 <b>문서로 남기기</b></div>
+    <div id="ol-0" class="flow"><span class="fnum">1</span><span>날짜 · 정리 규칙</span></div><div id="ol-1" class="flow"><span class="fnum">2</span><span>바뀐 파일 목록</span></div><div id="ol-2" class="flow"><span class="fnum">3</span><span>내가 확인할 파일 목록</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-const" class="scene ov clip" data-start="244.470" data-duration="24.660" data-track-index="4">
+  <div id="o-const-sc" class="sc">
+  <div id="oq-c" class="ovc br done">
+    <div id="oq-fl" class="mdflow"><span id="oq-a" class="mdchip">cleanup-log 규칙</span><svg id="oq-ar" class="arrow arrow-sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><span id="oq-b" class="mdchip main">CLAUDE.md</span></div>
+    <div id="oq-t" class="ovt sm">CLAUDE.md = Claude의 <span class="hl" style="--hlc:var(--hl-p)">헌법</span></div>
+    <div id="oq-q" class="qline">"폴더 정리해 줘" → <b>이 규칙대로</b></div>
+    <div id="oq-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>다른 규칙도 적어 두면 AI가 참고해요</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-allow" class="scene ov clip" data-start="284.450" data-duration="7.250" data-track-index="4">
+  <div id="o-allow-sc" class="sc">
+  <div id="oa-c" class="ovc tr">
+    <div id="oa-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>플랜이 마음에 들면 허락하기</span></div>
+    <div class="ovrow">
+      <div id="oa-m" class="mbtn"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 34V16a4 4 0 0 1 8 0v14M30 28V12a4 4 0 0 1 8 0v18M38 28v-12a4 4 0 0 1 8 0v22c0 10-6 16-15 16-6 0-10-3-13-8l-6-10a4 4 0 0 1 7-4l3 4"/></svg><span>매뉴얼 · 하나씩</span></div>
+      <div id="oa-o" class="mbtn"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M36 6L14 36h16l-4 22 22-30H32z" fill="#e7a92c" stroke-width="2"/></svg><span>오토 · 알아서</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-why" class="scene ov clip" data-start="308.380" data-duration="18.520" data-track-index="4">
+  <div id="o-why-sc" class="sc">
+  <div id="ow-c" class="ovc tr">
+    <div id="ow-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>왜 순서(로직)대로 할까요?</span></div>
+    <div id="ow-1" class="grow"><span class="gk">간단한 작업</span><span>이렇게 저렇게 해도 OK</span></div>
+    <div id="ow-2" class="grow"><span class="gk hot">복잡·큰 작업</span><span><b>로직대로</b> 해야</span></div>
+    <div id="ow-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>깔끔한 결과물 + 효율성 ↑</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-end" class="scene ov clip" data-start="334.400" data-duration="18.360" data-track-index="4">
+  <div id="o-end-sc" class="sc">
+  <div class="center-col" style="top:120px">
+    <img id="oe-ph" class="endph" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+    <div id="oe-k" class="pill pill-glass"><span class="pdot" style="background:#9a8be6"></span><span>필로소피 AI 교육 · 교수님들을 위한 Claude Code CLI</span></div>
+    <div id="oe-h" class="endbig">3편 · 폴더 정리 <span class="endok">완료</span></div>
+    <div id="oe-n" class="endnext"><span>다음 편</span><b>4편에서 만나요</b><span class="endarr">→</span></div>
+  </div>
+  </div>
+</div>
+
+  <div id="endfade"></div>
+</div>
+<script>
+(function () {
+  const tl = gsap.timeline({ paused: true });
+  const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: .6 }, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(1.8)' }, t);
+  const up = (sel, t, dy = 30) => tl.fromTo(sel, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' }, t);
+  const rise = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 60, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .6, ease: 'expo.out' }, t);
+  const slide = (sel, t, dx = 60) => tl.fromTo(sel, { opacity: 0, x: dx }, { opacity: 1, x: 0, duration: .5, ease: 'power3.out' }, t);
+  const sweep = (sel, t) => tl.fromTo(sel, { backgroundSize: '0% 38%' }, { backgroundSize: '100% 38%', duration: .7, ease: 'power2.inOut', immediateRender: false }, t);
+  const draw = (sel, t, d) => tl.fromTo(sel, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: d, ease: 'power2.out' }, t);
+  const ok2 = (sel, t) => tl.to(sel, { backgroundColor: '#e3f6ec', boxShadow: 'inset 0 0 0 2px #9fdcbc', duration: .4, ease: 'power2.out' }, t);
+  const type = (sel, text, t, d) => {
+    const el = document.querySelector(sel); const st = { n: 0 };
+    tl.fromTo(st, { n: 0 }, { n: text.length, duration: d, ease: 'none', onUpdate: () => { el.textContent = text.slice(0, Math.round(st.n)); } }, t);
+  };
+  const blink = (sel, t0, t1) => {
+    const cyc = .9, n = Math.max(0, Math.floor((t1 - t0) / cyc) - 1);
+    tl.fromTo(sel, { opacity: 1 }, { opacity: 0, duration: cyc / 2, ease: 'steps(1)', yoyo: true, repeat: n * 2 + 1, immediateRender: false }, t0);
+  };
+  const act = (sel, t) => tl.to(sel, { backgroundColor: '#d2603f', color: '#ffffff', scale: 1.06, duration: .35, ease: 'back.out(2)' }, t);
+  const done = (sel, t) => tl.to(sel, { backgroundColor: '#e3f6ec', color: '#24533f', scale: 1, duration: .35, ease: 'power2.out' }, t);
+  const idle = (sel, t) => tl.to(sel, { backgroundColor: 'rgba(255,255,255,0)', color: '#8d89a3', scale: 1, duration: .35, ease: 'power2.out' }, t);
+  const count = (sel, to, t, d) => {
+    const el = document.querySelector(sel); const st = { n: 0 };
+    tl.fromTo(st, { n: 0 }, { n: to, duration: d, ease: 'power2.out', onUpdate: () => { el.textContent = String(Math.round(st.n)); } }, t);
+  };
+  const confetti = (pre, t, cx = 60, cy = 60) => {
+    const host = document.getElementById(pre + '-c'); const cols = ['#ef8a6f', '#e7a92c', '#4fb489', '#9a8be6', '#e8708f', '#6aa3e6'];
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('span'); p.className = 'cf'; p.style.background = cols[i % 6];
+      p.style.left = cx + 'px'; p.style.top = cy + 'px'; host.appendChild(p);
+      const a = (i / 18) * Math.PI * 2, r = 90 + (i % 4) * 30;
+      tl.fromTo(p, { opacity: 1, x: 0, y: 0, rotation: 0 }, { opacity: 0, x: Math.cos(a) * r, y: Math.sin(a) * r, rotation: 200 + i * 20, duration: 1.1, ease: 'power3.out', immediateRender: false }, t);
+    }
+  };
+
+  // cover backgrounds
+  
+
+  // graphics
+
+  // s-title
+  tl.fromTo('#s-title-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 0.00);
+  tl.to('#s-title-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 7.410);
+  tl.fromTo('#st-scrim', {opacity:0}, {opacity:1, duration:.5, ease:'power2.out'}, 0);
+  tl.fromTo('#st-ph', {opacity:0, x:-160}, {opacity:1, x:0, duration:.8, ease:'back.out(1.4)'}, .2);
+  rise('#st-c', .35); up('#st-k', .6, 16); up('#st-h', .75, 34); sweep('#st-h .hl', 1.4);
+  pop('#st-s', 2.94);
+  pop('#st-f0', 4.57); pop('#st-a1', 4.74); pop('#st-f1', 4.79); pop('#st-a2', 4.96); pop('#st-f2', 5.01); pop('#st-a3', 5.18); pop('#st-f3', 5.23); pop('#st-a4', 5.40); pop('#st-f4', 5.45); pop('#st-a5', 5.62); pop('#st-f5', 5.67);
+
+  // trk
+  tl.fromTo('#trk-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 43.26);
+  tl.to('#trk-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 326.730);
+  tl.fromTo('#tk', {opacity:0, y:-24}, {opacity:1, y:0, duration:.5, ease:'power3.out'}, 43.36);
+  act('#tk-0', 45.12);
+  act('#tk-1', 113.61); done('#tk-0', 113.61);
+  act('#tk-2', 170.12); done('#tk-1', 170.12);
+  act('#tk-3', 207.35); done('#tk-2', 207.35);
+  act('#tk-4', 227.19); done('#tk-3', 227.19);
+  act('#tk-5', 245.78); done('#tk-4', 245.78);
+  done('#tk-5', 269.33);
+  idle('#tk-0', 274.96); idle('#tk-1', 274.96); idle('#tk-2', 274.96); idle('#tk-3', 274.96); idle('#tk-4', 274.96); idle('#tk-5', 274.96);
+  act('#tk-0', 275.94);
+  act('#tk-1', 281.52); done('#tk-0', 281.52);
+  act('#tk-2', 291.90); done('#tk-1', 291.90);
+  act('#tk-3', 292.50); done('#tk-2', 292.50);
+  act('#tk-4', 295.92); done('#tk-3', 295.92);
+  act('#tk-5', 300.15); done('#tk-4', 300.15);
+  done('#tk-5', 305.25);
+  tl.fromTo('#tk', {boxShadow:'0 10px 26px rgba(0,0,0,.35), 0 0 0 0px rgba(159,220,188,0)'}, {boxShadow:'0 10px 26px rgba(0,0,0,.35), 0 0 0 6px rgba(159,220,188,.85)', duration:.4, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 305.45);
+
+  // o-go
+  tl.fromTo('#o-go-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 18.46);
+  tl.to('#o-go-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 40.080);
+  rise('#og-c', 18.56); up('#og-cmd', 20.23, 14); pop('#og-n', 26.48);
+  up('#og-p', 31.64, 12); tl.fromTo('#og-pb', {color:'#f4efe6'}, {color:'#ffd27a', duration:.4, ease:'power2.out', immediateRender:false}, 34.83);
+  pop('#og-ok', 37.96);
+
+  // o-fake
+  tl.fromTo('#o-fake-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 43.26);
+  tl.to('#o-fake-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 67.110);
+  rise('#of-c', 44.82); up('#of-k', 45.12, 12); up('#of-w', 52.38, 12);
+  pop('#of-ok', 57.57); slide('#of-f', 59.07, -30); count('#of-n', 40, 62.51, 1.4);
+
+  // o-cafe
+  tl.fromTo('#o-cafe-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 67.68);
+  tl.to('#o-cafe-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 85.890);
+  rise('#oc-c', 67.78); up('#oc-k', 67.98, 12); pop('#oc-i', 71.11); up('#oc-t', 73.05, 12);
+  up('#oc-s', 78.43, 12); pop('#oc-ok', 83.63);
+
+  // o-mess
+  tl.fromTo('#o-mess-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 91.46);
+  tl.to('#o-mess-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 111.100);
+  rise('#om-c', 91.56); up('#om-k', 91.76, 12);
+  tl.fromTo('#om-0', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.4, ease:'back.out(2)'}, 92.55); tl.fromTo('#om-1', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.4, ease:'back.out(2)'}, 92.83); tl.fromTo('#om-2', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.4, ease:'back.out(2)'}, 93.11); tl.fromTo('#om-3', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.4, ease:'back.out(2)'}, 93.39); tl.fromTo('#om-4', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.4, ease:'back.out(2)'}, 93.67); tl.fromTo('#om-5', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.4, ease:'back.out(2)'}, 93.95);
+  tl.fromTo('#om-box', {x:0}, {x:6, duration:.07, ease:'none', yoyo:true, repeat:7, immediateRender:false}, 95.97);
+  up('#om-t', 95.87, 12); pop('#om-d0', 108.06); pop('#om-d1', 109.83);
+
+  // o-plan
+  tl.fromTo('#o-plan-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 111.67);
+  tl.to('#o-plan-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 126.950);
+  rise('#op-c', 111.77); up('#op-cmd', 113.61, 12); type('#op-tt', '/plan', 113.81, .5); blink('#op-cur', 113.61, 118.84);
+  up('#op-s', 115.44, 12); pop('#op-n', 120.69); pop('#op-ok', 124.73);
+
+  // o-rule
+  tl.fromTo('#o-rule-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 129.44);
+  tl.to('#o-rule-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 148.120);
+  rise('#or-c', 129.54); up('#or-k', 129.74, 12); up('#or-s', 134.96, 12);
+  slide('#or-0', 140.88, -30); slide('#or-1', 142.38, -30); slide('#or-2', 143.63, -30); slide('#or-3', 146.53, -30);
+
+  // o-tree
+  tl.fromTo('#o-tree-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 148.69);
+  tl.to('#o-tree-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 161.110);
+  rise('#ot-c', 148.79); up('#ot-k', 148.99, 12); slide('#ot-r', 149.19, -24);
+  slide('#ot-0', 149.59, -24); slide('#ot-1', 150.49, -24); slide('#ot-2', 150.89, -24); slide('#ot-3', 151.99, -24);
+
+  // o-name
+  tl.fromTo('#o-name-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 161.68);
+  tl.to('#o-name-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 172.090);
+  rise('#on-c', 161.78); up('#on-k', 161.98, 12); up('#on-cmd', 162.28, 12);
+  slide('#on-b', 162.13, -24); tl.fromTo('#on-b s', {width:'0%'}, {width:'100%', duration:.4, ease:'power2.out', immediateRender:false}, 164.26);
+  pop('#on-ar', 164.46); pop('#on-a', 164.76);
+
+  // o-csv
+  tl.fromTo('#o-csv-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 188.67);
+  tl.to('#o-csv-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 204.230);
+  rise('#ov-c', 188.77); pop('#ov-i', 190.73); pop('#ov-tag', 196.80);
+  slide('#ov-r', 192.33, 30); slide('#ov-r2', 192.83, 30); pop('#ov-ok', 199.70);
+
+  // o-check
+  tl.fromTo('#o-check-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 205.41);
+  tl.to('#o-check-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 226.620);
+  rise('#ok-c', 205.51); up('#ok-k', 207.35, 12);
+  slide('#ok-0', 211.99, 30); slide('#ok-1', 215.11, 30); slide('#ok-2', 220.07, 30);
+  tl.fromTo('#ok-1', {backgroundColor:'#f8f6fb'}, {backgroundColor:'#fde8ec', duration:.3, ease:'power2.out', yoyo:true, repeat:3, immediateRender:false}, 216.52);
+  pop('#ok-res', 224.88); pop('#ok-t0', 225.38); pop('#ok-t1', 225.63); pop('#ok-t2', 225.88); confetti('ok', 225.28, 300, 360);
+
+  // o-log
+  tl.fromTo('#o-log-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 227.19);
+  tl.to('#o-log-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 243.900);
+  rise('#ol-c', 227.29); pop('#ol-i', 227.49); up('#ol-s', 227.79, 12);
+  slide('#ol-0', 232.10, 30); slide('#ol-1', 233.88, 30); slide('#ol-2', 234.83, 30);
+
+  // o-const
+  tl.fromTo('#o-const-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 244.47);
+  tl.to('#o-const-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 268.760);
+  rise('#oq-c', 244.57); pop('#oq-a', 245.78); draw('#oq-ar path', 246.38, .4); pop('#oq-b', 246.78);
+  up('#oq-t', 250.83, 12); sweep('#oq-t .hl', 251.43); up('#oq-q', 258.32, 12); pop('#oq-ok', 262.03);
+
+  // o-allow
+  tl.fromTo('#o-allow-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 284.45);
+  tl.to('#o-allow-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 291.330);
+  rise('#oa-c', 284.55); up('#oa-k', 284.75, 12); pop('#oa-m', 286.68); pop('#oa-o', 288.61);
+
+  // o-why
+  tl.fromTo('#o-why-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 308.38);
+  tl.to('#o-why-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 326.530);
+  rise('#ow-c', 308.48); up('#ow-k', 310.20, 12); slide('#ow-1', 314.54, 30); slide('#ow-2', 317.76, 30); pop('#ow-ok', 321.66);
+
+  // o-end
+  tl.fromTo('#o-end-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 334.40);
+  
+  tl.fromTo('#oe-ph', {opacity:0, y:80, scale:.9}, {opacity:1, y:0, scale:1, duration:.8, ease:'back.out(1.5)'}, 334.70);
+  up('#oe-k', 335.20, 16); up('#oe-h', 335.50, 30); rise('#oe-n', 336.40);
+
+  tl.fromTo('#endfade', { opacity: 0 }, { opacity: 1, duration: .8, ease: 'power1.in' }, 351.960);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+})();
+</script>
+</body>
+</html>
