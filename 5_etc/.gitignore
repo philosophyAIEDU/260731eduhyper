@@ -27,6 +27,16 @@ videos/*/public/fonts/malgun*.ttf
 
 *.log
 
+# API 키 — 절대 저장소에 올리지 않습니다
+.env
+
+# 인사이트 영상 소재 (Pixabay 약관상 원본 재배포 금지, 내려받아 다시 받을 수 있음)
+videos/*/assets/media/visuals/
+videos/*/assets/media/narration.*
+videos/*/edit/candidates/
+videos/*/edit/pixabay-cache/
+videos/*/edit/tmp/
+
 # 시스템
 .DS_Store
 Thumbs.db
@@ -34,3 +44,4 @@ desktop.ini
 
 # 업로드용 완성 영상 (Git LFS)
 !upload-videos/*.mp4
+

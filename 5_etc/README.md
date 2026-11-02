@@ -371,6 +371,11 @@ scripts/               터미널에서 쓰는 경우용 (데스크탑 앱에서�
 videos/                완성한 영상 프로젝트들 (HyperFrames)
 remotion/              같은 영상을 Remotion(React)으로 만드는 키트 — remotion/README.md
 upload-videos/         완성 MP4 (Git LFS)
+../1_작업할 영상/       새 영상 자료를 넣는 곳 (저장소 제외)
+../2_완성 영상/         완성 MP4 (저장소 제외)
+../3_원본 보관/         작업이 끝난 원본 (저장소 제외)
+../4_이미지 자료/       캐릭터 등 자주 쓰는 이미지
+../.claude/CLAUDE.md    Claude Code 규칙서
 ```
 
 `CLAUDE.md` 가 이 키트의 핵심입니다. Claude 가 이 파일을 읽고 함정을 미리 알기 때문에,

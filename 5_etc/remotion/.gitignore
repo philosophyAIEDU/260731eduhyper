@@ -2,3 +2,5 @@ node_modules/
 out/
 # 원본 영상에서 뽑은 오디오 — 각자 추출 (README 참고)
 public/*/narration.*
+# 인사이트 영상 소재(Pixabay·Gemini)는 저장소에 올리지 않는다
+public/*/visuals/
