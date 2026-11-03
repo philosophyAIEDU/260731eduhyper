@@ -1,0 +1,1689 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>필로소피 AI 봉사단 2기 첫 회의</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+@font-face { font-family: "Pretendard"; src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations"); font-weight: 45 920; font-style: normal; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #fdf6ee; }
+:root { --ink: #34314a; --ink-soft: #5b5873; --hl-y: rgba(255, 220, 120, .85); }
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Pretendard", sans-serif; color: var(--ink); background: #000; }
+#vwrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+#vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#endfade { position: absolute; inset: 0; z-index: 20; background: #000; opacity: 0; pointer-events: none; }
+
+.cover { position: absolute; inset: 0; z-index: 2; }
+.cov-in { position: absolute; inset: 0; overflow: hidden; opacity: 0; background: linear-gradient(135deg, #fff6ee 0%, #fdf1f4 45%, #f1f0ff 100%); }
+.blob { position: absolute; border-radius: 50%; opacity: .75; filter: blur(30px); }
+
+.cap { position: absolute; left: 0; right: 0; bottom: 52px; z-index: 8; display: flex; justify-content: center; pointer-events: none; }
+.cap span { max-width: 1900px; padding: 8px 34px 14px; background: #000; color: #fff; word-break: keep-all; display: flex; align-items: center; justify-content: center;
+  font-size: 62px; font-weight: 800; line-height: 1.2; text-align: center; letter-spacing: -.01em; }
+.cap .nm { font-style: normal; display: inline-block; filter: blur(12px); opacity: .9; }
+.mask { position: absolute; z-index: 1; border-radius: 4px; }
+
+.scene { position: absolute; inset: 0; }
+.scene.full { z-index: 3; }
+.scene.ov { z-index: 4; }
+.sc { position: absolute; inset: 0; opacity: 0; }
+
+.card { position: absolute; display: block; background: rgba(255, 255, 255, .95); border: 2px solid #fff; border-radius: 40px;
+  box-shadow: 0 26px 60px rgba(80, 60, 70, .16), 0 6px 18px rgba(80, 60, 70, .07); }
+.center-col { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 34px; }
+.pill { display: inline-flex; align-items: center; padding: 12px 28px; border-radius: 999px; background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e8da;
+  font-size: 30px; font-weight: 750; color: #9a4f35; white-space: nowrap; }
+.pill-sm { font-size: 24px; padding: 8px 18px; align-self: flex-start; }
+.h1 { font-size: 100px; font-weight: 900; line-height: 1.12; letter-spacing: -.035em; text-align: center; word-break: keep-all; }
+.h2 { font-size: 66px; font-weight: 900; line-height: 1.2; letter-spacing: -.03em; text-align: center; word-break: keep-all; }
+.hl { background-image: linear-gradient(var(--hl-y), var(--hl-y)); background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 38%; padding: 0 4px; }
+.icb { display: flex; align-items: center; justify-content: center; flex: 0 0 auto; width: 76px; height: 76px; border-radius: 50%; padding: 17px; box-shadow: inset 0 0 0 4px rgba(255,255,255,.7); }
+.icb svg { display: block; width: 100%; height: 100%; }
+.icb.lg { width: 120px; height: 120px; padding: 27px; }
+.icb.sm { width: 54px; height: 54px; padding: 12px; }
+.hdr { position: absolute; left: 0; right: 0; top: 90px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.flowline { position: absolute; left: 0; right: 0; top: 790px; text-align: center; font-size: 40px; font-weight: 750; color: var(--ink-soft); }
+.flowline i { font-style: normal; font-weight: 900; color: #ef8a6f; padding: 0 10px; }
+.stn { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #34314a; color: #fff; font-size: 28px; font-weight: 900; flex: 0 0 auto; }
+.stn.sm { width: 40px; height: 40px; font-size: 22px; }
+
+/* title */
+.hero-ph { position: absolute; left: 130px; top: 200px; width: 430px; height: auto; filter: drop-shadow(0 24px 30px rgba(80, 60, 90, .22)); }
+.hero { left: 640px; top: 230px; width: 1140px; padding: 60px 60px 66px; display: flex; flex-direction: column; align-items: center; gap: 34px; }
+.ep { display: flex; align-items: center; gap: 18px; padding: 14px 36px; border-radius: 999px; background: #ffe6dc; font-size: 42px; font-weight: 700; color: #9a4f35; }
+.ep b { font-weight: 900; color: #d0603f; }
+
+/* gen 1 stats */
+.statrow { position: absolute; left: 0; right: 0; top: 330px; display: flex; justify-content: center; gap: 34px; }
+.statc { position: relative; width: 380px; height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px; text-align: center; }
+.statc b { font-size: 76px; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
+.statc span { font-size: 32px; font-weight: 700; color: var(--ink-soft); line-height: 1.3; word-break: keep-all; }
+
+/* gen 2 */
+.vsrow { position: absolute; left: 0; right: 0; top: 330px; display: flex; justify-content: center; align-items: center; gap: 40px; }
+.vsc { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 34px 60px; border-radius: 36px; background: rgba(255,255,255,.92); box-shadow: 0 20px 50px rgba(80,60,70,.14); }
+.vsc.hot { box-shadow: 0 0 0 8px rgba(255, 199, 180, .55), 0 26px 60px rgba(239, 138, 111, .22); }
+.vsl { font-size: 30px; font-weight: 850; color: var(--ink-soft); }
+.vsc b { font-size: 60px; font-weight: 900; letter-spacing: -.03em; }
+.vsc small { font-size: 28px; font-weight: 650; color: var(--ink-soft); }
+.vsar { font-size: 70px; font-weight: 900; color: #c4583a; }
+.steprow { position: absolute; left: 0; right: 0; top: 520px; display: flex; justify-content: center; align-items: center; gap: 22px; }
+.stepc { position: relative; width: 470px; height: 330px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 26px; text-align: center; }
+.stepc .stn { position: absolute; left: 28px; top: 26px; }
+.stepc b { font-size: 46px; font-weight: 900; letter-spacing: -.03em; }
+.stepc span:last-child { font-size: 30px; font-weight: 650; color: var(--ink-soft); }
+.sar { font-size: 60px; font-weight: 900; color: #b4a9d3; }
+
+/* quote */
+.bigquote { left: 260px; top: 200px; width: 1400px; padding: 70px 90px 64px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
+.qmk { position: absolute; left: 50px; top: -30px; font-size: 220px; line-height: 1; font-weight: 900; color: #f6dccf; }
+.qline1 { font-size: 64px; font-weight: 700; letter-spacing: -.03em; }
+.qline2 { font-size: 88px; font-weight: 900; letter-spacing: -.035em; }
+.qen { margin-top: 10px; font-size: 32px; font-weight: 600; font-style: italic; color: var(--ink-soft); }
+.note { position: absolute; left: 0; right: 0; top: 720px; text-align: center; font-size: 40px; font-weight: 700; color: var(--ink-soft); }
+
+/* bonjeon */
+.mega { font-size: 190px; font-weight: 900; letter-spacing: -.05em; line-height: 1.05; }
+.bjrow { display: flex; align-items: center; gap: 40px; }
+.bjc { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 34px 54px; }
+.bjc span { font-size: 32px; font-weight: 650; color: var(--ink-soft); }
+.bjc b { font-size: 48px; font-weight: 900; letter-spacing: -.03em; }
+.bjc.hot { box-shadow: 0 0 0 8px rgba(160, 225, 195, .6), 0 26px 60px rgba(63, 168, 119, .2); }
+
+/* topics / members intro */
+.duo { position: absolute; left: 0; right: 0; top: 340px; display: flex; justify-content: center; gap: 50px; }
+.duoc { position: relative; width: 640px; height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
+.duoc .stn { position: absolute; left: 30px; top: 28px; }
+.duoc b { font-size: 52px; font-weight: 900; letter-spacing: -.03em; }
+.duoc span:last-child { font-size: 36px; font-weight: 700; color: var(--ink-soft); }
+.catrow { position: absolute; left: 0; right: 0; top: 340px; display: flex; justify-content: center; gap: 30px; }
+.catc { position: relative; width: 380px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+.catc b { font-size: 38px; font-weight: 900; letter-spacing: -.02em; }
+
+/* closing */
+.closelist { position: absolute; left: 200px; top: 330px; width: 1060px; display: flex; flex-direction: column; gap: 28px; }
+.cli { position: relative; display: flex; align-items: center; gap: 28px; padding: 26px 40px; border-radius: 32px; }
+.cli b { font-size: 46px; font-weight: 850; letter-spacing: -.02em; }
+.close-ph { position: absolute; right: 150px; top: 260px; width: 420px; height: auto; filter: drop-shadow(0 24px 30px rgba(80, 60, 90, .22)); }
+.endbig { position: absolute; left: 0; right: 520px; top: 400px; text-align: center; font-size: 130px; font-weight: 900; letter-spacing: -.04em; color: #34314a; }
+
+/* member scenes */
+.mtop { position: absolute; left: 110px; right: 110px; top: 54px; display: flex; align-items: center; gap: 14px; }
+.mlab { font-size: 30px; font-weight: 900; color: var(--ink); margin-right: 18px; white-space: nowrap; }
+.mcat { padding: 10px 22px; border-radius: 999px; background: rgba(255,255,255,.7); box-shadow: inset 0 0 0 2px rgba(0,0,0,.05); font-size: 26px; font-weight: 800; color: #8d89a3; white-space: nowrap; }
+.prof { left: 110px; top: 160px; width: 540px; height: 720px; display: flex; flex-direction: column; align-items: center; gap: 22px; padding: 60px 40px 40px; text-align: center; }
+.pnum { position: absolute; left: 30px; top: 26px; font-size: 24px; font-weight: 900; letter-spacing: .06em; color: var(--ac); }
+.pav { display: flex; align-items: center; justify-content: center; width: 210px; height: 210px; border-radius: 50%; padding: 48px; box-shadow: inset 0 0 0 8px rgba(255,255,255,.75), 0 16px 36px rgba(80,60,70,.12); }
+.pav svg { display: block; width: 100%; height: 100%; }
+.prole { font-size: 72px; font-weight: 900; letter-spacing: -.03em; line-height: 1.1; }
+.psub { font-size: 32px; font-weight: 700; color: var(--ink-soft); line-height: 1.3; word-break: keep-all; }
+.ptags { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 8px; }
+.ptag { padding: 10px 22px; border-radius: 999px; background: var(--bg); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ac); font-size: 28px; font-weight: 850; white-space: nowrap; }
+.pg { position: absolute; left: 710px; top: 160px; width: 1100px; height: 720px; display: flex; flex-direction: column; gap: 26px; opacity: 0; }
+.pgh { display: flex; align-items: center; gap: 20px; }
+.pgc { padding: 8px 20px; border-radius: 14px; color: #fff; font-size: 26px; font-weight: 850; white-space: nowrap; }
+.pgh b { font-size: 54px; font-weight: 900; letter-spacing: -.03em; }
+.pgi { display: flex; flex-direction: column; gap: 22px; }
+.it { position: relative; }
+.card-it { display: flex; align-items: center; gap: 28px; padding: 24px 34px; border-radius: 30px; background: rgba(255,255,255,.95); box-shadow: 0 16px 40px rgba(80,60,70,.12); }
+.itx { display: flex; flex-direction: column; gap: 6px; }
+.itx b { font-size: 44px; font-weight: 850; letter-spacing: -.025em; line-height: 1.2; word-break: keep-all; }
+.itx span { font-size: 30px; font-weight: 600; color: var(--ink-soft); line-height: 1.3; word-break: keep-all; }
+.q-it { padding: 44px 56px 46px 90px; border-radius: 34px; background: rgba(255,255,255,.95); box-shadow: 0 16px 40px rgba(80,60,70,.12), inset 6px 0 0 var(--ac); }
+.qm { position: absolute; left: 26px; top: -6px; font-size: 140px; font-weight: 900; line-height: 1; color: var(--ac); opacity: .35; }
+.q-it p { font-size: 50px; font-weight: 800; line-height: 1.35; letter-spacing: -.03em; word-break: keep-all; }
+.q-it em { font-style: normal; color: var(--ac); }
+.st-it { display: flex; align-items: baseline; gap: 26px; padding: 22px 34px; border-radius: 30px; background: rgba(255,255,255,.95); box-shadow: 0 16px 40px rgba(80,60,70,.12); align-self: flex-start; }
+.st-it b { font-size: 90px; font-weight: 900; letter-spacing: -.04em; line-height: 1; }
+.st-it span { font-size: 36px; font-weight: 750; color: var(--ink-soft); }
+.fl-it { display: flex; flex-direction: column; gap: 22px; padding: 34px; border-radius: 30px; background: rgba(255,255,255,.95); box-shadow: 0 16px 40px rgba(80,60,70,.12); }
+.flr { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+.fls { padding: 18px 28px; border-radius: 22px; background: var(--bg); box-shadow: inset 0 0 0 3px var(--ac); font-size: 38px; font-weight: 900; letter-spacing: -.02em; white-space: nowrap; }
+.fla { font-size: 50px; font-weight: 900; color: #b4a9d3; }
+.flsub { font-size: 32px; font-weight: 650; color: var(--ink-soft); }
+
+/* overlays on PPT */
+.ovc { position: absolute; display: flex; flex-direction: column; gap: 14px; padding: 26px 28px; border-radius: 28px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 22px 50px rgba(30, 24, 40, .28), inset 0 0 0 2px #f3ebe2; }
+.ovc.rside { left: 1470px; top: 250px; width: 410px; }
+.vstep { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: 18px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; font-size: 30px; }
+.vstep b { font-weight: 850; }
+.vdown { align-self: center; font-size: 26px; font-weight: 900; color: #b4a9d3; line-height: 1; }
+.ovline { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 18px; font-size: 29px; font-weight: 650; line-height: 1.3; word-break: keep-all; }
+.ovline svg { display: block; flex: 0 0 auto; width: 40px; height: 40px; }
+.ovline b { font-weight: 900; }
+.ovline.no { background: #fde8ec; color: #8a3550; }
+.ovline.yes { background: #e3f6ec; color: #24533f; }
+.ovhead { display: flex; align-items: center; gap: 16px; }
+.ovh { font-size: 28px; font-weight: 850; color: var(--ink-soft); }
+.ovt { font-size: 40px; font-weight: 650; line-height: 1.3; letter-spacing: -.02em; }
+.ovt b { font-weight: 900; color: #6b57c9; }
+.okpill { display: inline-flex; align-items: center; gap: 12px; align-self: flex-start; padding: 8px 20px 8px 8px; border-radius: 999px; background: #e3f6ec; font-size: 26px; font-weight: 800; color: #24533f; }
+.okpill svg { display: block; width: 38px; height: 38px; padding: 6px; border-radius: 50%; background: #3fa877; }
+.zlabel { position: absolute; left: 440px; top: 4px; width: 260px; height: 36px; border-radius: 8px; background: #1c1c1e; color: #d9d6e3; font-size: 20px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.rpanel { position: absolute; left: 1550px; top: 0; width: 370px; height: 1080px; padding: 40px 24px; display: flex; flex-direction: column; gap: 20px;
+  background: linear-gradient(160deg, #fff6ee 0%, #fdf1f4 50%, #f1f0ff 100%); box-shadow: -14px 0 40px rgba(0,0,0,.35); }
+.rpg { position: absolute; left: 24px; right: 24px; top: 110px; display: flex; flex-direction: column; gap: 16px; }
+.rph { font-size: 28px; font-weight: 900; letter-spacing: -.02em; }
+.rpi { display: flex; align-items: center; gap: 14px; padding: 16px 16px; border-radius: 22px; background: rgba(255,255,255,.96); box-shadow: 0 10px 26px rgba(80,60,70,.12); font-size: 25px; font-weight: 650; line-height: 1.3; word-break: keep-all; }
+.rpi b { font-weight: 900; }
+.rpnote { font-size: 24px; font-weight: 750; color: #9a4f35; padding: 10px 16px; border-radius: 16px; background: #fff1e8; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="1780.5" data-width="1920" data-height="1080">
+  <div id="vwrap"><video id="vid" class="clip" src="assets/media/export.mp4" playsinline data-has-audio="true" data-start="0" data-duration="1780.5" data-track-index="0"></video></div>
+
+
+<div id="cv0" class="cover clip" data-start="0.000" data-duration="7.900" data-track-index="2"><div id="cv0-in" class="cov-in"><span id="cv0-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv0-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv0-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv0-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv0-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+<div id="cv1" class="cover clip" data-start="13.400" data-duration="29.800" data-track-index="2"><div id="cv1-in" class="cov-in"><span id="cv1-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv1-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv1-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv1-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv1-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+<div id="cv2" class="cover clip" data-start="59.300" data-duration="61.720" data-track-index="2"><div id="cv2-in" class="cov-in"><span id="cv2-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv2-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv2-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv2-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv2-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+<div id="cv3" class="cover clip" data-start="210.180" data-duration="20.940" data-track-index="2"><div id="cv3-in" class="cov-in"><span id="cv3-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv3-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv3-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv3-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv3-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+<div id="cv4" class="cover clip" data-start="245.120" data-duration="33.400" data-track-index="2"><div id="cv4-in" class="cov-in"><span id="cv4-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv4-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv4-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv4-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv4-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+<div id="cv5" class="cover clip" data-start="344.420" data-duration="28.300" data-track-index="2"><div id="cv5-in" class="cov-in"><span id="cv5-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv5-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv5-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv5-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv5-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+<div id="cv6" class="cover clip" data-start="447.630" data-duration="813.990" data-track-index="2"><div id="cv6-in" class="cov-in"><span id="cv6-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv6-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv6-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv6-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv6-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+<div id="cv7" class="cover clip" data-start="1391.120" data-duration="227.610" data-track-index="2"><div id="cv7-in" class="cov-in"><span id="cv7-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv7-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv7-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv7-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv7-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+<div id="cv8" class="cover clip" data-start="1739.000" data-duration="41.500" data-track-index="2"><div id="cv8-in" class="cov-in"><span id="cv8-bl0" class="blob" data-layout-allow-overflow style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cv8-bl1" class="blob" data-layout-allow-overflow style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cv8-bl2" class="blob" data-layout-allow-overflow style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cv8-bl3" class="blob" data-layout-allow-overflow style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cv8-bl4" class="blob" data-layout-allow-overflow style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span></div></div>
+
+<div id="h-title" class="scene full clip" data-start="0.200" data-duration="7.700" data-track-index="3">
+  <div id="h-title-sc" class="sc">
+  <img id="ht-ph" class="hero-ph" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+  <div id="ht-c" class="card hero">
+    <span id="ht-k" class="pill">교육자를 위한 AI 재능기부 모임</span>
+    <h1 id="ht-h" class="h1">필로소피 AI 봉사단 <span class="hl">2기</span></h1>
+    <div id="ht-s" class="ep"><b>첫 번째</b><span>온라인 회의</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="h-gen1" class="scene full clip" data-start="13.400" data-duration="29.800" data-track-index="3">
+  <div id="h-gen1-sc" class="sc">
+  <div class="hdr"><span id="g1-k" class="pill">1기 돌아보기</span><h2 id="g1-h" class="h2">2026년 1월 ~ 6월</h2></div>
+  <div class="statrow">
+    <div id="g1-0" class="card statc"><span class="icb lg" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="42" rx="6"/><path d="M8 24h48M20 6v12M44 6v12"/></svg></span><b style="color:#5b93dc">3회</b><span>AI 스터디</span></div>
+    <div id="g1-1" class="card statc"><span class="icb lg" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><path d="M38 24c-1-3-4-4-6-4-4 0-7 2-7 5 0 7 14 4 14 11 0 3-3 5-7 5-3 0-6-1-7-4M32 16v4M32 44v4"/></svg></span><b style="color:#b8820f">5만 원</b><span>참가비</span></div>
+    <div id="g1-2" class="card statc"><span class="icb lg" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="14" width="40" height="28" rx="3"/><path d="M6 50h52l-4-8H10z"/></svg></span><b style="color:#ef8a6f">5대</b><span>리퍼 노트북 구매</span></div>
+    <div id="g1-3" class="card statc"><span class="icb lg" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="26" width="44" height="28" rx="3"/><path d="M6 18h52v8H6zM32 18v36M32 18c-4-10-16-10-14-2 1 3 8 3 14 2zM32 18c4-10 16-10 14-2-1 3-8 3-14 2z"/></svg></span><b style="color:#3fa877">아이들에게</b><span>보육원 아동 4명 + 지역아동센터</span></div>
+  </div>
+  <div id="g1-ar" class="flowline">스터디 참가비 <i>→</i> 리퍼 노트북 <i>→</i> 아이들에게 선물</div>
+  </div>
+</div>
+
+<div id="h-gen2" class="scene full clip" data-start="59.300" data-duration="61.720" data-track-index="3">
+  <div id="h-gen2-sc" class="sc">
+  <div class="hdr"><span id="g2-k" class="pill">봉사단 2기</span><h2 id="g2-h" class="h2">2026년 11월 ~ 내년 6월 · <span class="hl">7개월</span></h2></div>
+  <div id="g2-vs" class="vsrow">
+    <div id="g2-a" class="vsc"><span class="vsl">1기</span><b>혼자 수업</b></div>
+    <span id="g2-ar" class="vsar">→</span>
+    <div id="g2-b" class="vsc hot"><span class="vsl">2기</span><b>함께 발표</b><small>어드밴스드 단원들과</small></div>
+  </div>
+  <div class="steprow">
+    <div id="g2-s0" class="card stepc"><span class="stn">1</span><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="24" y="8" width="16" height="30" rx="8"/><path d="M16 30a16 16 0 0 0 32 0M32 46v10M22 56h20"/></svg></span><b>격주 AI 발표</b><span>2주에 한 번 · 돌아가며</span></div><span id="g2-sa1" class="sar">›</span>
+    <div id="g2-s1" class="card stepc"><span class="stn">2</span><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="48" height="30" rx="4"/><path d="M32 40v8M20 56l12-8 12 8"/><path d="M18 30l8-8 6 6 10-10"/></svg></span><b>오프라인 컨퍼런스</b><span>2회 · 내년 2월 · 6월</span></div><span id="g2-sa2" class="sar">›</span>
+    <div id="g2-s2" class="card stepc"><span class="stn">3</span><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="26" width="44" height="28" rx="3"/><path d="M6 18h52v8H6zM32 18v36M32 18c-4-10-16-10-14-2 1 3 8 3 14 2zM32 18c4-10 16-10 14-2-1 3-8 3-14 2z"/></svg></span><b>노트북 선물</b><span>참가비로 보육원 아동들에게</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="h-quote" class="scene full clip" data-start="210.180" data-duration="20.940" data-track-index="3">
+  <div id="h-quote-sc" class="sc">
+  <div id="hq-c" class="card bigquote">
+    <span class="qmk">“</span>
+    <p id="hq-1" class="qline1">미래를 예측하는 가장 좋은 방법은</p>
+    <p id="hq-2" class="qline2"><span class="hl">그것을 만드는 것</span>이다</p>
+    <span id="hq-en" class="qen">The best way to predict the future is to create it.</span>
+  </div>
+  <div id="hq-n" class="note">AI에 대한 부정적인 예측 속에서, 우리는 좋은 일을 만들어 보기로</div>
+  </div>
+</div>
+
+<div id="h-bonjeon" class="scene full clip" data-start="245.120" data-duration="33.400" data-track-index="3">
+  <div id="h-bonjeon-sc" class="sc">
+  <div class="center-col" style="top:150px">
+    <span id="hb-k" class="pill">우리가 시작하는 이유</span>
+    <div id="hb-h" class="mega">밑져야 <span class="hl">본전</span></div>
+    <div id="hb-r" class="bjrow">
+      <div id="hb-a" class="card bjc"><span>어차피 AI 때문에</span><b>좋지 않은 미래가 온다면</b></div>
+      <span id="hb-ar" class="vsar">→</span>
+      <div id="hb-b" class="card bjc hot"><span>조금이라도</span><b>좋게 만들기 위해</b></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="h-topics" class="scene full clip" data-start="344.420" data-duration="28.300" data-track-index="3">
+  <div id="h-topics-sc" class="sc">
+  <div class="hdr"><span id="tp-k" class="pill">필로소피가 준비할 발표</span><h2 id="tp-h" class="h2">교육자분들을 위한 <span class="hl">클로드 코드</span></h2></div>
+  <div class="duo">
+    <div id="tp-1" class="card duoc"><span class="stn">1</span><span class="icb lg" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></span><b>클로드 코드 CLI</b><span>반복 업무 해결하기</span></div>
+    <div id="tp-2" class="card duoc"><span class="stn">2</span><span class="icb lg" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="14" width="40" height="28" rx="3"/><path d="M6 50h52l-4-8H10z"/></svg></span><b>클로드 코드 데스크톱</b><span>학습 앱 만들고 배포하기</span></div>
+  </div>
+  <div id="tp-n" class="flowline">내 발표 차례 <i>+</i> 오프라인 컨퍼런스에서</div>
+  </div>
+</div>
+
+<div id="h-members" class="scene full clip" data-start="447.630" data-duration="11.690" data-track-index="3">
+  <div id="h-members-sc" class="sc">
+  <div class="hdr"><span id="hm-k" class="pill">이제 들어 볼 차례</span><h2 id="hm-h" class="h2">봉사 단원 소개</h2></div>
+  <div class="catrow"><div id="hm-0" class="card catc"><span class="icb lg" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 34V16a4 4 0 0 1 8 0v14M30 28V12a4 4 0 0 1 8 0v18M38 28v-12a4 4 0 0 1 8 0v22c0 10-6 16-15 16-6 0-10-3-13-8l-6-10a4 4 0 0 1 7-4l3 4"/></svg></span><b>나는 누구인가요</b></div><div id="hm-1" class="card catc"><span class="icb lg" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26l28-12 28 12-28 12z"/><path d="M16 32v12c8 6 24 6 32 0V32M58 27v14"/></svg></span><b>나의 전문 분야</b></div><div id="hm-2" class="card catc"><span class="icb lg" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#3fa877" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#3fa877" stroke-width="1.5"/></svg></span><b>요즘 AI로 하는 일</b></div><div id="hm-3" class="card catc"><span class="icb lg" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="24" y="8" width="16" height="30" rx="8"/><path d="M16 30a16 16 0 0 0 32 0M32 46v10M22 56h20"/></svg></span><b>진행하실 발표 내용</b></div></div>
+  <div id="hm-n" class="flowline">교수님 · 선생님 · 원장님 · 박사님 <i>12명</i>의 이야기</div>
+  </div>
+</div>
+
+<div id="h-close" class="scene full clip" data-start="1739.000" data-duration="41.500" data-track-index="3">
+  <div id="h-close-sc" class="sc">
+  <div class="hdr"><span id="hc-k" class="pill">오늘 회의 정리</span><h2 id="hc-h" class="h2">함께 만들어 갈 봉사단 2기</h2></div>
+  <div class="closelist">
+    <div id="hc-0" class="card cli"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></span><b>발표 일정은 카톡방에서 정해요</b></div>
+    <div id="hc-1" class="card cli"><span class="icb " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e2678a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#e2678a"/></svg></span><b>부담 없이, 할 수 있는 만큼만</b></div>
+    <div id="hc-2" class="card cli"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="48" height="30" rx="4"/><path d="M32 40v8M20 56l12-8 12 8"/><path d="M18 30l8-8 6 6 10-10"/></svg></span><b>오프라인 강의는 준비한 대로 진행</b></div>
+  </div>
+  <img id="hc-ph" class="close-ph" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+  <div id="hc-end" class="endbig">수고하셨습니다</div>
+  </div>
+</div>
+
+<div id="o-pbl" class="scene ov clip" data-start="1301.900" data-duration="35.920" data-track-index="4">
+  <div id="o-pbl-sc" class="sc">
+  <div id="op-c" class="ovc rside">
+    <span id="op-k" class="pill pill-sm">프로젝트 기반 학습</span>
+    <div id="op-0" class="vstep"><span class="stn sm">1</span><b>관심사 발견</b></div><span class="vdown">↓</span><div id="op-1" class="vstep"><span class="stn sm">2</span><b>깊이 공감</b></div><span class="vdown">↓</span><div id="op-2" class="vstep"><span class="stn sm">3</span><b>함께 탐구</b></div><span class="vdown">↓</span><div id="op-3" class="vstep"><span class="stn sm">4</span><b>실제 경험으로 확장</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-think" class="scene ov clip" data-start="1337.990" data-duration="15.330" data-track-index="4">
+  <div id="o-think-sc" class="sc">
+  <div id="ot-c" class="ovc rside">
+    <span id="ot-k" class="pill pill-sm">AI와 함께하는 수업</span>
+    <div id="ot-a" class="ovline no"><svg viewBox="0 0 64 64" fill="none" stroke="#e0607f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg><span>AI가 생각을 <b>대신</b>하는 수업</span></div>
+    <div id="ot-b" class="ovline yes"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg><span>아이들의 생각이 <b>담기는</b> AI 콘텐츠</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-topic" class="scene ov clip" data-start="1353.530" data-duration="35.590" data-track-index="4">
+  <div id="o-topic-sc" class="sc">
+  <div id="oc-c" class="ovc rside">
+    <div class="ovhead"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="24" y="8" width="16" height="30" rx="8"/><path d="M16 30a16 16 0 0 0 32 0M32 46v10M22 56h20"/></svg></span><span class="ovh">진행하실 발표 내용</span></div>
+    <div id="oc-t" class="ovt">학생의 관심사를<br><b>AI 프로젝트 수업</b>으로<br>연결하는 방법</div>
+    <div id="oc-n" class="okpill"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg><span>실제 수업 경험 공유</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-panel" class="scene ov clip" data-start="1618.730" data-duration="120.270" data-track-index="4">
+  <div id="o-panel-sc" class="sc">
+  <div id="rp" class="rpanel">
+    <span id="rp-k" class="pill pill-sm">단원 소개</span>
+    <div id="rp-p0" class="rpg">
+      <div id="rp-a0" class="rpi"><span class="icb sm" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 56s18-17 18-30a18 18 0 0 0-36 0c0 13 18 30 18 30z"/><circle cx="32" cy="26" r="6"/></svg></span><span><b>대구</b> 에듀테크 기업 재직</span></div>
+      <div id="rp-a1" class="rpi"><span class="icb sm" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 20L10 32l12 12M42 20l12 12-12 12M36 14l-8 36"/></svg></span><span><b>전자전기공학</b><br>임베디드 · 안드로이드 · OS</span></div>
+      <div id="rp-a2" class="rpi"><span class="icb sm" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></span><span>연구 기획 · R&amp;D 전략<br><b>10년+</b></span></div>
+    </div>
+    <div id="rp-p1" class="rpg">
+      <div id="rp-b0" class="rpi"><span class="icb sm" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="14" width="40" height="28" rx="3"/><path d="M6 50h52l-4-8H10z"/></svg></span><span>올해부터 <b>바이브 코딩</b><br>→ 학교 현장 적용</span></div>
+      <div id="rp-b1" class="rpi"><span class="icb sm" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="8"/><circle cx="44" cy="26" r="6"/><path d="M8 52c2-9 8-14 16-14s14 5 16 14M40 38c7 0 13 4 16 12"/></svg></span><span>주 대상은<br><b>초 · 중등</b> 교육 현장</span></div>
+    </div>
+    <div id="rp-p2" class="rpg">
+      <span class="rph">교육 현장의 AI, 세 가지</span>
+      <div id="rp-c0" class="rpi"><span class="icb sm" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M36 6L14 36h16l-4 22 22-30H32z" fill="#b8820f" stroke-width="2"/></svg></span><span>선생님 <b>업무 경감</b></span></div>
+      <div id="rp-c1" class="rpi"><span class="icb sm" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="48" height="30" rx="4"/><path d="M32 40v8M20 56l12-8 12 8"/><path d="M18 30l8-8 6 6 10-10"/></svg></span><span><b>수업</b>에 AI 활용</span></div>
+      <div id="rp-c2" class="rpi star"><span class="icb sm" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6l22 8v16c0 14-10 23-22 28C20 53 10 44 10 30V14z"/><path d="M22 32l7 7 13-14"/></svg></span><span><b>AI 리터러시</b><br>책임감 있고 안전하게</span></div>
+      <div id="rp-c3" class="rpnote">다루는 곳이 아직 드물어요</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="m1" class="scene full clip" data-start="459.470" data-duration="65.250" data-track-index="3">
+  <div id="m1-sc" class="sc">
+  <div class="mtop">
+    <span id="m1-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m1-c0" class="mcat">나는 누구인가요</span><span id="m1-c1" class="mcat">나의 전문 분야</span><span id="m1-c2" class="mcat">요즘 AI로 하는 일</span><span id="m1-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m1-pf" class="card prof" style="--ac:#5b93dc">
+    <span class="pnum">단원 01</span>
+    <span class="pav" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26l28-12 28 12-28 12z"/><path d="M16 32v12c8 6 24 6 32 0V32M58 27v14"/></svg></span>
+    <b class="prole">손정우 교수님</b>
+    <span class="psub">학생들의 AI 활용 고민</span>
+    <div class="ptags"><span id="m1-t0" class="ptag" style="--ac:#5b93dc;--bg:#e2eeff">학생 AI 접근성</span><span id="m1-t1" class="ptag" style="--ac:#5b93dc;--bg:#e2eeff">제미나이</span><span id="m1-t2" class="ptag" style="--ac:#5b93dc;--bg:#e2eeff">스킬 활용</span></div>
+  </div>
+  
+  <div id="m1-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#5b93dc">요즘 AI로 하는 일</span><b>학생들의 현실</b></div>
+    <div class="pgi"><div id="m1-p0-i0" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><path d="M38 24c-1-3-4-4-6-4-4 0-7 2-7 5 0 7 14 4 14 11 0 3-3 5-7 5-3 0-6-1-7-4M32 16v4M32 44v4"/></svg></span><div class="itx"><b>가장 큰 문제</b><span>학생들은 유료 AI를 쓰기 어렵다</span></div></div><div id="m1-p0-i1" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#5b93dc" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#5b93dc" stroke-width="1.5"/></svg></span><div class="itx"><b>대학생은 제미나이 1년 무료</b><span>연장도 가능</span></div></div><div id="m1-p0-i2" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#5b93dc"/></svg></span><div class="itx"><b>작업은 클로드가 최고지만</b><span>학생이 실제로 쓸 수 있는 건 거의 제미나이</span></div></div></div>
+  </div>
+  <div id="m1-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#5b93dc">요즘 AI로 하는 일</span><b>도구는 아직 어렵다</b></div>
+    <div class="pgi"><div id="m1-p1-i0" class="it fl-it"><div class="flr"><span id="m1-p1-i0-s0" class="fls" style="--ac:#5b93dc;--bg:#e2eeff">코덱스</span><span id="m1-p1-i0-a1" class="fla">›</span><span id="m1-p1-i0-s1" class="fls" style="--ac:#5b93dc;--bg:#e2eeff">제미나이 CLI</span><span id="m1-p1-i0-a2" class="fla">›</span><span id="m1-p1-i0-s2" class="fls" style="--ac:#5b93dc;--bg:#e2eeff">안티그래비티</span></div><span id="m1-p1-i0-sub" class="flsub">학생들이 접근하기 너무 어려워해요</span></div></div>
+  </div>
+  <div id="m1-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#5b93dc">요즘 AI로 하는 일</span><b>그래서 지금은 스킬에 집중</b></div>
+    <div class="pgi"><div id="m1-p2-i0" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#5b93dc" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#5b93dc" stroke-width="1.5"/></svg></span><div class="itx"><b>스킬을 잘 만들어</b><span>업무에 활용하는 방법</span></div></div><div id="m1-p2-i1" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M36 6L14 36h16l-4 22 22-30H32z" fill="#5b93dc" stroke-width="2"/></svg></span><div class="itx"><b>프로 요금제 이상이라면</b><span>작업할 때 스킬을 넘겨서 작업</span></div></div><div id="m1-p2-i2" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></span><div class="itx"><b>계속 다듬어 가는 중</b></div></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m2" class="scene full clip" data-start="524.720" data-duration="89.600" data-track-index="3">
+  <div id="m2-sc" class="sc">
+  <div class="mtop">
+    <span id="m2-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m2-c0" class="mcat">나는 누구인가요</span><span id="m2-c1" class="mcat">나의 전문 분야</span><span id="m2-c2" class="mcat">요즘 AI로 하는 일</span><span id="m2-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m2-pf" class="card prof" style="--ac:#ef8a6f">
+    <span class="pnum">단원 02</span>
+    <span class="pav" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="22" r="10"/><path d="M12 54c2-11 10-17 20-17s18 6 20 17"/></svg></span>
+    <b class="prole">박병태 기술사님</b>
+    <span class="psub">직장인 · AI를 체계적으로</span>
+    <div class="ptags"><span id="m2-t0" class="ptag" style="--ac:#ef8a6f;--bg:#ffe6dc">직장인</span><span id="m2-t1" class="ptag" style="--ac:#ef8a6f;--bg:#ffe6dc">AI 강의 열공</span><span id="m2-t2" class="ptag" style="--ac:#ef8a6f;--bg:#ffe6dc">함께 성장</span></div>
+  </div>
+  
+  <div id="m2-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#ef8a6f">나는 누구인가요</span><b>나는 누구인가요</b></div>
+    <div class="pgi"><div id="m2-p0-i0" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="22" r="10"/><path d="M12 54c2-11 10-17 20-17s18 6 20 17"/></svg></span><div class="itx"><b>기술사 · 직장인</b></div></div><div id="m2-p0-i1" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><path d="M27 22l15 10-15 10z" fill="#ef8a6f"/></svg></span><div class="itx"><b>올해 초부터 유튜브로 AI 강의</b><span>좋은 강의를 많이 들어 왔어요</span></div></div><div id="m2-p0-i2" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#ef8a6f"/></svg></span><div class="itx"><b>필로소피 강의가 귀에 쏙쏙</b><span>좋은 일도 많이 하셔서</span></div></div></div>
+  </div>
+  <div id="m2-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#ef8a6f">나는 누구인가요</span><b>봉사단에 참여한 이유</b></div>
+    <div class="pgi"><div id="m2-p1-i0" class="it fl-it"><div class="flr"><span id="m2-p1-i0-s0" class="fls" style="--ac:#ef8a6f;--bg:#ffe6dc">체계적인 AI 공부</span><span id="m2-p1-i0-a1" class="fla">›</span><span id="m2-p1-i0-s1" class="fls" style="--ac:#ef8a6f;--bg:#ffe6dc">전문성 키우기</span><span id="m2-p1-i0-a2" class="fla">›</span><span id="m2-p1-i0-s2" class="fls" style="--ac:#ef8a6f;--bg:#ffe6dc">혼자보다 함께</span></div></div></div>
+  </div>
+  <div id="m2-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#ef8a6f">진행하실 발표 내용</span><b>발표는 이렇게 준비할게요</b></div>
+    <div class="pgi"><div id="m2-p2-i0" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="24" y="8" width="16" height="30" rx="8"/><path d="M16 30a16 16 0 0 0 32 0M32 46v10M22 56h20"/></svg></span><div class="itx"><b>다른 분들 발표를 들어 보고</b><span>어떤 내용을 준비할지 주제 정하기</span></div></div><div id="m2-p2-i1" class="it q-it" style="--ac:#ef8a6f"><span class="qm">“</span><p>실력도 키우고, 좋은 일도 함께</p></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m3" class="scene full clip" data-start="614.320" data-duration="97.600" data-track-index="3">
+  <div id="m3-sc" class="sc">
+  <div class="mtop">
+    <span id="m3-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m3-c0" class="mcat">나는 누구인가요</span><span id="m3-c1" class="mcat">나의 전문 분야</span><span id="m3-c2" class="mcat">요즘 AI로 하는 일</span><span id="m3-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m3-pf" class="card prof" style="--ac:#3fa877">
+    <span class="pnum">단원 03</span>
+    <span class="pav" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="8"/><path d="M32 8v8M32 48v8M8 32h8M48 32h8M15 15l6 6M43 43l6 6M49 15l-6 6M21 43l-6 6"/></svg></span>
+    <b class="prole">임재홍 선생님</b>
+    <span class="psub">공장·시스템 자동화 · 해외 현장</span>
+    <div class="ptags"><span id="m3-t0" class="ptag" style="--ac:#3fa877;--bg:#dcf3e8">베트남 하노이</span><span id="m3-t1" class="ptag" style="--ac:#3fa877;--bg:#dcf3e8">공장 자동화</span><span id="m3-t2" class="ptag" style="--ac:#3fa877;--bg:#dcf3e8">AI 실무</span></div>
+  </div>
+  
+  <div id="m3-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#3fa877">나는 누구인가요</span><b>나는 누구인가요</b></div>
+    <div class="pgi"><div id="m3-p0-i0" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 56s18-17 18-30a18 18 0 0 0-36 0c0 13 18 30 18 30z"/><circle cx="32" cy="26" r="6"/></svg></span><div class="itx"><b>베트남 하노이</b><span>중소기업에서 근무</span></div></div><div id="m3-p0-i1" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="8"/><path d="M32 8v8M32 48v8M8 32h8M48 32h8M15 15l6 6M43 43l6 6M49 15l-6 6M21 43l-6 6"/></svg></span><div class="itx"><b>공장 자동화 · 시스템 자동화</b></div></div></div>
+  </div>
+  <div id="m3-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#3fa877">나의 전문 분야</span><b>AI를 만나기까지</b></div>
+    <div class="pgi"><div id="m3-p1-i0" class="it fl-it"><div class="flr"><span id="m3-p1-i0-s0" class="fls" style="--ac:#3fa877;--bg:#dcf3e8">IT · 공장 자동화</span><span id="m3-p1-i0-a1" class="fla">›</span><span id="m3-p1-i0-s1" class="fls" style="--ac:#3fa877;--bg:#dcf3e8">AI</span><span id="m3-p1-i0-a2" class="fla">›</span><span id="m3-p1-i0-s2" class="fls" style="--ac:#3fa877;--bg:#dcf3e8">필로소피 강좌로 관심 ↑</span></div><span id="m3-p1-i0-sub" class="flsub">지금은 AI 쪽 일을 많이 하고 있어요</span></div></div>
+  </div>
+  <div id="m3-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#3fa877">요즘 AI로 하는 일</span><b>현장에서 느낀 것</b></div>
+    <div class="pgi"><div id="m3-p2-i0" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></span><div class="itx"><b>앞서 본 고민 4번 · 8번</b><span>사고력 키우기 · 수업 참여 높이기</span></div></div><div id="m3-p2-i1" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="8"/><circle cx="44" cy="26" r="6"/><path d="M8 52c2-9 8-14 16-14s14 5 16 14M40 38c7 0 13 4 16 12"/></svg></span><div class="itx"><b>학생이 AI를 잘 활용하게</b></div></div><div id="m3-p2-i2" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#3fa877" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#3fa877" stroke-width="1.5"/></svg></span><div class="itx"><b>무엇을 해야 할지 아는 힘</b><span>기능은 계속 좋아지니까 더 중요해요</span></div></div></div>
+  </div>
+  <div id="m3-p3" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#3fa877">진행하실 발표 내용</span><b>하고 싶은 발표</b></div>
+    <div class="pgi"><div id="m3-p3-i0" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="48" height="30" rx="4"/><path d="M32 40v8M20 56l12-8 12 8"/><path d="M18 30l8-8 6 6 10-10"/></svg></span><div class="itx"><b>AI로 더 잘 가르치는 실제 사례</b><span>발굴해서 소개하기</span></div></div><div id="m3-p3-i1" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><div class="itx"><b>실무에 다가가는 활동</b></div></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m4" class="scene full clip" data-start="711.920" data-duration="89.700" data-track-index="3">
+  <div id="m4-sc" class="sc">
+  <div class="mtop">
+    <span id="m4-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m4-c0" class="mcat">나는 누구인가요</span><span id="m4-c1" class="mcat">나의 전문 분야</span><span id="m4-c2" class="mcat">요즘 AI로 하는 일</span><span id="m4-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m4-pf" class="card prof" style="--ac:#8a78e0">
+    <span class="pnum">단원 04</span>
+    <span class="pav" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 20L10 32l12 12M42 20l12 12-12 12M36 14l-8 36"/></svg></span>
+    <b class="prole">조헌국 교수님</b>
+    <span class="psub">물리교육 · AI 학습 디자인</span>
+    <div class="ptags"><span id="m4-t0" class="ptag" style="--ac:#8a78e0;--bg:#ebe6ff">물리교육</span><span id="m4-t1" class="ptag" style="--ac:#8a78e0;--bg:#ebe6ff">전 프로그래머</span><span id="m4-t2" class="ptag" style="--ac:#8a78e0;--bg:#ebe6ff">머신러닝 독학</span></div>
+  </div>
+  
+  <div id="m4-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#8a78e0">나는 누구인가요</span><b>나는 누구인가요</b></div>
+    <div class="pgi"><div id="m4-p0-i0" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26l28-12 28 12-28 12z"/><path d="M16 32v12c8 6 24 6 32 0V32M58 27v14"/></svg></span><div class="itx"><b>부산대학교 · 물리교육 전공</b></div></div><div id="m4-p0-i1" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 20L10 32l12 12M42 20l12 12-12 12M36 14l-8 36"/></svg></span><div class="itx"><b>예전엔 컴퓨터 프로그래머</b><span>프로그래밍에 익숙해요</span></div></div><div id="m4-p0-i2" class="it st-it"><b style="color:#8a78e0">2018</b><span>머신러닝 독학 시작</span></div></div>
+  </div>
+  <div id="m4-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#8a78e0">나의 전문 분야</span><b>교육용 AI의 핵심</b></div>
+    <div class="pgi"><div id="m4-p1-i0" class="it q-it" style="--ac:#8a78e0"><span class="qm">“</span><p>AI는 교육용으로 만들어진 게 아니라서,<br><em>어떻게 디자인하느냐</em>에 따라 완전히 달라진다</p></div></div>
+  </div>
+  <div id="m4-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#8a78e0">요즘 AI로 하는 일</span><b>요즘 관심 · 내적 피드백</b></div>
+    <div class="pgi"><div id="m4-p2-i0" class="it fl-it"><div class="flr"><span id="m4-p2-i0-s0" class="fls" style="--ac:#8a78e0;--bg:#ebe6ff">스스로 문제 찾기</span><span id="m4-p2-i0-a1" class="fla">›</span><span id="m4-p2-i0-s1" class="fls" style="--ac:#8a78e0;--bg:#ebe6ff">외부와 비교</span><span id="m4-p2-i0-a2" class="fla">›</span><span id="m4-p2-i0-s2" class="fls" style="--ac:#8a78e0;--bg:#ebe6ff">스스로 개선</span></div></div><div id="m4-p2-i1" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#8a78e0" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#8a78e0" stroke-width="1.5"/></svg></span><div class="itx"><b>AI를 그렇게 쓰도록</b><span>학습 디자인과 테스트를 하고 있어요</span></div></div></div>
+  </div>
+  <div id="m4-p3" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#8a78e0">진행하실 발표 내용</span><b>하고 싶은 발표</b></div>
+    <div class="pgi"><div id="m4-p3-i0" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></span><div class="itx"><b>AI 학습 디자인 사례</b></div></div><div id="m4-p3-i1" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c8-3 16-3 24 2v38c-8-5-16-5-24-2zM56 14c-8-3-16-3-24 2v38c8-5 16-5 24-2z"/></svg></span><div class="itx"><b>새로운 학습 이론과의 접목</b><span>AI 시대에 등장한 학습 이론 소개</span></div></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m5" class="scene full clip" data-start="801.620" data-duration="79.300" data-track-index="3">
+  <div id="m5-sc" class="sc">
+  <div class="mtop">
+    <span id="m5-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m5-c0" class="mcat">나는 누구인가요</span><span id="m5-c1" class="mcat">나의 전문 분야</span><span id="m5-c2" class="mcat">요즘 AI로 하는 일</span><span id="m5-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m5-pf" class="card prof" style="--ac:#ef8a6f">
+    <span class="pnum">단원 05</span>
+    <span class="pav" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="8"/><circle cx="44" cy="26" r="6"/><path d="M8 52c2-9 8-14 16-14s14 5 16 14M40 38c7 0 13 4 16 12"/></svg></span>
+    <b class="prole">손미현 교수님</b>
+    <span class="psub">화학교육 · 학생과 함께 쓰는 AI</span>
+    <div class="ptags"><span id="m5-t0" class="ptag" style="--ac:#ef8a6f;--bg:#ffe6dc">화학교육</span><span id="m5-t1" class="ptag" style="--ac:#ef8a6f;--bg:#ffe6dc">AI 활용</span><span id="m5-t2" class="ptag" style="--ac:#ef8a6f;--bg:#ffe6dc">자기주도 학습</span></div>
+  </div>
+  
+  <div id="m5-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#ef8a6f">나는 누구인가요</span><b>나는 누구인가요</b></div>
+    <div class="pgi"><div id="m5-p0-i0" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26l28-12 28 12-28 12z"/><path d="M16 32v12c8 6 24 6 32 0V32M58 27v14"/></svg></span><div class="itx"><b>화학교육과 교수</b></div></div><div id="m5-p0-i1" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><div class="itx"><b>프로그래밍 전문가는 아니에요</b></div></div><div id="m5-p0-i2" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><div class="itx"><b>AI를 정말 잘 쓰는 사람</b></div></div></div>
+  </div>
+  <div id="m5-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#ef8a6f">요즘 AI로 하는 일</span><b>학생들과 이렇게 써요</b></div>
+    <div class="pgi"><div id="m5-p1-i0" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="8"/><circle cx="44" cy="26" r="6"/><path d="M8 52c2-9 8-14 16-14s14 5 16 14M40 38c7 0 13 4 16 12"/></svg></span><div class="itx"><b>학생들이 AI로 스스로 공부</b></div></div><div id="m5-p1-i1" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><path d="M38 24c-1-3-4-4-6-4-4 0-7 2-7 5 0 7 14 4 14 11 0 3-3 5-7 5-3 0-6-1-7-4M32 16v4M32 44v4"/></svg></span><div class="itx"><b>유료 버전까지 쓰면서</b><span>공부 내용을 AI에게 훈련시켜요</span></div></div><div id="m5-p1-i2" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></span><div class="itx"><b>프롬프트 훈련 · 피드백 받기</b></div></div></div>
+  </div>
+  <div id="m5-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#ef8a6f">진행하실 발표 내용</span><b>발표는 이렇게</b></div>
+    <div class="pgi"><div id="m5-p2-i0" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="10" width="48" height="30" rx="4"/><path d="M32 40v8M20 56l12-8 12 8"/><path d="M18 30l8-8 6 6 10-10"/></svg></span><div class="itx"><b>학생 활용 사례 소개</b></div></div><div id="m5-p2-i1" class="it card-it"><span class="icb " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></span><div class="itx"><b>현장 반응 보며 추가 준비</b></div></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m6" class="scene full clip" data-start="880.920" data-duration="115.900" data-track-index="3">
+  <div id="m6-sc" class="sc">
+  <div class="mtop">
+    <span id="m6-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m6-c0" class="mcat">나는 누구인가요</span><span id="m6-c1" class="mcat">나의 전문 분야</span><span id="m6-c2" class="mcat">요즘 AI로 하는 일</span><span id="m6-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m6-pf" class="card prof" style="--ac:#b8820f">
+    <span class="pnum">단원 06</span>
+    <span class="pav" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50l4-14 26-26 10 10-26 26z"/><path d="M38 16l10 10"/></svg></span>
+    <b class="prole">권혁만 선생님</b>
+    <span class="psub">시니어 AI 강사 · 전자책 작가</span>
+    <div class="ptags"><span id="m6-t0" class="ptag" style="--ac:#b8820f;--bg:#fff1cc">은퇴 후 AI 독학</span><span id="m6-t1" class="ptag" style="--ac:#b8820f;--bg:#fff1cc">또래 대상 강의</span><span id="m6-t2" class="ptag" style="--ac:#b8820f;--bg:#fff1cc">전자책 5권</span></div>
+  </div>
+  
+  <div id="m6-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#b8820f">나는 누구인가요</span><b>나는 누구인가요</b></div>
+    <div class="pgi"><div id="m6-p0-i0" class="it card-it"><span class="icb " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="22" r="10"/><path d="M12 54c2-11 10-17 20-17s18 6 20 17"/></svg></span><div class="itx"><b>은퇴 후 AI를 만나다</b></div></div><div id="m6-p0-i1" class="it card-it"><span class="icb " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#b8820f" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#b8820f" stroke-width="1.5"/></svg></span><div class="itx"><b>"시대의 대세가 되겠다"</b></div></div><div id="m6-p0-i2" class="it card-it"><span class="icb " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="22"/><path d="M32 18v15l10 6"/></svg></span><div class="itx"><b>혼자서 몇 년 동안 독학</b><span>가르쳐 주는 사람 없이</span></div></div></div>
+  </div>
+  <div id="m6-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#b8820f">나의 전문 분야</span><b>나의 전문 분야</b></div>
+    <div class="pgi"><div id="m6-p1-i0" class="it card-it"><span class="icb " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></span><div class="itx"><b>또래분들께 AI 강의</b><span>제 경험이 도움이 되도록</span></div></div><div id="m6-p1-i1" class="it st-it"><b style="color:#b8820f">5권</b><span>AI를 배운 뒤 낸 전자책</span></div><div id="m6-p1-i2" class="it card-it"><span class="icb " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></span><div class="itx"><b>예전 글로 · AI로 · 의뢰받아</b></div></div></div>
+  </div>
+  <div id="m6-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#b8820f">진행하실 발표 내용</span><b>하고 싶은 발표</b></div>
+    <div class="pgi"><div id="m6-p2-i0" class="it fl-it"><div class="flr"><span id="m6-p2-i0-s0" class="fls" style="--ac:#b8820f;--bg:#fff1cc">AI와 함께 시작</span><span id="m6-p2-i0-a1" class="fla">›</span><span id="m6-p2-i0-s1" class="fls" style="--ac:#b8820f;--bg:#fff1cc">집필</span><span id="m6-p2-i0-a2" class="fla">›</span><span id="m6-p2-i0-s2" class="fls" style="--ac:#b8820f;--bg:#fff1cc">출간</span></div><span id="m6-p2-i0-sub" class="flsub">그 과정에서 겪은 시행착오를 공유할게요</span></div></div>
+  </div>
+  <div id="m6-p3" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#b8820f">요즘 AI로 하는 일</span><b>요즘 AI로 하는 일</b></div>
+    <div class="pgi"><div id="m6-p3-i0" class="it card-it"><span class="icb " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#b8820f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></span><div class="itx"><b>사고력 프롬프트 × 클로드 프로젝트</b></div></div><div id="m6-p3-i1" class="it st-it"><b style="color:#b8820f">2~3시간</b><span>하루에 AI와 대화하는 시간</span></div><div id="m6-p3-i2" class="it q-it" style="--ac:#b8820f"><span class="qm">“</span><p>내 사례와 말과 경험이<br><em>이렇게 녹아들 수 있구나</em></p></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m7" class="scene full clip" data-start="996.820" data-duration="158.600" data-track-index="3">
+  <div id="m7-sc" class="sc">
+  <div class="mtop">
+    <span id="m7-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m7-c0" class="mcat">나는 누구인가요</span><span id="m7-c1" class="mcat">나의 전문 분야</span><span id="m7-c2" class="mcat">요즘 AI로 하는 일</span><span id="m7-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m7-pf" class="card prof" style="--ac:#5b93dc">
+    <span class="pnum">단원 07</span>
+    <span class="pav" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 34h12l5-12 8 24 6-16 4 4h17"/></svg></span>
+    <b class="prole">김보연 박사님</b>
+    <span class="psub">AI · 머신러닝 전문 강사</span>
+    <div class="ptags"><span id="m7-t0" class="ptag" style="--ac:#5b93dc;--bg:#e2eeff">컴퓨터공학</span><span id="m7-t1" class="ptag" style="--ac:#5b93dc;--bg:#e2eeff">의공학 박사</span><span id="m7-t2" class="ptag" style="--ac:#5b93dc;--bg:#e2eeff">AI 전문 강사</span></div>
+  </div>
+  
+  <div id="m7-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#5b93dc">나는 누구인가요</span><b>나는 누구인가요</b></div>
+    <div class="pgi"><div id="m7-p0-i0" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 20L10 32l12 12M42 20l12 12-12 12M36 14l-8 36"/></svg></span><div class="itx"><b>학부 · 석사: 컴퓨터공학</b></div></div><div id="m7-p0-i1" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#5b93dc" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#5b93dc" stroke-width="1.5"/></svg></span><div class="itx"><b>석사 때부터 인공신경망</b><span>지금 말하는 딥러닝</span></div></div><div id="m7-p0-i2" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 34h12l5-12 8 24 6-16 4 4h17"/></svg></span><div class="itx"><b>박사: 의공학</b><span>컴퓨터공학 + 의공학, 두 가지 배경</span></div></div></div>
+  </div>
+  <div id="m7-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#5b93dc">나의 전문 분야</span><b>나의 전문 분야</b></div>
+    <div class="pgi"><div id="m7-p1-i0" class="it st-it"><b style="color:#5b93dc">2019~</b><span>AI 전문 강사로 활동</span></div><div id="m7-p1-i1" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c8-3 16-3 24 2v38c-8-5-16-5-24-2zM56 14c-8-3-16-3-24 2v38c8-5 16-5 24-2z"/></svg></span><div class="itx"><b>AI · 머신러닝 기본 이론</b></div></div></div>
+  </div>
+  <div id="m7-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#5b93dc">진행하실 발표 내용</span><b>특강으로 할 수 있는 것</b></div>
+    <div class="pgi"><div id="m7-p2-i0" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50l4-14 26-26 10 10-26 26z"/><path d="M38 16l10 10"/></svg></span><div class="itx"><b>시험 문제 출제</b><span>중간고사 · 기말고사</span></div></div><div id="m7-p2-i1" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><div class="itx"><b>루브릭 작성</b><span>GPTs 대신 할 수 있는 방법</span></div></div><div id="m7-p2-i2" class="it st-it"><b style="color:#5b93dc">3시간</b><span>특강으로 가능</span></div></div>
+  </div>
+  <div id="m7-p3" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#5b93dc">나는 누구인가요</span><b>봉사단에 온 이유</b></div>
+    <div class="pgi"><div id="m7-p3-i0" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 34V16a4 4 0 0 1 8 0v14M30 28V12a4 4 0 0 1 8 0v18M38 28v-12a4 4 0 0 1 8 0v22c0 10-6 16-15 16-6 0-10-3-13-8l-6-10a4 4 0 0 1 7-4l3 4"/></svg></span><div class="itx"><b>교육 때 받은 도움</b><span>옆에서 정말 잘 도와주셨어요</span></div></div><div id="m7-p3-i1" class="it card-it"><span class="icb " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#5b93dc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#5b93dc"/></svg></span><div class="itx"><b>이제는 저도 보조라도!</b></div></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m8" class="scene full clip" data-start="1155.420" data-duration="106.200" data-track-index="3">
+  <div id="m8-sc" class="sc">
+  <div class="mtop">
+    <span id="m8-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m8-c0" class="mcat">나는 누구인가요</span><span id="m8-c1" class="mcat">나의 전문 분야</span><span id="m8-c2" class="mcat">요즘 AI로 하는 일</span><span id="m8-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m8-pf" class="card prof" style="--ac:#3fa877">
+    <span class="pnum">단원 08</span>
+    <span class="pav" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26l28-12 28 12-28 12z"/><path d="M16 32v12c8 6 24 6 32 0V32M58 27v14"/></svg></span>
+    <b class="prole">박지훈 교수님</b>
+    <span class="psub">화학교육 · 업무를 스킬로</span>
+    <div class="ptags"><span id="m8-t0" class="ptag" style="--ac:#3fa877;--bg:#dcf3e8">화학교육</span><span id="m8-t1" class="ptag" style="--ac:#3fa877;--bg:#dcf3e8">사고력 × AI</span><span id="m8-t2" class="ptag" style="--ac:#3fa877;--bg:#dcf3e8">클로드 스킬</span></div>
+  </div>
+  
+  <div id="m8-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#3fa877">나는 누구인가요</span><b>나는 누구인가요</b></div>
+    <div class="pgi"><div id="m8-p0-i0" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26l28-12 28 12-28 12z"/><path d="M16 32v12c8 6 24 6 32 0V32M58 27v14"/></svg></span><div class="itx"><b>경인교육대학교 · 화학교육</b></div></div><div id="m8-p0-i1" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></span><div class="itx"><b>이론보다는 관심 분야 소개</b></div></div></div>
+  </div>
+  <div id="m8-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#3fa877">나의 전문 분야</span><b>나의 관심 분야</b></div>
+    <div class="pgi"><div id="m8-p1-i0" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#3fa877" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#3fa877" stroke-width="1.5"/></svg></span><div class="itx"><b>AI로 학생 사고력 높이기</b><span>활용 방법을 연구하고 있어요</span></div></div></div>
+  </div>
+  <div id="m8-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#3fa877">요즘 AI로 하는 일</span><b>업무 워크플로 → 스킬</b></div>
+    <div class="pgi"><div id="m8-p2-i0" class="it fl-it"><div class="flr"><span id="m8-p2-i0-s0" class="fls" style="--ac:#3fa877;--bg:#dcf3e8">업무 워크플로</span><span id="m8-p2-i0-a1" class="fla">›</span><span id="m8-p2-i0-s1" class="fls" style="--ac:#3fa877;--bg:#dcf3e8">클로드 스킬</span><span id="m8-p2-i0-a2" class="fla">›</span><span id="m8-p2-i0-s2" class="fls" style="--ac:#3fa877;--bg:#dcf3e8">선생님들께 배포</span></div></div><div id="m8-p2-i1" class="it q-it" style="--ac:#3fa877"><span class="qm">“</span><p>원고 쓰기가 <em>굉장히 편해졌어요</em></p></div></div>
+  </div>
+  <div id="m8-p3" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#3fa877">진행하실 발표 내용</span><b>하고 싶은 발표</b></div>
+    <div class="pgi"><div id="m8-p3-i0" class="it card-it"><span class="icb " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#3fa877" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><div class="itx"><b>선생님들이 실제로 유용하게 쓴 스킬</b></div></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m9" class="scene full clip" data-start="1391.120" data-duration="124.010" data-track-index="3">
+  <div id="m9-sc" class="sc">
+  <div class="mtop">
+    <span id="m9-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m9-c0" class="mcat">나는 누구인가요</span><span id="m9-c1" class="mcat">나의 전문 분야</span><span id="m9-c2" class="mcat">요즘 AI로 하는 일</span><span id="m9-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m9-pf" class="card prof" style="--ac:#e2678a">
+    <span class="pnum">단원 09</span>
+    <span class="pav" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e2678a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="40" rx="5"/><circle cx="22" cy="26" r="5"/><path d="M8 46l14-12 10 8 8-6 16 12"/></svg></span>
+    <b class="prole">안성혜 원장님</b>
+    <span class="psub">영어 교육 · AI 강사</span>
+    <div class="ptags"><span id="m9-t0" class="ptag" style="--ac:#e2678a;--bg:#ffe3ea">영어 입시</span><span id="m9-t1" class="ptag" style="--ac:#e2678a;--bg:#ffe3ea">AI 강사</span><span id="m9-t2" class="ptag" style="--ac:#e2678a;--bg:#ffe3ea">인스타툰</span></div>
+  </div>
+  
+  <div id="m9-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#e2678a">나는 누구인가요</span><b>요즘 하는 두 가지 일</b></div>
+    <div class="pgi"><div id="m9-p0-i0" class="it card-it"><span class="icb " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e2678a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></span><div class="itx"><b>고등학교 입시 영어</b></div></div><div id="m9-p0-i1" class="it card-it"><span class="icb " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e2678a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 26l28-12 28 12-28 12z"/><path d="M16 32v12c8 6 24 6 32 0V32M58 27v14"/></svg></span><div class="itx"><b>중장년층 AI 강사 양성 과정 선발</b><span>지금은 AI 강사로 활동</span></div></div><div id="m9-p0-i2" class="it card-it"><span class="icb " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e2678a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 56s18-17 18-30a18 18 0 0 0-36 0c0 13 18 30 18 30z"/><circle cx="32" cy="26" r="6"/></svg></span><div class="itx"><b>AI 디지털 배움터 강사</b><span>서울 · 경기</span></div></div></div>
+  </div>
+  <div id="m9-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#e2678a">요즘 AI로 하는 일</span><b>코덱스로 만든 인스타툰 생성기</b></div>
+    <div class="pgi"><div id="m9-p1-i0" class="it fl-it"><div class="flr"><span id="m9-p1-i0-s0" class="fls" style="--ac:#e2678a;--bg:#ffe3ea">프로젝트 설정</span><span id="m9-p1-i0-a1" class="fla">›</span><span id="m9-p1-i0-s1" class="fls" style="--ac:#e2678a;--bg:#ffe3ea">캐릭터</span><span id="m9-p1-i0-a2" class="fla">›</span><span id="m9-p1-i0-s2" class="fls" style="--ac:#e2678a;--bg:#ffe3ea">대본</span><span id="m9-p1-i0-a3" class="fla">›</span><span id="m9-p1-i0-s3" class="fls" style="--ac:#e2678a;--bg:#ffe3ea">이미지 프롬프트</span></div></div><div id="m9-p1-i1" class="it card-it"><span class="icb " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e2678a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="8"/><circle cx="44" cy="26" r="6"/><path d="M8 52c2-9 8-14 16-14s14 5 16 14M40 38c7 0 13 4 16 12"/></svg></span><div class="itx"><b>영어학원 원장님 모임용</b></div></div><div id="m9-p1-i2" class="it card-it"><span class="icb " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e2678a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#e2678a"/></svg></span><div class="itx"><b>어르신용 캐릭터도 개발 중</b><span>디지털 소외계층을 위해</span></div></div></div>
+  </div>
+  <div id="m9-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#e2678a">진행하실 발표 내용</span><b>봉사단에서는</b></div>
+    <div class="pgi"><div id="m9-p2-i0" class="it card-it"><span class="icb " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e2678a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 34V16a4 4 0 0 1 8 0v14M30 28V12a4 4 0 0 1 8 0v18M38 28v-12a4 4 0 0 1 8 0v22c0 10-6 16-15 16-6 0-10-3-13-8l-6-10a4 4 0 0 1 7-4l3 4"/></svg></span><div class="itx"><b>보조 · 후원으로 함께</b><span>많이 배우고 싶어요</span></div></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="m10" class="scene full clip" data-start="1515.130" data-duration="103.600" data-track-index="3">
+  <div id="m10-sc" class="sc">
+  <div class="mtop">
+    <span id="m10-lab" class="mlab">봉사 단원 소개</span>
+    <span id="m10-c0" class="mcat">나는 누구인가요</span><span id="m10-c1" class="mcat">나의 전문 분야</span><span id="m10-c2" class="mcat">요즘 AI로 하는 일</span><span id="m10-c3" class="mcat">진행하실 발표 내용</span>
+  </div>
+  <div id="m10-pf" class="card prof" style="--ac:#8a78e0">
+    <span class="pnum">단원 10</span>
+    <span class="pav" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c8-3 16-3 24 2v38c-8-5-16-5-24-2zM56 14c-8-3-16-3-24 2v38c8-5 16-5 24-2z"/></svg></span>
+    <b class="prole">정진선 교수님</b>
+    <span class="psub">중국어 · 중국 고전문학</span>
+    <div class="ptags"><span id="m10-t0" class="ptag" style="--ac:#8a78e0;--bg:#ebe6ff">중국 시 · 소설</span><span id="m10-t1" class="ptag" style="--ac:#8a78e0;--bg:#ebe6ff">유일한 문과</span><span id="m10-t2" class="ptag" style="--ac:#8a78e0;--bg:#ebe6ff">『논어』 GPTs</span></div>
+  </div>
+  
+  <div id="m10-p0" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#8a78e0">나는 누구인가요</span><b>나는 누구인가요</b></div>
+    <div class="pgi"><div id="m10-p0-i0" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c8-3 16-3 24 2v38c-8-5-16-5-24-2zM56 14c-8-3-16-3-24 2v38c8-5 16-5 24-2z"/></svg></span><div class="itx"><b>중국어 · 중국 시와 고전 소설</b></div></div><div id="m10-p0-i1" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#8a78e0" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#8a78e0" stroke-width="1.5"/></svg></span><div class="itx"><b>도메인 지식 × AI</b><span>학생들이 텍스트에 더 집중하도록</span></div></div></div>
+  </div>
+  <div id="m10-p1" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#8a78e0">요즘 AI로 하는 일</span><b>『논어』 GPTs</b></div>
+    <div class="pgi"><div id="m10-p1-i0" class="it fl-it"><div class="flr"><span id="m10-p1-i0-s0" class="fls" style="--ac:#8a78e0;--bg:#ebe6ff">학생의 고민</span><span id="m10-p1-i0-a1" class="fla">›</span><span id="m10-p1-i0-s1" class="fls" style="--ac:#8a78e0;--bg:#ebe6ff">『논어』 데이터</span><span id="m10-p1-i0-a2" class="fla">›</span><span id="m10-p1-i0-s2" class="fls" style="--ac:#8a78e0;--bg:#ebe6ff">공자님 페르소나</span><span id="m10-p1-i0-a3" class="fla">›</span><span id="m10-p1-i0-s3" class="fls" style="--ac:#8a78e0;--bg:#ebe6ff">구절로 답하기</span></div></div><div id="m10-p1-i1" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></span><div class="itx"><b>질문하면 공자님이 답해요</b><span>학생의 고민에 맞게 설명하며</span></div></div></div>
+  </div>
+  <div id="m10-p2" class="pg">
+    <div class="pgh"><span class="pgc" style="background:#8a78e0">진행하실 발표 내용</span><b>하고 싶은 발표</b></div>
+    <div class="pgi"><div id="m10-p2-i0" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></span><div class="itx"><b>좌충우돌 AI 인사이트</b><span>기술보다 사용 경험</span></div></div><div id="m10-p2-i1" class="it card-it"><span class="icb " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#8a78e0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 14c8-3 16-3 24 2v38c-8-5-16-5-24-2zM56 14c-8-3-16-3-24 2v38c8-5 16-5 24-2z"/></svg></span><div class="itx"><b>깊이 · 자세히 읽는 연습</b><span>텍스트를 기반으로</span></div></div></div>
+  </div>
+  </div>
+</div>
+<div id="cap0" class="cap clip" data-start="0.000" data-duration="6.010" data-track-index="8"><span style="font-size:44px">안녕하세요 Philosophy AI 봉사단 2기 첫 번째 회의를 시작하겠습니다</span></div>
+<div id="cap1" class="cap clip" data-start="6.010" data-duration="1.890" data-track-index="8"><span style="font-size:62px">오늘 첫 번째 회의를 이제 시작해 보려고 하고요</span></div>
+<div id="cap2" class="cap clip" data-start="13.400" data-duration="0.200" data-track-index="8"><span style="font-size:62px">Philosophy AI 봉사단은</span></div>
+<div id="cap3" class="cap clip" data-start="13.580" data-duration="2.850" data-track-index="8"><span style="font-size:62px">저희가 1기를 잘 마쳤습니다</span></div>
+<div id="cap4" class="cap clip" data-start="16.430" data-duration="3.450" data-track-index="8"><span style="font-size:62px">그래서 26년 1월부터 6월까지</span></div>
+<div id="cap5" class="cap clip" data-start="19.880" data-duration="2.530" data-track-index="8"><span style="font-size:62px">AI 스터디를 3회 진행했고요</span></div>
+<div id="cap6" class="cap clip" data-start="22.410" data-duration="1.940" data-track-index="8"><span style="font-size:62px">우리 손정우 교수님이 많이 도와주셔서</span></div>
+<div id="cap7" class="cap clip" data-start="24.350" data-duration="2.100" data-track-index="8"><span style="font-size:62px">서울교대에서 두 번 했고</span></div>
+<div id="cap8" class="cap clip" data-start="26.450" data-duration="2.320" data-track-index="8"><span style="font-size:62px">한 번은 이제 서울에서</span></div>
+<div id="cap9" class="cap clip" data-start="28.770" data-duration="1.900" data-track-index="8"><span style="font-size:62px">회의실 같은 곳에서 진행했습니다</span></div>
+<div id="cap10" class="cap clip" data-start="30.670" data-duration="1.940" data-track-index="8"><span style="font-size:62px">그래서 참가비를 5만원씩 받아서</span></div>
+<div id="cap11" class="cap clip" data-start="32.610" data-duration="3.160" data-track-index="8"><span style="font-size:62px">이 3회 동안 리퍼 노트북을</span></div>
+<div id="cap12" class="cap clip" data-start="35.770" data-duration="1.670" data-track-index="8"><span style="font-size:62px">다섯 대 구매해서</span></div>
+<div id="cap13" class="cap clip" data-start="37.440" data-duration="0.940" data-track-index="8"><span style="font-size:62px">보육원 아동</span></div>
+<div id="cap14" class="cap clip" data-start="38.380" data-duration="0.660" data-track-index="8"><span style="font-size:62px">네 명</span></div>
+<div id="cap15" class="cap clip" data-start="39.040" data-duration="4.160" data-track-index="8"><span style="font-size:54px">그리고 지역아동센터 다문화 가정 아이에게 선물해줬습니다</span></div>
+<div id="cap16" class="cap clip" data-start="59.330" data-duration="5.410" data-track-index="8"><span style="font-size:62px">그리고 이제 봉사단 2기는</span></div>
+<div id="cap17" class="cap clip" data-start="64.740" data-duration="7.170" data-track-index="8"><span style="font-size:44px">여기 26년 11월부터 내년 6월까지 한 7개월 정도 진행하려고 합니다</span></div>
+<div id="cap18" class="cap clip" data-start="71.910" data-duration="3.810" data-track-index="8"><span style="font-size:62px">그래서 이 1기랑 조금 다른 점 뭐냐면</span></div>
+<div id="cap19" class="cap clip" data-start="75.720" data-duration="6.780" data-track-index="8"><span style="font-size:44px">1기는 이 스터디 3회를 다 제가 저 혼자 수업을 진행했어요 진행했는데</span></div>
+<div id="cap20" class="cap clip" data-start="82.500" data-duration="6.770" data-track-index="8"><span style="font-size:60px">이번에는 이제 어드밴스 레벨이신 분들을 더 모아서</span></div>
+<div id="cap21" class="cap clip" data-start="89.270" data-duration="5.840" data-track-index="8"><span style="font-size:62px">2주에 한 분씩 2주에 한 번씩</span></div>
+<div id="cap22" class="cap clip" data-start="95.110" data-duration="4.880" data-track-index="8"><span style="font-size:60px">각자 AI 관련 발표를 돌아가면서 하실 예정이고,</span></div>
+<div id="cap23" class="cap clip" data-start="99.990" data-duration="4.730" data-track-index="8"><span style="font-size:58px">교육자분들을 위한 AI 관련 발표를 하실 예정이고,</span></div>
+<div id="cap24" class="cap clip" data-start="104.720" data-duration="1.730" data-track-index="8"><span style="font-size:62px">그 내용을 바탕으로</span></div>
+<div id="cap25" class="cap clip" data-start="106.450" data-duration="2.990" data-track-index="8"><span style="font-size:62px">오프라인 컨퍼런스를 두 번 여는 게 목표입니다</span></div>
+<div id="cap26" class="cap clip" data-start="109.440" data-duration="1.620" data-track-index="8"><span style="font-size:62px">그래서 내년 2월,</span></div>
+<div id="cap27" class="cap clip" data-start="111.060" data-duration="3.590" data-track-index="8"><span style="font-size:62px">내년 6월 이렇게 두 번 여는 것이 목표고,</span></div>
+<div id="cap28" class="cap clip" data-start="114.650" data-duration="2.630" data-track-index="8"><span style="font-size:62px">이때도 참가비를 모아서</span></div>
+<div id="cap29" class="cap clip" data-start="117.280" data-duration="1.520" data-track-index="8"><span style="font-size:62px">리퍼 노트북을 사서</span></div>
+<div id="cap30" class="cap clip" data-start="118.800" data-duration="2.220" data-track-index="8"><span style="font-size:62px">보육원 아동들에게 줄 예정입니다</span></div>
+<div id="cap31" class="cap clip" data-start="210.180" data-duration="2.200" data-track-index="8"><span style="font-size:62px">그래서 이 손정우 교수님 카톡에도</span></div>
+<div id="cap32" class="cap clip" data-start="212.380" data-duration="2.650" data-track-index="8"><span style="font-size:62px">이렇게 적혀 있던데</span></div>
+<div id="cap33" class="cap clip" data-start="215.030" data-duration="1.630" data-track-index="8"><span style="font-size:62px">이제 "미래를 예측하는</span></div>
+<div id="cap34" class="cap clip" data-start="216.660" data-duration="1.210" data-track-index="8"><span style="font-size:62px">가장 좋은 방법은</span></div>
+<div id="cap35" class="cap clip" data-start="217.870" data-duration="4.830" data-track-index="8"><span style="font-size:62px">그걸 만드는 것이다."라는 문구인데요</span></div>
+<div id="cap36" class="cap clip" data-start="222.700" data-duration="2.540" data-track-index="8"><span style="font-size:62px">사실 AI에 관해서</span></div>
+<div id="cap37" class="cap clip" data-start="225.240" data-duration="3.030" data-track-index="8"><span style="font-size:62px">부정적인 그러한 예측들</span></div>
+<div id="cap38" class="cap clip" data-start="228.270" data-duration="1.170" data-track-index="8"><span style="font-size:62px">그리고 저희를 좌절시키는</span></div>
+<div id="cap39" class="cap clip" data-start="229.440" data-duration="1.680" data-track-index="8"><span style="font-size:62px">그런 뉴스들이 굉장히 많은데</span></div>
+<div id="cap40" class="cap clip" data-start="245.120" data-duration="0.310" data-track-index="8"><span style="font-size:62px">너무 절망적인 이야기밖에 없기 때문에</span></div>
+<div id="cap41" class="cap clip" data-start="245.430" data-duration="1.160" data-track-index="8"><span style="font-size:62px">밑져야 본전이니까</span></div>
+<div id="cap42" class="cap clip" data-start="246.590" data-duration="2.840" data-track-index="8"><span style="font-size:62px">좋은 일을 해보자라는 생각이 들었습니다</span></div>
+<div id="cap43" class="cap clip" data-start="249.430" data-duration="1.830" data-track-index="8"><span style="font-size:62px">우리 박병태 기술사님이</span></div>
+<div id="cap44" class="cap clip" data-start="251.260" data-duration="2.160" data-track-index="8"><span style="font-size:62px">저한테 메일을 보내주셨는데</span></div>
+<div id="cap45" class="cap clip" data-start="253.420" data-duration="3.240" data-track-index="8"><span style="font-size:62px">거기에 이런 구절이 적혀 있더라고요</span></div>
+<div id="cap46" class="cap clip" data-start="256.660" data-duration="2.240" data-track-index="8"><span style="font-size:62px">한 달 정도 고민을 하셨는데</span></div>
+<div id="cap47" class="cap clip" data-start="258.900" data-duration="1.190" data-track-index="8"><span style="font-size:62px">밑져야 본전이니까</span></div>
+<div id="cap48" class="cap clip" data-start="260.090" data-duration="2.020" data-track-index="8"><span style="font-size:62px">지원을 하셨다는 문구를</span></div>
+<div id="cap49" class="cap clip" data-start="262.110" data-duration="3.350" data-track-index="8"><span style="font-size:62px">제가 봤는데 저희도 마찬가지입니다</span></div>
+<div id="cap50" class="cap clip" data-start="265.460" data-duration="2.100" data-track-index="8"><span style="font-size:62px">어차피 AI 때문에</span></div>
+<div id="cap51" class="cap clip" data-start="267.560" data-duration="2.750" data-track-index="8"><span style="font-size:62px">안 좋은 미래가 온다면</span></div>
+<div id="cap52" class="cap clip" data-start="270.310" data-duration="2.150" data-track-index="8"><span style="font-size:62px">조금이라도 좋게 하기 위해</span></div>
+<div id="cap53" class="cap clip" data-start="272.460" data-duration="3.080" data-track-index="8"><span style="font-size:62px">이러한 활동을 해보고자 합니다</span></div>
+<div id="cap54" class="cap clip" data-start="275.540" data-duration="2.980" data-track-index="8"><span style="font-size:62px">밑져야 본전이니까요</span></div>
+<div id="cap55" class="cap clip" data-start="344.420" data-duration="0.250" data-track-index="8"><span style="font-size:62px">좋은 일도 하고 감사합니다 저,</span></div>
+<div id="cap56" class="cap clip" data-start="344.670" data-duration="0.790" data-track-index="8"><span style="font-size:62px">저도 전</span></div>
+<div id="cap57" class="cap clip" data-start="345.460" data-duration="5.830" data-track-index="8"><span style="font-size:62px">그래서 클로드 코드 CLI를 활용한 업무 해결,</span></div>
+<div id="cap58" class="cap clip" data-start="351.290" data-duration="0.940" data-track-index="8"><span style="font-size:62px">반복 업무 해결</span></div>
+<div id="cap59" class="cap clip" data-start="352.230" data-duration="5.160" data-track-index="8"><span style="font-size:54px">그리고 두 번째는 이제 클로드 코드 데스크탑을 활용해서</span></div>
+<div id="cap60" class="cap clip" data-start="357.390" data-duration="3.040" data-track-index="8"><span style="font-size:62px">학습 앱을 만들고 배포하는 법</span></div>
+<div id="cap61" class="cap clip" data-start="360.430" data-duration="3.700" data-track-index="8"><span style="font-size:62px">요 두 가지 정도를 제가 오프라인,</span></div>
+<div id="cap62" class="cap clip" data-start="364.130" data-duration="4.370" data-track-index="8"><span style="font-size:58px">아 제가 이제 제 발표 차례에 하면 좋을 것 같고,</span></div>
+<div id="cap63" class="cap clip" data-start="368.500" data-duration="2.290" data-track-index="8"><span style="font-size:62px">그리고 오프라인 컨퍼런스 때도</span></div>
+<div id="cap64" class="cap clip" data-start="370.790" data-duration="1.930" data-track-index="8"><span style="font-size:62px">그걸 하면 좋을 것 같다는 생각을 했습니다</span></div>
+<div id="cap65" class="cap clip" data-start="447.630" data-duration="0.630" data-track-index="8"><span style="font-size:62px">도움이 될 것 같습니다</span></div>
+<div id="cap66" class="cap clip" data-start="448.260" data-duration="3.060" data-track-index="8"><span style="font-size:62px">그래서 제 얘긴 여기까지고요</span></div>
+<div id="cap67" class="cap clip" data-start="451.320" data-duration="2.510" data-track-index="8"><span style="font-size:62px">이제 우리 교수님들,</span></div>
+<div id="cap68" class="cap clip" data-start="453.830" data-duration="2.600" data-track-index="8"><span style="font-size:62px">그리고 우리 선생님들의 소개를</span></div>
+<div id="cap69" class="cap clip" data-start="456.430" data-duration="3.410" data-track-index="8"><span style="font-size:62px">간단히 들어보려고 하는데요</span></div>
+<div id="cap70" class="cap clip" data-start="459.840" data-duration="3.580" data-track-index="8"><span style="font-size:62px">존경하는 손정우 교수님</span></div>
+<div id="cap71" class="cap clip" data-start="463.420" data-duration="2.700" data-track-index="8"><span style="font-size:62px">아, 교수님</span></div>
+<div id="cap72" class="cap clip" data-start="466.120" data-duration="2.980" data-track-index="8"><span style="font-size:62px">저는 그 가장 큰 문제가 네</span></div>
+<div id="cap73" class="cap clip" data-start="469.100" data-duration="2.660" data-track-index="8"><span style="font-size:62px">학생들이 지금 돈이 없어요</span></div>
+<div id="cap74" class="cap clip" data-start="471.760" data-duration="1.280" data-track-index="8"><span style="font-size:62px">저는 대학생들도 그렇고</span></div>
+<div id="cap75" class="cap clip" data-start="473.040" data-duration="4.810" data-track-index="8"><span style="font-size:54px">물론 Gemini가 대학생 무료 1년 주고 연장시켜줘서</span></div>
+<div id="cap76" class="cap clip" data-start="477.850" data-duration="2.870" data-track-index="8"><span style="font-size:58px">그래서 작업하기는 Claude로 하면 제일 좋은데,</span></div>
+<div id="cap77" class="cap clip" data-start="480.720" data-duration="1.950" data-track-index="8"><span style="font-size:62px">실질적으로 학생들이 쓸 수 있는 거는</span></div>
+<div id="cap78" class="cap clip" data-start="482.670" data-duration="2.160" data-track-index="8"><span style="font-size:62px">대학생 이하로 쓸 수 있고,</span></div>
+<div id="cap79" class="cap clip" data-start="484.830" data-duration="1.780" data-track-index="8"><span style="font-size:62px">교사들이 쓸 수 있는</span></div>
+<div id="cap80" class="cap clip" data-start="486.610" data-duration="2.810" data-track-index="8"><span style="font-size:62px">그런 거의 Gemini밖에 없어서</span></div>
+<div id="cap81" class="cap clip" data-start="489.420" data-duration="0.560" data-track-index="8"><span style="font-size:62px">그래서 Gemini로</span></div>
+<div id="cap82" class="cap clip" data-start="489.980" data-duration="0.610" data-track-index="8"><span style="font-size:62px">어떻게 할까를</span></div>
+<div id="cap83" class="cap clip" data-start="490.590" data-duration="2.120" data-track-index="8"><span style="font-size:62px">진짜 고민을 많이 하는데</span></div>
+<div id="cap84" class="cap clip" data-start="492.710" data-duration="2.490" data-track-index="8"><span style="font-size:62px">Codex, Gemini,</span></div>
+<div id="cap85" class="cap clip" data-start="495.200" data-duration="2.870" data-track-index="8"><span style="font-size:62px">CLI, Antigravity</span></div>
+<div id="cap86" class="cap clip" data-start="498.070" data-duration="3.130" data-track-index="8"><span style="font-size:62px">너무 학생들이 접근하기 힘들어해서</span></div>
+<div id="cap87" class="cap clip" data-start="501.200" data-duration="3.330" data-track-index="8"><span style="font-size:62px">그래서 지금은 Skill에 집중하고 있어요</span></div>
+<div id="cap88" class="cap clip" data-start="504.530" data-duration="2.410" data-track-index="8"><span style="font-size:62px">스킬을 어떻게 잘 맞춰서</span></div>
+<div id="cap89" class="cap clip" data-start="506.940" data-duration="1.910" data-track-index="8"><span style="font-size:62px">업무에 활용하고</span></div>
+<div id="cap90" class="cap clip" data-start="508.850" data-duration="3.830" data-track-index="8"><span style="font-size:56px">그거를 이제 그 프로 버전 이상부터는 작업에 있으니까</span></div>
+<div id="cap91" class="cap clip" data-start="512.680" data-duration="1.990" data-track-index="8"><span style="font-size:62px">그 작업할 때 스킬을 넘겨서</span></div>
+<div id="cap92" class="cap clip" data-start="514.670" data-duration="1.530" data-track-index="8"><span style="font-size:62px">작업하는 방법,</span></div>
+<div id="cap93" class="cap clip" data-start="516.200" data-duration="8.650" data-track-index="8"><span style="font-size:46px">그것을 지금 계속 다듬어가고 있어요 이상입니다 감사합니다 교수님</span></div>
+<div id="cap94" class="cap clip" data-start="524.850" data-duration="3.420" data-track-index="8"><span style="font-size:62px">박병태 기술사님</span></div>
+<div id="cap95" class="cap clip" data-start="528.270" data-duration="2.850" data-track-index="8"><span style="font-size:62px">소개 부탁드립니다 안녕하세요 안녕하십니까?</span></div>
+<div id="cap96" class="cap clip" data-start="531.120" data-duration="1.020" data-track-index="8"><span style="font-size:62px">잘 들리세요?</span></div>
+<div id="cap97" class="cap clip" data-start="532.140" data-duration="1.260" data-track-index="8"><span style="font-size:62px">잘 들립니다</span></div>
+<div id="cap98" class="cap clip" data-start="533.400" data-duration="5.040" data-track-index="8"><span style="font-size:62px">여기 어떻게 나를 할까 해서 이제 기웃거렸는데,</span></div>
+<div id="cap99" class="cap clip" data-start="538.440" data-duration="3.600" data-track-index="8"><span style="font-size:62px">저는 뭐 그 직장에 다니는 사람이고요</span></div>
+<div id="cap100" class="cap clip" data-start="542.040" data-duration="3.910" data-track-index="8"><span style="font-size:62px">제가 여기를 이제 참여하게 된 동기는, 음,</span></div>
+<div id="cap101" class="cap clip" data-start="545.950" data-duration="6.710" data-track-index="8"><span style="font-size:47px">유튜브에 이제 이런 AI 강의를 올 초부터 많이 듣고 있는데,</span></div>
+<div id="cap102" class="cap clip" data-start="552.660" data-duration="2.000" data-track-index="8"><span style="font-size:62px">그 좋은 강의도 많죠</span></div>
+<div id="cap103" class="cap clip" data-start="554.660" data-duration="4.000" data-track-index="8"><span style="font-size:62px">그래서 그래도 또 펠로우십 님께서 해주는 강의가</span></div>
+<div id="cap104" class="cap clip" data-start="558.660" data-duration="2.740" data-track-index="8"><span style="font-size:62px">좀 저한테는 좀 귀에 쏙쏙 잘 들어오고</span></div>
+<div id="cap105" class="cap clip" data-start="561.400" data-duration="3.010" data-track-index="8"><span style="font-size:62px">또 좋은 일도 많이 하시는 것 같아서</span></div>
+<div id="cap106" class="cap clip" data-start="564.410" data-duration="5.470" data-track-index="8"><span style="font-size:62px">좀 더 그 체계적으로 좀 AI를 공부하면서</span></div>
+<div id="cap107" class="cap clip" data-start="569.880" data-duration="3.840" data-track-index="8"><span style="font-size:62px">뭔가 전문성을 키워보는 게 좋겠다 싶어서</span></div>
+<div id="cap108" class="cap clip" data-start="573.720" data-duration="1.370" data-track-index="8"><span style="font-size:62px">혼자면 안 되니까,</span></div>
+<div id="cap109" class="cap clip" data-start="575.090" data-duration="1.080" data-track-index="8"><span style="font-size:62px">혼자면 안 되니까</span></div>
+<div id="cap110" class="cap clip" data-start="576.170" data-duration="1.800" data-track-index="8"><span style="font-size:62px">같이 한번 해볼까?</span></div>
+<div id="cap111" class="cap clip" data-start="577.970" data-duration="1.170" data-track-index="8"><span style="font-size:62px">아, 그런 차원에서</span></div>
+<div id="cap112" class="cap clip" data-start="579.140" data-duration="1.820" data-track-index="8"><span style="font-size:62px">일단은 제가 들어왔습니다</span></div>
+<div id="cap113" class="cap clip" data-start="580.960" data-duration="1.230" data-track-index="8"><span style="font-size:62px">그리고 저런 내용 중에</span></div>
+<div id="cap114" class="cap clip" data-start="582.190" data-duration="1.750" data-track-index="8"><span style="font-size:62px">하나를 제가 고를지</span></div>
+<div id="cap115" class="cap clip" data-start="583.940" data-duration="3.540" data-track-index="8"><span style="font-size:62px">아니면 좀 다른 분들 강의하는 것 좀 듣고 아,</span></div>
+<div id="cap116" class="cap clip" data-start="587.480" data-duration="2.980" data-track-index="8"><span style="font-size:60px">나는 좀 이런 내용으로 좀 준비를 해봤으면 좋겠다</span></div>
+<div id="cap117" class="cap clip" data-start="590.460" data-duration="1.330" data-track-index="8"><span style="font-size:62px">좀 이렇게 좀,</span></div>
+<div id="cap118" class="cap clip" data-start="591.790" data-duration="1.260" data-track-index="8"><span style="font-size:62px">좀 생각해 보고</span></div>
+<div id="cap119" class="cap clip" data-start="593.050" data-duration="5.410" data-track-index="8"><span style="font-size:44px">좀 그런 주제를 제가 한번 정해 보는 게 좋을 것 같다는 생각이 듭니다</span></div>
+<div id="cap120" class="cap clip" data-start="598.460" data-duration="2.000" data-track-index="8"><span style="font-size:62px">아무튼 만나 봬서 반갑고요</span></div>
+<div id="cap121" class="cap clip" data-start="600.460" data-duration="2.120" data-track-index="8"><span style="font-size:62px">어, 하는 동안</span></div>
+<div id="cap122" class="cap clip" data-start="602.580" data-duration="3.010" data-track-index="8"><span style="font-size:62px">좀 열심히 같이 좀 하면서</span></div>
+<div id="cap123" class="cap clip" data-start="605.590" data-duration="1.690" data-track-index="8"><span style="font-size:62px">실력을 키우면서</span></div>
+<div id="cap124" class="cap clip" data-start="607.280" data-duration="2.480" data-track-index="8"><span style="font-size:62px">또 좋은 일을 수 있는</span></div>
+<div id="cap125" class="cap clip" data-start="609.760" data-duration="3.000" data-track-index="8"><span style="font-size:62px">기회가 만들어졌으면 좋겠습니다</span></div>
+<div id="cap126" class="cap clip" data-start="612.760" data-duration="1.250" data-track-index="8"><span style="font-size:62px">네, 이상입니다</span></div>
+<div id="cap127" class="cap clip" data-start="614.010" data-duration="2.680" data-track-index="8"><span style="font-size:62px">김 실장님</span></div>
+<div id="cap128" class="cap clip" data-start="616.690" data-duration="3.030" data-track-index="8"><span style="font-size:62px">그러면 우리 임재홍 선생님</span></div>
+<div id="cap129" class="cap clip" data-start="619.720" data-duration="4.290" data-track-index="8"><span style="font-size:62px">아, 네 안녕하세요 안녕하세요 어,</span></div>
+<div id="cap130" class="cap clip" data-start="624.010" data-duration="3.250" data-track-index="8"><span style="font-size:62px">저는 지금 베트남 하노이에 있습니다</span></div>
+<div id="cap131" class="cap clip" data-start="627.260" data-duration="2.740" data-track-index="8"><span style="font-size:62px">여기서 어, 중소기업에 지금 있고요</span></div>
+<div id="cap132" class="cap clip" data-start="630.000" data-duration="2.200" data-track-index="8"><span style="font-size:62px">어, 중소기업의 공장 자동화하고</span></div>
+<div id="cap133" class="cap clip" data-start="632.200" data-duration="3.210" data-track-index="8"><span style="font-size:62px">시스템 자동화하는 부분을 하고 있습니다</span></div>
+<div id="cap134" class="cap clip" data-start="635.410" data-duration="0.780" data-track-index="8"><span style="font-size:62px">그러다 보니까</span></div>
+<div id="cap135" class="cap clip" data-start="636.190" data-duration="2.620" data-track-index="8"><span style="font-size:62px">저도 뭐 박병태 기술사님하고</span></div>
+<div id="cap136" class="cap clip" data-start="638.810" data-duration="2.390" data-track-index="8"><span style="font-size:62px">비슷하게 IT 쪽이나</span></div>
+<div id="cap137" class="cap clip" data-start="641.200" data-duration="1.980" data-track-index="8"><span style="font-size:62px">뭐 공장 자동화 쪽을 계속하다 보니까</span></div>
+<div id="cap138" class="cap clip" data-start="643.180" data-duration="4.280" data-track-index="8"><span style="font-size:62px">이 AI도 참, 하게 되었고요</span></div>
+<div id="cap139" class="cap clip" data-start="647.460" data-duration="2.700" data-track-index="8"><span style="font-size:58px">그리고 거기에서 우리 Philosophy 님 강좌나</span></div>
+<div id="cap140" class="cap clip" data-start="650.160" data-duration="0.970" data-track-index="8"><span style="font-size:62px">이런 걸 보다 보니까</span></div>
+<div id="cap141" class="cap clip" data-start="651.130" data-duration="1.850" data-track-index="8"><span style="font-size:62px">뭐 관심을 많이 갖게 돼서</span></div>
+<div id="cap142" class="cap clip" data-start="652.980" data-duration="2.670" data-track-index="8"><span style="font-size:56px">지금은 그쪽으로 많이 일을 진행하고 있습니다 그래서요</span></div>
+<div id="cap143" class="cap clip" data-start="655.650" data-duration="6.780" data-track-index="8"><span style="font-size:44px">근데 그전에는 제가 AI를 좀 많이 알아야겠다라는 생각이 많이 들었었는데</span></div>
+<div id="cap144" class="cap clip" data-start="662.430" data-duration="1.390" data-track-index="8"><span style="font-size:62px">아까 그 보여주신 것 중에</span></div>
+<div id="cap145" class="cap clip" data-start="663.820" data-duration="0.760" data-track-index="8"><span style="font-size:62px">한 네 번째하고</span></div>
+<div id="cap146" class="cap clip" data-start="664.580" data-duration="2.100" data-track-index="8"><span style="font-size:62px">여덟 번째 보면,</span></div>
+<div id="cap147" class="cap clip" data-start="666.680" data-duration="3.740" data-track-index="8"><span style="font-size:58px">어 AI를 어떻게 학생들이 잘 활용하고 쓰게 할까?</span></div>
+<div id="cap148" class="cap clip" data-start="670.420" data-duration="2.880" data-track-index="8"><span style="font-size:62px">아니면은 AI에 대한 기본 기능들은</span></div>
+<div id="cap149" class="cap clip" data-start="673.300" data-duration="1.960" data-track-index="8"><span style="font-size:62px">너무 점점 좋아지니까</span></div>
+<div id="cap150" class="cap clip" data-start="675.260" data-duration="1.460" data-track-index="8"><span style="font-size:62px">무얼 해야 될까를</span></div>
+<div id="cap151" class="cap clip" data-start="676.720" data-duration="1.870" data-track-index="8"><span style="font-size:62px">학생들이 알게 하는 게</span></div>
+<div id="cap152" class="cap clip" data-start="678.590" data-duration="2.300" data-track-index="8"><span style="font-size:62px">이번에 보니까 훨씬 더 필요한 것 같더라고요</span></div>
+<div id="cap153" class="cap clip" data-start="680.890" data-duration="4.730" data-track-index="8"><span style="font-size:54px">그래서 앞으로는 AI가 없이는 살기 어려울 것 같은데,</span></div>
+<div id="cap154" class="cap clip" data-start="685.620" data-duration="5.210" data-track-index="8"><span style="font-size:62px">교수님들이나 아니면 어떤 강사분들이나 교사분들이</span></div>
+<div id="cap155" class="cap clip" data-start="690.830" data-duration="1.780" data-track-index="8"><span style="font-size:62px">학생들을 AI를 통해서</span></div>
+<div id="cap156" class="cap clip" data-start="692.610" data-duration="2.810" data-track-index="8"><span style="font-size:62px">좀 더 잘 가르칠 수 있는</span></div>
+<div id="cap157" class="cap clip" data-start="695.420" data-duration="2.040" data-track-index="8"><span style="font-size:62px">실 사례 같은 그런 부분들을</span></div>
+<div id="cap158" class="cap clip" data-start="697.460" data-duration="3.750" data-track-index="8"><span style="font-size:62px">좀 저는 발굴을 해서 쓰고 싶고요</span></div>
+<div id="cap159" class="cap clip" data-start="701.210" data-duration="2.630" data-track-index="8"><span style="font-size:62px">그리고 그런 부분들을 좀 더 보면서</span></div>
+<div id="cap160" class="cap clip" data-start="703.840" data-duration="2.460" data-track-index="8"><span style="font-size:62px">실무적으로 좀 다가설 수 있는 부분에</span></div>
+<div id="cap161" class="cap clip" data-start="706.300" data-duration="1.830" data-track-index="8"><span style="font-size:62px">저는 좀 집중해서</span></div>
+<div id="cap162" class="cap clip" data-start="708.130" data-duration="4.040" data-track-index="8"><span style="font-size:60px">앞으로 활동을 할 수 있게 해보겠습니다 감사합니다</span></div>
+<div id="cap163" class="cap clip" data-start="712.170" data-duration="2.230" data-track-index="8"><span style="font-size:62px">네, 감사합니다</span></div>
+<div id="cap164" class="cap clip" data-start="714.400" data-duration="4.250" data-track-index="8"><span style="font-size:62px">그러면 우리 조헌국 교수님</span></div>
+<div id="cap165" class="cap clip" data-start="718.650" data-duration="1.730" data-track-index="8"><span style="font-size:62px">아, 네 안녕하세요 반갑습니다</span></div>
+<div id="cap166" class="cap clip" data-start="720.380" data-duration="3.670" data-track-index="8"><span style="font-size:60px">부산대학교 자율전공학부에 있는 조헌국이라고 하고요</span></div>
+<div id="cap167" class="cap clip" data-start="724.050" data-duration="0.770" data-track-index="8"><span style="font-size:62px">어, 전공은</span></div>
+<div id="cap168" class="cap clip" data-start="724.820" data-duration="1.510" data-track-index="8"><span style="font-size:62px">저희 손정우 선생님 후배라서</span></div>
+<div id="cap169" class="cap clip" data-start="726.330" data-duration="1.690" data-track-index="8"><span style="font-size:62px">네, 물리교육이고요</span></div>
+<div id="cap170" class="cap clip" data-start="728.020" data-duration="2.310" data-track-index="8"><span style="font-size:62px">어 어, 물리 교육이고</span></div>
+<div id="cap171" class="cap clip" data-start="730.330" data-duration="1.580" data-track-index="8"><span style="font-size:62px">그리고 제가 컴퓨터 프로그래머로</span></div>
+<div id="cap172" class="cap clip" data-start="731.910" data-duration="1.420" data-track-index="8"><span style="font-size:62px">일한 적도 예전에 있었어요</span></div>
+<div id="cap173" class="cap clip" data-start="733.330" data-duration="2.790" data-track-index="8"><span style="font-size:62px">그래서 이제 컴퓨터 프로그래밍에 익숙했고,</span></div>
+<div id="cap174" class="cap clip" data-start="736.120" data-duration="4.810" data-track-index="8"><span style="font-size:50px">머신러닝은 2018년부터 이제 혼자 독학해서 시작을 했고,</span></div>
+<div id="cap175" class="cap clip" data-start="740.930" data-duration="4.100" data-track-index="8"><span style="font-size:62px">지금 주로 AI 관련돼서 하고 있는 거는</span></div>
+<div id="cap176" class="cap clip" data-start="745.030" data-duration="2.250" data-track-index="8"><span style="font-size:58px">크게 한 두 가지 정도로 나눠볼 수 있을 것 같은데</span></div>
+<div id="cap177" class="cap clip" data-start="747.280" data-duration="2.830" data-track-index="8"><span style="font-size:62px">하나는 오히려 저는 현재</span></div>
+<div id="cap178" class="cap clip" data-start="750.110" data-duration="1.680" data-track-index="8"><span style="font-size:62px">그러니까 교육 파트에서 LLM을,</span></div>
+<div id="cap179" class="cap clip" data-start="751.790" data-duration="2.570" data-track-index="8"><span style="font-size:60px">그러니까 LLM이나 AI를 쓸 때 문제점이 뭐냐면</span></div>
+<div id="cap180" class="cap clip" data-start="754.360" data-duration="3.580" data-track-index="8"><span style="font-size:62px">이게 교육의 목적에 맞춰진 게 아니기 때문에</span></div>
+<div id="cap181" class="cap clip" data-start="757.940" data-duration="3.090" data-track-index="8"><span style="font-size:62px">이걸 어떻게 디자인하는지에 따라 굉장히 달라져요</span></div>
+<div id="cap182" class="cap clip" data-start="761.030" data-duration="1.960" data-track-index="8"><span style="font-size:62px">그래서 아주 작은 디자인만 해도</span></div>
+<div id="cap183" class="cap clip" data-start="762.990" data-duration="2.470" data-track-index="8"><span style="font-size:62px">사실은 이게 완전히 다른 식으로 동작하거든요</span></div>
+<div id="cap184" class="cap clip" data-start="765.460" data-duration="1.390" data-track-index="8"><span style="font-size:62px">뭐 예를 들면</span></div>
+<div id="cap185" class="cap clip" data-start="766.850" data-duration="3.340" data-track-index="8"><span style="font-size:49px">학생들의 인지를 계속 자극할 수 있는 방식으로 둘 수도 있고</span></div>
+<div id="cap186" class="cap clip" data-start="770.190" data-duration="1.210" data-track-index="8"><span style="font-size:62px">이제 제가 요즘 관심 있는 거는</span></div>
+<div id="cap187" class="cap clip" data-start="771.400" data-duration="0.620" data-track-index="8"><span style="font-size:62px">Internal Feedback이라고</span></div>
+<div id="cap188" class="cap clip" data-start="772.020" data-duration="3.000" data-track-index="8"><span style="font-size:62px">그래서 학생들 스스로 문제를 찾고</span></div>
+<div id="cap189" class="cap clip" data-start="775.020" data-duration="2.140" data-track-index="8"><span style="font-size:62px">그거를 외부에 있는 것과 비교해서</span></div>
+<div id="cap190" class="cap clip" data-start="777.160" data-duration="2.690" data-track-index="8"><span style="font-size:62px">자기 스스로 개선해 나가는 것에 관심이 있거든요</span></div>
+<div id="cap191" class="cap clip" data-start="779.850" data-duration="1.570" data-track-index="8"><span style="font-size:62px">AI가 그렇게 쓸 수 있게</span></div>
+<div id="cap192" class="cap clip" data-start="781.420" data-duration="1.480" data-track-index="8"><span style="font-size:62px">학습 디자인을 지금 하고 있고</span></div>
+<div id="cap193" class="cap clip" data-start="782.900" data-duration="1.290" data-track-index="8"><span style="font-size:62px">몇 가지 테스트들을 하고 있어요</span></div>
+<div id="cap194" class="cap clip" data-start="784.190" data-duration="1.650" data-track-index="8"><span style="font-size:62px">그래서 그런 것들 혹시 있으면</span></div>
+<div id="cap195" class="cap clip" data-start="785.840" data-duration="1.190" data-track-index="8"><span style="font-size:62px">사례들 좀 보여드리고</span></div>
+<div id="cap196" class="cap clip" data-start="787.030" data-duration="4.070" data-track-index="8"><span style="font-size:44px">이제 주로 요즘에 어떤 식으로 AI와 관련된 학습 이론들이 등장해서</span></div>
+<div id="cap197" class="cap clip" data-start="791.100" data-duration="1.330" data-track-index="8"><span style="font-size:62px">그걸 어떻게 접목하는지에 대한</span></div>
+<div id="cap198" class="cap clip" data-start="792.430" data-duration="3.040" data-track-index="8"><span style="font-size:62px">그런 케이스나 사례들을 소개해 드리는 게</span></div>
+<div id="cap199" class="cap clip" data-start="795.470" data-duration="4.610" data-track-index="8"><span style="font-size:49px">오히려 제가 더 적절하지 않을까라는 생각이 듭니다 이상입니다</span></div>
+<div id="cap200" class="cap clip" data-start="800.080" data-duration="2.320" data-track-index="8"><span style="font-size:62px">아주 좋습니다 감사합니다</span></div>
+<div id="cap201" class="cap clip" data-start="802.400" data-duration="6.070" data-track-index="8"><span style="font-size:62px">그러면 그다음은 우리 손미현 교수님</span></div>
+<div id="cap202" class="cap clip" data-start="808.470" data-duration="1.360" data-track-index="8"><span style="font-size:62px">네, 안녕하십니까</span></div>
+<div id="cap203" class="cap clip" data-start="809.830" data-duration="2.880" data-track-index="8"><span style="font-size:62px">안녕하세요, 교수님 안녕하세요 네,</span></div>
+<div id="cap204" class="cap clip" data-start="812.710" data-duration="5.460" data-track-index="8"><span style="font-size:44px">제 대학원 수업이 지금 끝나가지고 좀 늦었습니다 고생하셨습니다 네,</span></div>
+<div id="cap205" class="cap clip" data-start="818.170" data-duration="4.150" data-track-index="8"><span style="font-size:52px">저는 일단 손정우 교수님하고 같은 학교에 근무하고 있고요</span></div>
+<div id="cap206" class="cap clip" data-start="822.320" data-duration="2.220" data-track-index="8"><span style="font-size:62px">저는 화학교육과에 있습니다</span></div>
+<div id="cap207" class="cap clip" data-start="824.540" data-duration="3.160" data-track-index="8"><span style="font-size:62px">사실은 저는 막 프로그래밍을 막 잘하거나</span></div>
+<div id="cap208" class="cap clip" data-start="827.700" data-duration="0.810" data-track-index="8"><span style="font-size:62px">그런 게 아니고</span></div>
+<div id="cap209" class="cap clip" data-start="828.510" data-duration="4.000" data-track-index="8"><span style="font-size:62px">정말 AI를 그냥 잘 쓰는 사람이거든요</span></div>
+<div id="cap210" class="cap clip" data-start="832.510" data-duration="3.960" data-track-index="8"><span style="font-size:62px">그래서 학생들하고 어떻게 쓰고 있고</span></div>
+<div id="cap211" class="cap clip" data-start="836.470" data-duration="2.330" data-track-index="8"><span style="font-size:62px">제가 평가나 예를 들어</span></div>
+<div id="cap212" class="cap clip" data-start="838.800" data-duration="2.570" data-track-index="8"><span style="font-size:62px">학생들이 저희 같은 경우는</span></div>
+<div id="cap213" class="cap clip" data-start="841.370" data-duration="0.940" data-track-index="8"><span style="font-size:62px">AI를 이용해서</span></div>
+<div id="cap214" class="cap clip" data-start="842.310" data-duration="2.830" data-track-index="8"><span style="font-size:62px">아이들이 스스로 공부를 많이 하고 있어요</span></div>
+<div id="cap215" class="cap clip" data-start="845.140" data-duration="1.840" data-track-index="8"><span style="font-size:62px">저희 학생들 같은 경우는</span></div>
+<div id="cap216" class="cap clip" data-start="846.980" data-duration="2.200" data-track-index="8"><span style="font-size:62px">진짜 유료 버전을 써가면서</span></div>
+<div id="cap217" class="cap clip" data-start="849.180" data-duration="2.910" data-track-index="8"><span style="font-size:62px">그래서 아이들이 스스로 AI를 가지고</span></div>
+<div id="cap218" class="cap clip" data-start="852.090" data-duration="3.300" data-track-index="8"><span style="font-size:62px">어떻게 본인들이 공부하는 내용들을</span></div>
+<div id="cap219" class="cap clip" data-start="855.390" data-duration="1.480" data-track-index="8"><span style="font-size:62px">어떻게 훈련시키고</span></div>
+<div id="cap220" class="cap clip" data-start="856.870" data-duration="2.060" data-track-index="8"><span style="font-size:62px">자기들이 프롬프트 정도 훈련이지만</span></div>
+<div id="cap221" class="cap clip" data-start="858.930" data-duration="1.480" data-track-index="8"><span style="font-size:62px">어쨌든 훈련시키고</span></div>
+<div id="cap222" class="cap clip" data-start="860.410" data-duration="0.940" data-track-index="8"><span style="font-size:62px">본인들이 필요한 것들을</span></div>
+<div id="cap223" class="cap clip" data-start="861.350" data-duration="2.010" data-track-index="8"><span style="font-size:62px">어떻게 피드백 받고 하는지에 대한</span></div>
+<div id="cap224" class="cap clip" data-start="863.360" data-duration="2.480" data-track-index="8"><span style="font-size:62px">그런 사례들도 같이 소개해 드리고,</span></div>
+<div id="cap225" class="cap clip" data-start="865.840" data-duration="2.730" data-track-index="8"><span style="font-size:62px">마침 아까 발표 박병태 선생님하고</span></div>
+<div id="cap226" class="cap clip" data-start="868.570" data-duration="2.580" data-track-index="8"><span style="font-size:62px">임재홍 선생님 말씀해 주셨던 것처럼</span></div>
+<div id="cap227" class="cap clip" data-start="871.150" data-duration="3.110" data-track-index="8"><span style="font-size:62px">좀 보고 현장의 반응을 보면서</span></div>
+<div id="cap228" class="cap clip" data-start="874.260" data-duration="1.710" data-track-index="8"><span style="font-size:62px">"아, 이런 것들이 더 필요하신가 보다."</span></div>
+<div id="cap229" class="cap clip" data-start="875.970" data-duration="0.700" data-track-index="8"><span style="font-size:62px">하는 거 있으면</span></div>
+<div id="cap230" class="cap clip" data-start="876.670" data-duration="1.780" data-track-index="8"><span style="font-size:62px">더 추가적으로 하도록 하겠습니다</span></div>
+<div id="cap231" class="cap clip" data-start="878.450" data-duration="1.190" data-track-index="8"><span style="font-size:62px">네, 이상입니다</span></div>
+<div id="cap232" class="cap clip" data-start="879.640" data-duration="1.780" data-track-index="8"><span style="font-size:62px">감사합니다, 교수님</span></div>
+<div id="cap233" class="cap clip" data-start="881.420" data-duration="2.630" data-track-index="8"><span style="font-size:62px">그러면 이번에는 우리 권혁만</span></div>
+<div id="cap234" class="cap clip" data-start="884.050" data-duration="3.710" data-track-index="8"><span style="font-size:62px">선생님 소개 부탁드립니다</span></div>
+<div id="cap235" class="cap clip" data-start="887.760" data-duration="3.220" data-track-index="8"><span style="font-size:62px">네, 반갑습니다 안녕하세요</span></div>
+<div id="cap236" class="cap clip" data-start="890.980" data-duration="2.450" data-track-index="8"><span style="font-size:62px">그리고 저는 이제 은퇴를 했고요</span></div>
+<div id="cap237" class="cap clip" data-start="893.430" data-duration="6.770" data-track-index="8"><span style="font-size:60px">그렇게 해서 이제 년 전에 AI를 알게 돼가지고,</span></div>
+<div id="cap238" class="cap clip" data-start="900.200" data-duration="1.760" data-track-index="8"><span style="font-size:62px">뭐 이게 시대의 대세가 되겠다</span></div>
+<div id="cap239" class="cap clip" data-start="901.960" data-duration="2.110" data-track-index="8"><span style="font-size:62px">이런 생각을 그냥 개인적으로 하면서</span></div>
+<div id="cap240" class="cap clip" data-start="904.070" data-duration="3.250" data-track-index="8"><span style="font-size:62px">공부를 좀 했는데, 어...</span></div>
+<div id="cap241" class="cap clip" data-start="907.320" data-duration="1.390" data-track-index="8"><span style="font-size:62px">뭐 가르쳐주는 사람도 없고</span></div>
+<div id="cap242" class="cap clip" data-start="908.710" data-duration="1.430" data-track-index="8"><span style="font-size:62px">혼자서 몇 년 동안 하면서</span></div>
+<div id="cap243" class="cap clip" data-start="910.140" data-duration="2.940" data-track-index="8"><span style="font-size:62px">고생을 좀 많이 하다가</span></div>
+<div id="cap244" class="cap clip" data-start="913.080" data-duration="2.410" data-track-index="8"><span style="font-size:62px">제 또래 사람들에게는 제,</span></div>
+<div id="cap245" class="cap clip" data-start="915.490" data-duration="1.840" data-track-index="8"><span style="font-size:62px">제가 가졌던 이런 경험들이</span></div>
+<div id="cap246" class="cap clip" data-start="917.330" data-duration="1.750" data-track-index="8"><span style="font-size:62px">도움이... 될 것 같다</span></div>
+<div id="cap247" class="cap clip" data-start="919.080" data-duration="1.670" data-track-index="8"><span style="font-size:62px">이런 생각을 해서</span></div>
+<div id="cap248" class="cap clip" data-start="920.750" data-duration="3.250" data-track-index="8"><span style="font-size:62px">그분들 위주로 요새 강의를 좀 하고 있어요</span></div>
+<div id="cap249" class="cap clip" data-start="924.000" data-duration="3.580" data-track-index="8"><span style="font-size:62px">제가 지금 AI를 배우고 난 뒤에</span></div>
+<div id="cap250" class="cap clip" data-start="927.580" data-duration="3.220" data-track-index="8"><span style="font-size:62px">전자책을 한 다섯 권을 냈어요</span></div>
+<div id="cap251" class="cap clip" data-start="930.800" data-duration="3.890" data-track-index="8"><span style="font-size:62px">그래서 제가 쓴 내용 가지고,</span></div>
+<div id="cap252" class="cap clip" data-start="934.690" data-duration="2.320" data-track-index="8"><span style="font-size:62px">예전에 썼던 내용 가지고도 내고,</span></div>
+<div id="cap253" class="cap clip" data-start="937.010" data-duration="2.550" data-track-index="8"><span style="font-size:62px">AI를 가지고도 내고,</span></div>
+<div id="cap254" class="cap clip" data-start="939.560" data-duration="2.540" data-track-index="8"><span style="font-size:62px">또 다른 사람의 의뢰를 받아가지고도</span></div>
+<div id="cap255" class="cap clip" data-start="942.100" data-duration="1.800" data-track-index="8"><span style="font-size:62px">책을 내고,</span></div>
+<div id="cap256" class="cap clip" data-start="943.900" data-duration="1.410" data-track-index="8"><span style="font-size:62px">그렇게 하면서</span></div>
+<div id="cap257" class="cap clip" data-start="945.310" data-duration="4.640" data-track-index="8"><span style="font-size:62px">어- 전자책을 발간할 수 있도록</span></div>
+<div id="cap258" class="cap clip" data-start="949.950" data-duration="2.530" data-track-index="8"><span style="font-size:62px">또는 AI와 함께 시작해서</span></div>
+<div id="cap259" class="cap clip" data-start="952.480" data-duration="4.330" data-track-index="8"><span style="font-size:62px">마지막 출간까지 가는 프로세스를</span></div>
+<div id="cap260" class="cap clip" data-start="956.810" data-duration="2.320" data-track-index="8"><span style="font-size:62px">제가 겪었던 시행착오를</span></div>
+<div id="cap261" class="cap clip" data-start="959.130" data-duration="4.540" data-track-index="8"><span style="font-size:62px">이렇게 말씀을 한번 드리-드리면 좋지 않을까</span></div>
+<div id="cap262" class="cap clip" data-start="963.670" data-duration="1.400" data-track-index="8"><span style="font-size:62px">그런 생각을 하고 있습니다</span></div>
+<div id="cap263" class="cap clip" data-start="965.070" data-duration="2.760" data-track-index="8"><span style="font-size:62px">그래서 크로우드 프로젝트에 넣어가지고</span></div>
+<div id="cap264" class="cap clip" data-start="967.830" data-duration="1.220" data-track-index="8"><span style="font-size:62px">우리 하루에 2시간,</span></div>
+<div id="cap265" class="cap clip" data-start="969.050" data-duration="3.070" data-track-index="8"><span style="font-size:62px">3시간씩 대화를 합니다 와</span></div>
+<div id="cap266" class="cap clip" data-start="972.120" data-duration="3.470" data-track-index="8"><span style="font-size:62px">저는 뭐 시간이 많으니까</span></div>
+<div id="cap267" class="cap clip" data-start="975.590" data-duration="3.150" data-track-index="8"><span style="font-size:62px">그래서 이제 그게 그걸 하면서</span></div>
+<div id="cap268" class="cap clip" data-start="978.740" data-duration="2.200" data-track-index="8"><span style="font-size:62px">아, 내 사례와</span></div>
+<div id="cap269" class="cap clip" data-start="980.940" data-duration="2.770" data-track-index="8"><span style="font-size:62px">내 말과 내 실제 경험이</span></div>
+<div id="cap270" class="cap clip" data-start="983.710" data-duration="3.390" data-track-index="8"><span style="font-size:60px">이렇게 녹아 들어갈 수 있구나라는 것들을 느끼면서</span></div>
+<div id="cap271" class="cap clip" data-start="987.100" data-duration="4.430" data-track-index="8"><span style="font-size:62px">너무 개인적으로는 좀 감동스러운</span></div>
+<div id="cap272" class="cap clip" data-start="991.530" data-duration="2.450" data-track-index="8"><span style="font-size:62px">그런 순간도 많이 좀 있습니다</span></div>
+<div id="cap273" class="cap clip" data-start="993.980" data-duration="3.910" data-track-index="8"><span style="font-size:54px">이런 것들을 한번 공유하고 싶어요 이상입니다 감사합니다</span></div>
+<div id="cap274" class="cap clip" data-start="997.890" data-duration="2.330" data-track-index="8"><span style="font-size:62px">그러면 그다음</span></div>
+<div id="cap275" class="cap clip" data-start="1000.220" data-duration="4.710" data-track-index="8"><span style="font-size:62px">우리 김보연 박사님, 안녕하십니까?</span></div>
+<div id="cap276" class="cap clip" data-start="1004.930" data-duration="2.500" data-track-index="8"><span style="font-size:62px">저는 이제 배경이 학부하고</span></div>
+<div id="cap277" class="cap clip" data-start="1007.430" data-duration="2.580" data-track-index="8"><span style="font-size:62px">석사는 컴퓨터공학을 했고요</span></div>
+<div id="cap278" class="cap clip" data-start="1010.010" data-duration="2.880" data-track-index="8"><span style="font-size:62px">그때 이제 석사 때</span></div>
+<div id="cap279" class="cap clip" data-start="1012.890" data-duration="6.020" data-track-index="8"><span style="font-size:62px">소위 인공신경망으로 최적화하는 문제</span></div>
+<div id="cap280" class="cap clip" data-start="1018.910" data-duration="2.060" data-track-index="8"><span style="font-size:62px">이런 거를 하면서</span></div>
+<div id="cap281" class="cap clip" data-start="1020.970" data-duration="7.660" data-track-index="8"><span style="font-size:44px">석사 때부터 소위 이제 지금 말하는 딥러닝의 인공신경망 모델을 하기 시작했거든요</span></div>
+<div id="cap282" class="cap clip" data-start="1028.630" data-duration="3.870" data-track-index="8"><span style="font-size:62px">그리고 이제 박사 과정은 의공학을 했습니다</span></div>
+<div id="cap283" class="cap clip" data-start="1032.500" data-duration="1.730" data-track-index="8"><span style="font-size:62px">그래서 의공학을 해서</span></div>
+<div id="cap284" class="cap clip" data-start="1034.230" data-duration="1.450" data-track-index="8"><span style="font-size:62px">어, 백그라운드가</span></div>
+<div id="cap285" class="cap clip" data-start="1035.680" data-duration="2.220" data-track-index="8"><span style="font-size:62px">이제 컴, 컴퓨터공학과하고</span></div>
+<div id="cap286" class="cap clip" data-start="1037.900" data-duration="0.780" data-track-index="8"><span style="font-size:62px">어, 의공학</span></div>
+<div id="cap287" class="cap clip" data-start="1038.680" data-duration="1.370" data-track-index="8"><span style="font-size:62px">두 개가 있습니다</span></div>
+<div id="cap288" class="cap clip" data-start="1040.050" data-duration="4.130" data-track-index="8"><span style="font-size:62px">그래서 주로 강의를 꽤 오래 했고요</span></div>
+<div id="cap289" class="cap clip" data-start="1044.180" data-duration="4.980" data-track-index="8"><span style="font-size:62px">강의 이제 본격적으로는 2019년도부터 어,</span></div>
+<div id="cap290" class="cap clip" data-start="1049.160" data-duration="2.090" data-track-index="8"><span style="font-size:62px">이... 인공지능이</span></div>
+<div id="cap291" class="cap clip" data-start="1051.250" data-duration="2.080" data-track-index="8"><span style="font-size:62px">우리나라에서 이제 급격하게 퍼지면서</span></div>
+<div id="cap292" class="cap clip" data-start="1053.330" data-duration="1.610" data-track-index="8"><span style="font-size:62px">강사가 부족해서</span></div>
+<div id="cap293" class="cap clip" data-start="1054.940" data-duration="2.230" data-track-index="8"><span style="font-size:62px">강사를 가르치러 나갔다가</span></div>
+<div id="cap294" class="cap clip" data-start="1057.170" data-duration="2.720" data-track-index="8"><span style="font-size:62px">제가 아예 이제 전문 강사로 추천을 받아서</span></div>
+<div id="cap295" class="cap clip" data-start="1059.890" data-duration="2.670" data-track-index="8"><span style="font-size:62px">그쪽으로 나가게 됐습니다</span></div>
+<div id="cap296" class="cap clip" data-start="1062.560" data-duration="2.190" data-track-index="8"><span style="font-size:62px">그래서 강의를 하는 분야는</span></div>
+<div id="cap297" class="cap clip" data-start="1064.750" data-duration="2.070" data-track-index="8"><span style="font-size:62px">주로 이제 AI, 머신러닝</span></div>
+<div id="cap298" class="cap clip" data-start="1066.820" data-duration="3.360" data-track-index="8"><span style="font-size:62px">그런 쪽의 기본 이론이고요</span></div>
+<div id="cap299" class="cap clip" data-start="1070.180" data-duration="1.390" data-track-index="8"><span style="font-size:62px">어... 강의가 아니라</span></div>
+<div id="cap300" class="cap clip" data-start="1071.570" data-duration="0.730" data-track-index="8"><span style="font-size:62px">시험 문제</span></div>
+<div id="cap301" class="cap clip" data-start="1072.300" data-duration="1.480" data-track-index="8"><span style="font-size:62px">강의 평가가 아니라</span></div>
+<div id="cap302" class="cap clip" data-start="1073.780" data-duration="4.350" data-track-index="8"><span style="font-size:62px">시험 문제가... 예</span></div>
+<div id="cap303" class="cap clip" data-start="1078.130" data-duration="3.780" data-track-index="8"><span style="font-size:62px">시험 문제 내는 거 있죠 중간고사, 기말고사</span></div>
+<div id="cap304" class="cap clip" data-start="1081.910" data-duration="2.360" data-track-index="8"><span style="font-size:62px">시험 문제를 어떻게 출제하느냐?</span></div>
+<div id="cap305" class="cap clip" data-start="1084.270" data-duration="3.040" data-track-index="8"><span style="font-size:62px">이건 제가 강의했던 것이기도 하고요</span></div>
+<div id="cap306" class="cap clip" data-start="1087.310" data-duration="1.440" data-track-index="8"><span style="font-size:62px">프로젝트 기반으로 하셔도 되고</span></div>
+<div id="cap307" class="cap clip" data-start="1088.750" data-duration="5.160" data-track-index="8"><span style="font-size:62px">그때는 GPTs를 기반으로 했었는데</span></div>
+<div id="cap308" class="cap clip" data-start="1093.910" data-duration="2.080" data-track-index="8"><span style="font-size:62px">지금 GPTs가 없어지니까</span></div>
+<div id="cap309" class="cap clip" data-start="1095.990" data-duration="2.570" data-track-index="8"><span style="font-size:62px">이런 것들을 좀 도와드릴 수 있지 않을까 해서</span></div>
+<div id="cap310" class="cap clip" data-start="1098.560" data-duration="2.420" data-track-index="8"><span style="font-size:62px">시험 문제와 루브릭 작성하는 거</span></div>
+<div id="cap311" class="cap clip" data-start="1100.980" data-duration="1.550" data-track-index="8"><span style="font-size:62px">이런 거는 좀 특강으로 할 수 있...</span></div>
+<div id="cap312" class="cap clip" data-start="1102.530" data-duration="1.920" data-track-index="8"><span style="font-size:62px">한 세 시간 안에 할 수 있는 거 아닐까</span></div>
+<div id="cap313" class="cap clip" data-start="1104.450" data-duration="3.290" data-track-index="8"><span style="font-size:62px">지금 그렇게 생각을 하고 있고요</span></div>
+<div id="cap314" class="cap clip" data-start="1107.740" data-duration="2.320" data-track-index="8"><span style="font-size:62px">그러니까 저는 이제 1월달하고</span></div>
+<div id="cap315" class="cap clip" data-start="1110.060" data-duration="0.550" data-track-index="8"><span style="font-size:62px">또 언제더라</span></div>
+<div id="cap316" class="cap clip" data-start="1110.610" data-duration="5.250" data-track-index="8"><span style="font-size:56px">두 번 이 그, 그 Philosophy 교육에 나가서</span></div>
+<div id="cap317" class="cap clip" data-start="1115.860" data-duration="3.010" data-track-index="8"><span style="font-size:62px">그 제가 이제 클로드 코드를</span></div>
+<div id="cap318" class="cap clip" data-start="1118.870" data-duration="2.190" data-track-index="8"><span style="font-size:62px">클로드 코드로 바이브 코딩하는 게</span></div>
+<div id="cap319" class="cap clip" data-start="1121.060" data-duration="1.930" data-track-index="8"><span style="font-size:62px">너무 익숙하지 않아 가지고</span></div>
+<div id="cap320" class="cap clip" data-start="1122.990" data-duration="1.860" data-track-index="8"><span style="font-size:62px">두 번을 수업을 듣는데</span></div>
+<div id="cap321" class="cap clip" data-start="1124.850" data-duration="3.500" data-track-index="8"><span style="font-size:62px">옆에 이제 도와주시러 오신 분들이</span></div>
+<div id="cap322" class="cap clip" data-start="1128.350" data-duration="2.330" data-track-index="8"><span style="font-size:62px">어 되게 잘 도와주시더라고요</span></div>
+<div id="cap323" class="cap clip" data-start="1130.680" data-duration="2.010" data-track-index="8"><span style="font-size:62px">그래서 저도 기회가 되면</span></div>
+<div id="cap324" class="cap clip" data-start="1132.690" data-duration="2.890" data-track-index="8"><span style="font-size:62px">열심히 이렇게 연습을 해가지고 가서</span></div>
+<div id="cap325" class="cap clip" data-start="1135.580" data-duration="3.210" data-track-index="8"><span style="font-size:62px">이렇게 보조라도 해야겠다라는 생각으로</span></div>
+<div id="cap326" class="cap clip" data-start="1138.790" data-duration="2.140" data-track-index="8"><span style="font-size:62px">어... 지금 봉사단을 들었는데</span></div>
+<div id="cap327" class="cap clip" data-start="1140.930" data-duration="5.130" data-track-index="8"><span style="font-size:60px">생각보다 제가 생각한 이상을 해야 되는 거 아닌가</span></div>
+<div id="cap328" class="cap clip" data-start="1146.060" data-duration="4.200" data-track-index="8"><span style="font-size:54px">그래서 조금 걱정이 되고 있습니다 이상입니다 감사합니다</span></div>
+<div id="cap329" class="cap clip" data-start="1150.260" data-duration="1.520" data-track-index="8"><span style="font-size:62px">교수님 감사합니다</span></div>
+<div id="cap330" class="cap clip" data-start="1151.780" data-duration="2.320" data-track-index="8"><span style="font-size:62px">이미 수업을 들은 것 같이</span></div>
+<div id="cap331" class="cap clip" data-start="1154.100" data-duration="2.110" data-track-index="8"><span style="font-size:62px">제가 많이, 많이 배웠습니다</span></div>
+<div id="cap332" class="cap clip" data-start="1156.210" data-duration="5.910" data-track-index="8"><span style="font-size:62px">그러면 우리 다음은 박지훈 교수님 안녕하십니까?</span></div>
+<div id="cap333" class="cap clip" data-start="1162.120" data-duration="1.610" data-track-index="8"><span style="font-size:62px">아, 네</span></div>
+<div id="cap334" class="cap clip" data-start="1163.730" data-duration="3.320" data-track-index="8"><span style="font-size:62px">저는 경인교육대학교 박지훈이라고 하고</span></div>
+<div id="cap335" class="cap clip" data-start="1167.050" data-duration="2.500" data-track-index="8"><span style="font-size:62px">전공은 화학교육입니다</span></div>
+<div id="cap336" class="cap clip" data-start="1169.550" data-duration="4.350" data-track-index="8"><span style="font-size:62px">그래서 저는 AI와 컴퓨터와 관련된 것들을</span></div>
+<div id="cap337" class="cap clip" data-start="1173.900" data-duration="2.610" data-track-index="8"><span style="font-size:62px">학위에서 공부하지 않았기 때문에</span></div>
+<div id="cap338" class="cap clip" data-start="1176.510" data-duration="2.040" data-track-index="8"><span style="font-size:62px">이런 것들을 본격적으로</span></div>
+<div id="cap339" class="cap clip" data-start="1178.550" data-duration="1.540" data-track-index="8"><span style="font-size:62px">이론적으로 다루기보다는</span></div>
+<div id="cap340" class="cap clip" data-start="1180.090" data-duration="3.930" data-track-index="8"><span style="font-size:62px">그냥 평소에 제가 관심 있는 분야에 대해서</span></div>
+<div id="cap341" class="cap clip" data-start="1184.020" data-duration="1.470" data-track-index="8"><span style="font-size:62px">소개할 수 있을 것 같습니다</span></div>
+<div id="cap342" class="cap clip" data-start="1185.490" data-duration="2.850" data-track-index="8"><span style="font-size:62px">많은 교수님들이 하셨던 것들처럼</span></div>
+<div id="cap343" class="cap clip" data-start="1188.340" data-duration="3.130" data-track-index="8"><span style="font-size:62px">AI가 어떻게 학생들의 사고를 높일 수 있을지</span></div>
+<div id="cap344" class="cap clip" data-start="1191.470" data-duration="2.250" data-track-index="8"><span style="font-size:62px">그 부분에 대해서 관심이 많아서</span></div>
+<div id="cap345" class="cap clip" data-start="1193.720" data-duration="0.740" data-track-index="8"><span style="font-size:62px">그 부분에 대해서</span></div>
+<div id="cap346" class="cap clip" data-start="1194.460" data-duration="4.350" data-track-index="8"><span style="font-size:54px">저도 활용 방법을 연구를 하고 있는 중에 하나가 있고,</span></div>
+<div id="cap347" class="cap clip" data-start="1198.810" data-duration="1.010" data-track-index="8"><span style="font-size:62px">연구는 아니지만</span></div>
+<div id="cap348" class="cap clip" data-start="1199.820" data-duration="3.910" data-track-index="8"><span style="font-size:52px">최근에는 AI를 많이 활용하고 있는 것 중에 하나가 그,</span></div>
+<div id="cap349" class="cap clip" data-start="1203.730" data-duration="1.780" data-track-index="8"><span style="font-size:62px">우리의 어떤 그,</span></div>
+<div id="cap350" class="cap clip" data-start="1205.510" data-duration="3.750" data-track-index="8"><span style="font-size:62px">그 워크플로우를 좀 그 스킬로 만들어서</span></div>
+<div id="cap351" class="cap clip" data-start="1209.260" data-duration="1.870" data-track-index="8"><span style="font-size:62px">어떻게 업무를 편하게 할 수 있을까</span></div>
+<div id="cap352" class="cap clip" data-start="1211.130" data-duration="2.170" data-track-index="8"><span style="font-size:62px">부분에 대해서 많이</span></div>
+<div id="cap353" class="cap clip" data-start="1213.300" data-duration="1.740" data-track-index="8"><span style="font-size:62px">제가 나름대로 고민을 하고 있고,</span></div>
+<div id="cap354" class="cap clip" data-start="1215.040" data-duration="2.140" data-track-index="8"><span style="font-size:62px">그 부분들을 주변에 있는 선생님들한테</span></div>
+<div id="cap355" class="cap clip" data-start="1217.180" data-duration="1.270" data-track-index="8"><span style="font-size:62px">좀 알려줘서</span></div>
+<div id="cap356" class="cap clip" data-start="1218.450" data-duration="1.920" data-track-index="8"><span style="font-size:62px">그냥 좀 편하게 쓰시게 하는 것 같아요</span></div>
+<div id="cap357" class="cap clip" data-start="1220.370" data-duration="3.050" data-track-index="8"><span style="font-size:62px">최근에 뭐 어떤 그 업체와 하나</span></div>
+<div id="cap358" class="cap clip" data-start="1223.420" data-duration="3.580" data-track-index="8"><span style="font-size:62px">어, 프로그램을 개발하는 게 있는데</span></div>
+<div id="cap359" class="cap clip" data-start="1227.000" data-duration="1.900" data-track-index="8"><span style="font-size:62px">그중에 이제 선생님들을 모시고</span></div>
+<div id="cap360" class="cap clip" data-start="1228.900" data-duration="1.340" data-track-index="8"><span style="font-size:62px">원고를 쓰고</span></div>
+<div id="cap361" class="cap clip" data-start="1230.240" data-duration="2.490" data-track-index="8"><span style="font-size:62px">그, 그분들이 개발을 잘할 수 있도록</span></div>
+<div id="cap362" class="cap clip" data-start="1232.730" data-duration="0.980" data-track-index="8"><span style="font-size:62px">그 양식에 맞춰서</span></div>
+<div id="cap363" class="cap clip" data-start="1233.710" data-duration="1.510" data-track-index="8"><span style="font-size:62px">이제 원고를 써야 되는데</span></div>
+<div id="cap364" class="cap clip" data-start="1235.220" data-duration="2.850" data-track-index="8"><span style="font-size:62px">그런 부분들을 제가 클로드 스킬로 만들어서</span></div>
+<div id="cap365" class="cap clip" data-start="1238.070" data-duration="2.870" data-track-index="8"><span style="font-size:62px">선생님들에게 좀 배포를 해주니까</span></div>
+<div id="cap366" class="cap clip" data-start="1240.940" data-duration="2.030" data-track-index="8"><span style="font-size:62px">굉장히 원고 쓰기가 편안해졌다</span></div>
+<div id="cap367" class="cap clip" data-start="1242.970" data-duration="1.460" data-track-index="8"><span style="font-size:62px">이렇게 얘기를 하시더라고요</span></div>
+<div id="cap368" class="cap clip" data-start="1244.430" data-duration="2.750" data-track-index="8"><span style="font-size:62px">그래서 저는 발표를 한다라고 하면</span></div>
+<div id="cap369" class="cap clip" data-start="1247.180" data-duration="2.900" data-track-index="8"><span style="font-size:62px">정말 선생님들이 좀 유용하게 사용했다라고 하는</span></div>
+<div id="cap370" class="cap clip" data-start="1250.080" data-duration="1.130" data-track-index="8"><span style="font-size:62px">그런 스킬들,</span></div>
+<div id="cap371" class="cap clip" data-start="1251.210" data-duration="3.610" data-track-index="8"><span style="font-size:54px">그런 것들을 좀 위주로 발표를 할 수 있을 것 같습니다</span></div>
+<div id="cap372" class="cap clip" data-start="1254.820" data-duration="1.660" data-track-index="8"><span style="font-size:62px">듣기만 해도</span></div>
+<div id="cap373" class="cap clip" data-start="1256.480" data-duration="4.170" data-track-index="8"><span style="font-size:62px">저도 써보고 싶습니다, 교수님 감사합니다</span></div>
+<div id="cap374" class="cap clip" data-start="1260.650" data-duration="0.970" data-track-index="8"><span style="font-size:62px">박진 교수님</span></div>
+<div id="cap375" class="cap clip" data-start="1262.420" data-duration="2.820" data-track-index="8"><span style="min-width:671px;min-height:98px;font-size:62px">그다음 우리 송정미 교수님</span></div>
+<div id="cap376" class="cap clip" data-start="1391.120" data-duration="1.200" data-track-index="8"><span style="font-size:62px">이렇게 참여하게 됐습니다 감사합니다 감사합니다</span></div>
+<div id="cap377" class="cap clip" data-start="1392.320" data-duration="12.570" data-track-index="8"><span style="font-size:60px">그러면 이제 우리 안성혜 원장님 발표 부탁드립니다</span></div>
+<div id="cap378" class="cap clip" data-start="1404.890" data-duration="1.510" data-track-index="8"><span style="font-size:62px">네, 안녕하세요</span></div>
+<div id="cap379" class="cap clip" data-start="1406.400" data-duration="3.670" data-track-index="8"><span style="font-size:62px">저는 안성혜라고 하고요 어,</span></div>
+<div id="cap380" class="cap clip" data-start="1410.070" data-duration="3.200" data-track-index="8"><span style="font-size:62px">저는 요새 가지를 하고 있는데요</span></div>
+<div id="cap381" class="cap clip" data-start="1413.270" data-duration="4.910" data-track-index="8"><span style="font-size:62px">하나는 사교육의 영어,</span></div>
+<div id="cap382" class="cap clip" data-start="1418.180" data-duration="4.110" data-track-index="8"><span style="font-size:62px">주로 고등학교 입시 사교육을 하나 하고 있고요</span></div>
+<div id="cap383" class="cap clip" data-start="1422.290" data-duration="3.400" data-track-index="8"><span style="font-size:62px">또 하나는 이거는 이제 어,</span></div>
+<div id="cap384" class="cap clip" data-start="1425.690" data-duration="3.450" data-track-index="8"><span style="font-size:62px">저기 Philosophy 님을 통해서</span></div>
+<div id="cap385" class="cap clip" data-start="1429.140" data-duration="1.200" data-track-index="8"><span style="font-size:62px">어, 서울에서</span></div>
+<div id="cap386" class="cap clip" data-start="1430.340" data-duration="6.410" data-track-index="8"><span style="font-size:62px">중장년층 AI 강사 양성이 있었는데</span></div>
+<div id="cap387" class="cap clip" data-start="1436.750" data-duration="3.130" data-track-index="8"><span style="font-size:62px">그때 제가 Philosophy 카페를 보고</span></div>
+<div id="cap388" class="cap clip" data-start="1439.880" data-duration="2.120" data-track-index="8"><span style="font-size:62px">거기 지원을 해서</span></div>
+<div id="cap389" class="cap clip" data-start="1442.000" data-duration="3.060" data-track-index="8"><span style="font-size:62px">거기에 이제 선출이 돼서</span></div>
+<div id="cap390" class="cap clip" data-start="1445.060" data-duration="4.960" data-track-index="8"><span style="font-size:62px">지금은 AI 강사 지금 일을 하고 있습니다</span></div>
+<div id="cap391" class="cap clip" data-start="1450.020" data-duration="1.940" data-track-index="8"><span style="font-size:62px">그래서 서울하고</span></div>
+<div id="cap392" class="cap clip" data-start="1451.960" data-duration="3.160" data-track-index="8"><span style="font-size:62px">경기도에 AI 디지털 배움터라고 있는데</span></div>
+<div id="cap393" class="cap clip" data-start="1455.120" data-duration="1.570" data-track-index="8"><span style="font-size:62px">거기도 강사가 돼서</span></div>
+<div id="cap394" class="cap clip" data-start="1456.690" data-duration="1.820" data-track-index="8"><span style="font-size:62px">그 두 가지 일을 하고 있습니다</span></div>
+<div id="cap395" class="cap clip" data-start="1458.510" data-duration="3.590" data-track-index="8"><span style="font-size:62px">이건 제가 코덱스로 만들었거든요</span></div>
+<div id="cap396" class="cap clip" data-start="1462.100" data-duration="2.770" data-track-index="8"><span style="font-size:62px">이게 인스타에 올리는 인스타툰이</span></div>
+<div id="cap397" class="cap clip" data-start="1464.870" data-duration="2.910" data-track-index="8"><span style="font-size:62px">자동으로 생성되는 거예요</span></div>
+<div id="cap398" class="cap clip" data-start="1467.780" data-duration="4.730" data-track-index="8"><span style="font-size:62px">그래서 이거는 이제 여자 영어학원을 운영하는</span></div>
+<div id="cap399" class="cap clip" data-start="1472.510" data-duration="1.500" data-track-index="8"><span style="font-size:62px">여자 원장님들 모임을</span></div>
+<div id="cap400" class="cap clip" data-start="1474.010" data-duration="1.850" data-track-index="8"><span style="font-size:62px">제가 하나 운영을 하는데</span></div>
+<div id="cap401" class="cap clip" data-start="1475.860" data-duration="1.170" data-track-index="8"><span style="font-size:62px">그분들을 위해서</span></div>
+<div id="cap402" class="cap clip" data-start="1477.030" data-duration="6.850" data-track-index="8"><span style="font-size:62px">이거를 이제 이렇게 프로젝트를 설정을 해서</span></div>
+<div id="cap403" class="cap clip" data-start="1483.880" data-duration="3.380" data-track-index="8"><span style="font-size:62px">제가 캐릭터를 개발을 했고 이거,</span></div>
+<div id="cap404" class="cap clip" data-start="1487.260" data-duration="1.620" data-track-index="8"><span style="font-size:62px">이거는 이제 최근에</span></div>
+<div id="cap405" class="cap clip" data-start="1488.880" data-duration="2.540" data-track-index="8"><span style="font-size:62px">이제 디지털 소외계층 실버들을 위해서</span></div>
+<div id="cap406" class="cap clip" data-start="1491.420" data-duration="1.340" data-track-index="8"><span style="font-size:62px">이제 또 하나 만들려고</span></div>
+<div id="cap407" class="cap clip" data-start="1492.760" data-duration="2.220" data-track-index="8"><span style="font-size:62px">지금 캐릭터를 개발한 거고요</span></div>
+<div id="cap408" class="cap clip" data-start="1494.980" data-duration="2.180" data-track-index="8"><span style="font-size:62px">이번에 이렇게 봉사단 참여하니까</span></div>
+<div id="cap409" class="cap clip" data-start="1497.160" data-duration="2.280" data-track-index="8"><span style="font-size:62px">너무 훌륭하신 교수님들 많이 계시고</span></div>
+<div id="cap410" class="cap clip" data-start="1499.440" data-duration="1.610" data-track-index="8"><span style="font-size:62px">박사님도 계셔서</span></div>
+<div id="cap411" class="cap clip" data-start="1501.050" data-duration="2.580" data-track-index="8"><span style="font-size:62px">제가 많은 걸 배울 수 있을 것 같아요</span></div>
+<div id="cap412" class="cap clip" data-start="1503.630" data-duration="1.190" data-track-index="8"><span style="font-size:62px">그래서 막 그렇게</span></div>
+<div id="cap413" class="cap clip" data-start="1504.820" data-duration="2.970" data-track-index="8"><span style="font-size:62px">저는 수준 있는 강의는 잘 못하고</span></div>
+<div id="cap414" class="cap clip" data-start="1507.790" data-duration="3.360" data-track-index="8"><span style="font-size:62px">옆에서 막 보조를 한다든지 안 되면</span></div>
+<div id="cap415" class="cap clip" data-start="1511.150" data-duration="1.370" data-track-index="8"><span style="font-size:62px">뭐 후원금을 낸다든지</span></div>
+<div id="cap416" class="cap clip" data-start="1512.520" data-duration="2.770" data-track-index="8"><span style="font-size:62px">그런 쪽으로 해야 될 것 같습니다 감사합니다</span></div>
+<div id="cap417" class="cap clip" data-start="1515.290" data-duration="1.350" data-track-index="8"><span style="font-size:62px">안 원장님 감사합니다</span></div>
+<div id="cap418" class="cap clip" data-start="1516.640" data-duration="4.940" data-track-index="8"><span style="font-size:62px">그리고 우리 마지막, 마지막이시죠?</span></div>
+<div id="cap419" class="cap clip" data-start="1521.580" data-duration="2.390" data-track-index="8"><span style="font-size:62px">예, 정진선 교수님</span></div>
+<div id="cap420" class="cap clip" data-start="1523.970" data-duration="4.710" data-track-index="8"><span style="font-size:62px">오래 기다리셨습니다 안녕하세요 안녕하십니까?</span></div>
+<div id="cap421" class="cap clip" data-start="1528.680" data-duration="3.750" data-track-index="8"><span style="font-size:62px">서울대학교에서 어, 중국어를 가르치고 있고요</span></div>
+<div id="cap422" class="cap clip" data-start="1532.430" data-duration="3.330" data-track-index="8"><span style="font-size:62px">전공은 중국 시나 중국 고전 소설입니다</span></div>
+<div id="cap423" class="cap clip" data-start="1535.760" data-duration="1.340" data-track-index="8"><span style="font-size:62px">그래서 저 여기서 유일하게</span></div>
+<div id="cap424" class="cap clip" data-start="1537.100" data-duration="2.940" data-track-index="8"><span style="font-size:62px">아까 문과인 거 같은데</span></div>
+<div id="cap425" class="cap clip" data-start="1540.040" data-duration="1.810" data-track-index="8"><span style="font-size:62px">그래서 저는 기술보다는</span></div>
+<div id="cap426" class="cap clip" data-start="1541.850" data-duration="4.610" data-track-index="8"><span style="font-size:56px">제가 갖고 있는 도메인 지식을 어떻게 AI와 융합해서</span></div>
+<div id="cap427" class="cap clip" data-start="1546.460" data-duration="3.450" data-track-index="8"><span style="font-size:60px">학생들이 조금 더 이 텍스트에 집중할 수 있을까에</span></div>
+<div id="cap428" class="cap clip" data-start="1549.910" data-duration="1.550" data-track-index="8"><span style="font-size:62px">관, 관심이 있습니다</span></div>
+<div id="cap429" class="cap clip" data-start="1551.460" data-duration="3.050" data-track-index="8"><span style="font-size:62px">그래서 이제 어설프게 만들어 봤던 게</span></div>
+<div id="cap430" class="cap clip" data-start="1554.510" data-duration="1.930" data-track-index="8"><span style="font-size:62px">요즘 학생들 되게 고민이 많거든요</span></div>
+<div id="cap431" class="cap clip" data-start="1556.440" data-duration="3.160" data-track-index="8"><span style="font-size:62px">그렇다고 해서 친구한테 이야기를 해도</span></div>
+<div id="cap432" class="cap clip" data-start="1559.600" data-duration="3.310" data-track-index="8"><span style="font-size:62px">솔직히 이제 뭐 적절한 조언도 받지 못하고</span></div>
+<div id="cap433" class="cap clip" data-start="1562.910" data-duration="2.640" data-track-index="8"><span style="font-size:62px">그래서 저는 노노를 가지고서</span></div>
+<div id="cap434" class="cap clip" data-start="1565.550" data-duration="2.570" data-track-index="8"><span style="font-size:62px">노노를 이제 데이터로 만들었어요</span></div>
+<div id="cap435" class="cap clip" data-start="1568.120" data-duration="3.370" data-track-index="8"><span style="font-size:62px">그래서 거기다 약간 이제 페르소나를 줘서</span></div>
+<div id="cap436" class="cap clip" data-start="1571.490" data-duration="1.810" data-track-index="8"><span style="font-size:62px">어떤 질문을 던지면</span></div>
+<div id="cap437" class="cap clip" data-start="1573.300" data-duration="2.530" data-track-index="8"><span style="font-size:62px">노노의 공자님이</span></div>
+<div id="cap438" class="cap clip" data-start="1575.830" data-duration="4.220" data-track-index="8"><span style="font-size:62px">그 학생의 요구에 맞게 설명을 하면서</span></div>
+<div id="cap439" class="cap clip" data-start="1580.050" data-duration="2.430" data-track-index="8"><span style="font-size:62px">노노의 구절을 띡 던져주는</span></div>
+<div id="cap440" class="cap clip" data-start="1582.480" data-duration="3.490" data-track-index="8"><span style="font-size:62px">그런 어 GPTs를 만든 바 있습니다</span></div>
+<div id="cap441" class="cap clip" data-start="1585.970" data-duration="2.250" data-track-index="8"><span style="font-size:62px">그래서 저 같은 경우에는</span></div>
+<div id="cap442" class="cap clip" data-start="1588.220" data-duration="2.530" data-track-index="8"><span style="font-size:62px">이제 AI 기술보다는</span></div>
+<div id="cap443" class="cap clip" data-start="1590.750" data-duration="2.210" data-track-index="8"><span style="font-size:62px">AI를 사용하면서</span></div>
+<div id="cap444" class="cap clip" data-start="1592.960" data-duration="4.280" data-track-index="8"><span style="font-size:62px">좌충우도를 한 그 인사이트를 공유하고 싶고요</span></div>
+<div id="cap445" class="cap clip" data-start="1597.240" data-duration="2.950" data-track-index="8"><span style="font-size:62px">그래서 제가 무슨 발표를 하실지 모르겠는데</span></div>
+<div id="cap446" class="cap clip" data-start="1600.190" data-duration="1.610" data-track-index="8"><span style="font-size:62px">하여튼 그 텍스트를 기반으로 해서</span></div>
+<div id="cap447" class="cap clip" data-start="1601.800" data-duration="2.170" data-track-index="8"><span style="font-size:62px">그걸 데이터적인 세계관 속에서</span></div>
+<div id="cap448" class="cap clip" data-start="1603.970" data-duration="2.420" data-track-index="8"><span style="font-size:62px">그거를 이제 일반 사람들이나</span></div>
+<div id="cap449" class="cap clip" data-start="1606.390" data-duration="1.450" data-track-index="8"><span style="font-size:62px">또 대학생들이</span></div>
+<div id="cap450" class="cap clip" data-start="1607.840" data-duration="2.390" data-track-index="8"><span style="font-size:62px">그래서 어떻게 좀 더 깊이 있게</span></div>
+<div id="cap451" class="cap clip" data-start="1610.230" data-duration="2.590" data-track-index="8"><span style="font-size:62px">자세히 읽기 연습을 할 수 있을지</span></div>
+<div id="cap452" class="cap clip" data-start="1612.820" data-duration="2.450" data-track-index="8"><span style="font-size:62px">그 부분에 초점을 맞추면서 어,</span></div>
+<div id="cap453" class="cap clip" data-start="1615.270" data-duration="3.460" data-track-index="8"><span style="font-size:56px">한번 고민을 해보도록 하겠습니다 감사합니다 감사합니다</span></div>
+<div id="cap454" class="cap clip" data-start="1739.000" data-duration="0.250" data-track-index="8"><span style="font-size:62px">이상 설명을 마치겠습니다 감사합니다</span></div>
+<div id="cap455" class="cap clip" data-start="1739.250" data-duration="1.600" data-track-index="8"><span style="font-size:62px">이제 다 끝났습니다</span></div>
+<div id="cap456" class="cap clip" data-start="1740.850" data-duration="2.660" data-track-index="8"><span style="font-size:62px">교수님들 다들 고생하셨고</span></div>
+<div id="cap457" class="cap clip" data-start="1743.510" data-duration="4.230" data-track-index="8"><span style="font-size:62px">지금 이 소개해 주신 내용 잘 들었고</span></div>
+<div id="cap458" class="cap clip" data-start="1747.740" data-duration="1.420" data-track-index="8"><span style="font-size:62px">잘 준비해가지고</span></div>
+<div id="cap459" class="cap clip" data-start="1749.160" data-duration="5.350" data-track-index="8"><span style="font-size:47px">이제 카톡방에서 저희가 이제 발표를 언제 할지 이렇게 정해보고</span></div>
+<div id="cap460" class="cap clip" data-start="1754.510" data-duration="2.540" data-track-index="8"><span style="font-size:62px">근데 지금 참여해 주신 것만으로도</span></div>
+<div id="cap461" class="cap clip" data-start="1757.050" data-duration="3.180" data-track-index="8"><span style="font-size:62px">너무 감사하고 바쁘시기 때문에</span></div>
+<div id="cap462" class="cap clip" data-start="1760.230" data-duration="3.100" data-track-index="8"><span style="font-size:62px">이제 발표에 참여 못하셔도 괜찮습니다</span></div>
+<div id="cap463" class="cap clip" data-start="1763.330" data-duration="0.850" data-track-index="8"><span style="font-size:62px">그렇게 되면</span></div>
+<div id="cap464" class="cap clip" data-start="1764.180" data-duration="1.860" data-track-index="8"><span style="font-size:62px">또 저희가 준비한 거대로</span></div>
+<div id="cap465" class="cap clip" data-start="1766.040" data-duration="3.300" data-track-index="8"><span style="font-size:62px">이제 오프라인 강의를 할 거니까요</span></div>
+<div id="cap466" class="cap clip" data-start="1769.340" data-duration="2.730" data-track-index="8"><span style="font-size:62px">너무 부담 안 가지셨으면 좋겠어요</span></div>
+<div id="cap467" class="cap clip" data-start="1772.070" data-duration="0.750" data-track-index="8"><span style="font-size:62px">여기까지 와주셔서</span></div>
+<div id="cap468" class="cap clip" data-start="1772.820" data-duration="1.030" data-track-index="8"><span style="font-size:62px">너무 감사하고</span></div>
+<div id="cap469" class="cap clip" data-start="1773.850" data-duration="2.510" data-track-index="8"><span style="font-size:62px">오늘 회의는 여기까지 해보겠습니다</span></div>
+<div id="cap470" class="cap clip" data-start="1776.360" data-duration="4.130" data-track-index="8"><span style="font-size:52px">다들 감사드립니다 수고하셨습니다 수고하셨습니다 감사합니다</span></div>
+  <div id="endfade"></div>
+</div>
+<script>
+(function () {
+  const tl = gsap.timeline({ paused: true });
+  // 장면 시각을 off 만큼 당겨 놓는 래퍼 (같은 하나의 tl 에 추가된다)
+  const SH = (o) => ({ to: (a, b, p) => tl.to(a, b, p - o), fromTo: (a, b, c, p) => tl.fromTo(a, b, c, p - o), set: (a, b, p) => tl.set(a, b, p - o) });
+  const H = (T) => ({
+    pop: (sel, t) => T.fromTo(sel, { opacity: 0, scale: .6 }, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(1.8)' }, t),
+    up: (sel, t, dy = 30) => T.fromTo(sel, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' }, t),
+    rise: (sel, t) => T.fromTo(sel, { opacity: 0, y: 60, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .6, ease: 'expo.out' }, t),
+    slide: (sel, t, dx = 60) => T.fromTo(sel, { opacity: 0, x: dx }, { opacity: 1, x: 0, duration: .5, ease: 'power3.out' }, t),
+    sweep: (sel, t) => T.fromTo(sel, { backgroundSize: '0% 38%' }, { backgroundSize: '100% 38%', duration: .7, ease: 'power2.inOut', immediateRender: false }, t),
+  });
+  
+  tl.fromTo('#cv0-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 0.00);
+  tl.to('#cv0-in', {opacity:0, duration:.4, ease:'power2.in'}, 7.48);
+  tl.fromTo('#cv0-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cv0-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cv0-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cv0-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cv0-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cv1-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 13.40);
+  tl.to('#cv1-in', {opacity:0, duration:.4, ease:'power2.in'}, 42.78);
+  tl.fromTo('#cv1-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 13.40);
+  tl.fromTo('#cv1-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 13.40);
+  tl.fromTo('#cv1-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 13.40);
+  tl.fromTo('#cv1-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 13.40);
+  tl.fromTo('#cv1-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 13.40);
+  tl.fromTo('#cv2-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 59.30);
+  tl.to('#cv2-in', {opacity:0, duration:.4, ease:'power2.in'}, 120.60);
+  tl.fromTo('#cv2-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:5}, 59.30);
+  tl.fromTo('#cv2-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:5}, 59.30);
+  tl.fromTo('#cv2-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:5}, 59.30);
+  tl.fromTo('#cv2-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:5}, 59.30);
+  tl.fromTo('#cv2-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:5}, 59.30);
+  tl.fromTo('#cv3-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 210.18);
+  tl.to('#cv3-in', {opacity:0, duration:.4, ease:'power2.in'}, 230.70);
+  tl.fromTo('#cv3-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:1}, 210.18);
+  tl.fromTo('#cv3-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:1}, 210.18);
+  tl.fromTo('#cv3-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:1}, 210.18);
+  tl.fromTo('#cv3-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:1}, 210.18);
+  tl.fromTo('#cv3-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:1}, 210.18);
+  tl.fromTo('#cv4-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 245.12);
+  tl.to('#cv4-in', {opacity:0, duration:.4, ease:'power2.in'}, 278.10);
+  tl.fromTo('#cv4-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 245.12);
+  tl.fromTo('#cv4-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 245.12);
+  tl.fromTo('#cv4-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 245.12);
+  tl.fromTo('#cv4-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 245.12);
+  tl.fromTo('#cv4-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 245.12);
+  tl.fromTo('#cv5-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 344.42);
+  tl.to('#cv5-in', {opacity:0, duration:.4, ease:'power2.in'}, 372.30);
+  tl.fromTo('#cv5-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 344.42);
+  tl.fromTo('#cv5-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 344.42);
+  tl.fromTo('#cv5-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 344.42);
+  tl.fromTo('#cv5-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 344.42);
+  tl.fromTo('#cv5-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:2}, 344.42);
+  tl.fromTo('#cv6-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 447.63);
+  tl.to('#cv6-in', {opacity:0, duration:.4, ease:'power2.in'}, 1261.20);
+  tl.fromTo('#cv6-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:89}, 447.63);
+  tl.fromTo('#cv6-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:89}, 447.63);
+  tl.fromTo('#cv6-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:89}, 447.63);
+  tl.fromTo('#cv6-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:89}, 447.63);
+  tl.fromTo('#cv6-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:89}, 447.63);
+  tl.fromTo('#cv7-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1391.12);
+  tl.to('#cv7-in', {opacity:0, duration:.4, ease:'power2.in'}, 1618.31);
+  tl.fromTo('#cv7-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:24}, 1391.12);
+  tl.fromTo('#cv7-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:24}, 1391.12);
+  tl.fromTo('#cv7-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:24}, 1391.12);
+  tl.fromTo('#cv7-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:24}, 1391.12);
+  tl.fromTo('#cv7-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:24}, 1391.12);
+  tl.fromTo('#cv8-in', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1739.00);
+  
+  tl.fromTo('#cv8-bl0', {x:0, y:0}, {x:60, y:40, duration:9, ease:'sine.inOut', yoyo:true, repeat:3}, 1739.00);
+  tl.fromTo('#cv8-bl1', {x:0, y:0}, {x:-70, y:-50, duration:9, ease:'sine.inOut', yoyo:true, repeat:3}, 1739.00);
+  tl.fromTo('#cv8-bl2', {x:0, y:0}, {x:-50, y:60, duration:9, ease:'sine.inOut', yoyo:true, repeat:3}, 1739.00);
+  tl.fromTo('#cv8-bl3', {x:0, y:0}, {x:70, y:-40, duration:9, ease:'sine.inOut', yoyo:true, repeat:3}, 1739.00);
+  tl.fromTo('#cv8-bl4', {x:0, y:0}, {x:40, y:-60, duration:9, ease:'sine.inOut', yoyo:true, repeat:3}, 1739.00);
+
+  // h-title  (off 0)
+  { const tl = SH(0); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#h-title-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 0.20);
+  tl.to('#h-title-sc', {opacity:0, duration:.35, ease:'power2.in'}, 7.530);
+  tl.fromTo('#ht-ph', {opacity:0, x:-140}, {opacity:1, x:0, duration:.8, ease:'back.out(1.4)'}, 0.4);
+  rise('#ht-c', 0.5); up('#ht-k', 0.8, 16); up('#ht-h', 1.0, 30); sweep('#ht-h .hl', 1.7); pop('#ht-s', 3.3);
+  }
+
+  // h-gen1  (off 0)
+  { const tl = SH(0); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#h-gen1-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 13.40);
+  tl.to('#h-gen1-sc', {opacity:0, duration:.35, ease:'power2.in'}, 42.830);
+  up('#g1-k', 13.6, 16); up('#g1-h', 16.6, 24);
+  rise('#g1-0', 19.90); rise('#g1-1', 30.70); rise('#g1-2', 35.80); rise('#g1-3', 37.40);
+  up('#g1-ar', 39.4, 20);
+  }
+
+  // h-gen2  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#h-gen2-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 71.18);
+  tl.to('#h-gen2-sc', {opacity:0, duration:.35, ease:'power2.in'}, 132.530);
+  up('#g2-k', 71.4, 16); up('#g2-h', 71.6, 24); sweep('#g2-h .hl', 82.0);
+  pop('#g2-a', 87.6); pop('#g2-ar', 93.2); pop('#g2-b', 93.6);
+  tl.to('#g2-vs', {opacity:.35, scale:.86, y:-40, duration:.5, ease:'power2.inOut'}, 104.2);
+  rise('#g2-s0', 104.90); pop('#g2-sa1', 111.70); rise('#g2-s1', 111.90); pop('#g2-sa2', 126.50); rise('#g2-s2', 126.70);
+  tl.to('#g2-s1', {boxShadow:'0 0 0 10px rgba(255,199,180,.6), 0 30px 70px rgba(239,138,111,.25)', duration:.4, ease:'power2.out'}, 120.2);
+  }
+
+  // h-quote  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#h-quote-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 222.06);
+  tl.to('#h-quote-sc', {opacity:0, duration:.35, ease:'power2.in'}, 242.630);
+  rise('#hq-c', 222.4); up('#hq-1', 225.0, 20); up('#hq-2', 227.0, 24); sweep('#hq-2 .hl', 228.2); up('#hq-en', 229.6, 12);
+  up('#hq-n', 234.2, 16);
+  }
+
+  // h-bonjeon  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#h-bonjeon-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 257.00);
+  tl.to('#h-bonjeon-sc', {opacity:0, duration:.35, ease:'power2.in'}, 290.030);
+  up('#hb-k', 257.3, 16); tl.fromTo('#hb-h', {opacity:0, scale:.6}, {opacity:1, scale:1, duration:.7, ease:'back.out(1.7)'}, 257.5); sweep('#hb-h .hl', 258.6);
+  rise('#hb-a', 274.6); pop('#hb-ar', 281.6); rise('#hb-b', 282.0);
+  tl.fromTo('#hb-h', {scale:1}, {scale:1.06, duration:.35, ease:'power2.out', yoyo:true, repeat:1, immediateRender:false}, 288.0);
+  }
+
+  // h-topics  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#h-topics-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 356.30);
+  tl.to('#h-topics-sc', {opacity:0, duration:.35, ease:'power2.in'}, 384.230);
+  up('#tp-k', 356.6, 16); up('#tp-h', 356.8, 24); sweep('#tp-h .hl', 358.0);
+  rise('#tp-1', 357.4); rise('#tp-2', 365.8); up('#tp-n', 376.6, 18);
+  }
+
+  // h-members  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#h-members-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 459.51);
+  tl.to('#h-members-sc', {opacity:0, duration:.35, ease:'power2.in'}, 470.830);
+  up('#hm-k', 459.8, 16); up('#hm-h', 460.0, 26);
+  rise('#hm-0', 461.00); rise('#hm-1', 461.50); rise('#hm-2', 462.00); rise('#hm-3', 462.50); up('#hm-n', 464.6, 18);
+  }
+
+  // h-close  (off 0)
+  { const tl = SH(0); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#h-close-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1739.00);
+  
+  up('#hc-k', 1739.3, 16); up('#hc-h', 1739.5, 24);
+  slide('#hc-0', 1749.4, -60); slide('#hc-1', 1760.4, -60); slide('#hc-2', 1766.2, -60);
+  tl.fromTo('#hc-ph', {opacity:0, x:120}, {opacity:1, x:0, duration:.8, ease:'back.out(1.4)'}, 1740.2);
+  tl.to('.closelist, #h-close .hdr', {opacity:0, y:-30, duration:.5, ease:'power2.in'}, 1775.6);
+  tl.fromTo('#hc-end', {opacity:0, scale:.7}, {opacity:1, scale:1, duration:.7, ease:'back.out(1.7)'}, 1776.3);
+  }
+
+  // o-pbl  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#o-pbl-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1313.78);
+  tl.to('#o-pbl-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1349.330);
+  rise('#op-c', 1314.0); up('#op-k', 1314.2, 12); slide('#op-0', 1314.20, 40); slide('#op-1', 1320.50, 40); slide('#op-2', 1324.50, 40); slide('#op-3', 1342.80, 40);
+  }
+
+  // o-think  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#o-think-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1349.87);
+  tl.to('#o-think-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1364.830);
+  rise('#ot-c', 1350.1); slide('#ot-a', 1350.5, 40); slide('#ot-b', 1356.6, 40);
+  }
+
+  // o-topic  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#o-topic-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1365.41);
+  tl.to('#o-topic-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1400.630);
+  rise('#oc-c', 1365.6); up('#oc-t', 1366.0, 14); pop('#oc-n', 1371.6);
+  }
+
+  // o-panel  (off 12.17)
+  { const tl = SH(12.17); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#o-panel-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1630.90);
+  tl.to('#o-panel-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1750.800);
+  tl.fromTo('#rp', {x:380}, {x:0, duration:.6, ease:'power3.out'}, 1630.90); up('#rp-k', 1631.30, 12);
+  slide('#rp-a0', 1636.3, 40); slide('#rp-a1', 1645.6, 40); slide('#rp-a2', 1667.5, 40);
+  tl.to('#rp-p0', {opacity:0, duration:.35, ease:'power2.in'}, 1676.0);
+  slide('#rp-b0', 1676.5, 40); slide('#rp-b1', 1692.0, 40);
+  tl.to('#rp-p1', {opacity:0, duration:.35, ease:'power2.in'}, 1705.5);
+  up('#rp-p2 .rph', 1705.9, 12); slide('#rp-c0', 1711.8, 40); slide('#rp-c1', 1718.2, 40); slide('#rp-c2', 1723.3, 40);
+  tl.to('#rp-c2', {boxShadow:'0 0 0 5px rgba(63,168,119,.55)', backgroundColor:'#effaf4', duration:.4, ease:'power2.out'}, 1732.8);
+  up('#rp-c3', 1736.0, 12);
+  }
+
+  // m1  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m1-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 471.35);
+  tl.to('#m1-sc', {opacity:0, duration:.35, ease:'power2.in'}, 536.230);
+  rise('#m1-pf', 471.55); up('#m1-lab', 471.45, 10);
+  up('#m1-c0', 471.55, 10);
+  up('#m1-c1', 471.63, 10);
+  up('#m1-c2', 471.71, 10);
+  up('#m1-c3', 471.79, 10);
+  pop('#m1-t0', 476.00);
+  pop('#m1-t1', 484.00);
+  pop('#m1-t2', 513.00);
+  tl.fromTo('#m1-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 475.00);
+  tl.to('#m1-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 504.65);
+  tl.to('#m1-c2', {backgroundColor:'#5b93dc', color:'#ffffff', duration:.3, ease:'power2.out'}, 475.00);
+  slide('#m1-p0-i0', 475.40, 50);
+  slide('#m1-p0-i1', 483.60, 50);
+  slide('#m1-p0-i2', 489.60, 50);
+  tl.fromTo('#m1-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 504.97);
+  tl.to('#m1-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 512.33);
+  tl.fromTo('#m1-p1-i0', {opacity:0}, {opacity:1, duration:.3}, 505.30);
+  pop('#m1-p1-i0-s0', 505.30);
+  pop('#m1-p1-i0-a1', 506.45);
+  pop('#m1-p1-i0-s1', 506.60);
+  pop('#m1-p1-i0-a2', 507.85);
+  pop('#m1-p1-i0-s2', 508.00);
+  up('#m1-p1-i0-sub', 508.60, 12);
+  tl.fromTo('#m1-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 512.65);
+  slide('#m1-p2-i0', 513.20, 50);
+  slide('#m1-p2-i1', 520.60, 50);
+  slide('#m1-p2-i2', 527.80, 50);
+  }
+
+  // m2  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m2-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 536.60);
+  tl.to('#m2-sc', {opacity:0, duration:.35, ease:'power2.in'}, 625.830);
+  rise('#m2-pf', 536.80); up('#m2-lab', 536.70, 10);
+  up('#m2-c0', 536.80, 10);
+  up('#m2-c1', 536.88, 10);
+  up('#m2-c2', 536.96, 10);
+  up('#m2-c3', 537.04, 10);
+  pop('#m2-t0', 545.40);
+  pop('#m2-t1', 554.00);
+  pop('#m2-t2', 585.40);
+  tl.fromTo('#m2-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 545.10);
+  tl.to('#m2-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 575.30);
+  tl.to('#m2-c0', {backgroundColor:'#ef8a6f', color:'#ffffff', duration:.3, ease:'power2.out'}, 545.10);
+  slide('#m2-p0-i0', 545.50, 50);
+  slide('#m2-p0-i1', 554.00, 50);
+  slide('#m2-p0-i2', 567.90, 50);
+  tl.fromTo('#m2-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 575.62);
+  tl.to('#m2-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 592.60);
+  tl.fromTo('#m2-p1-i0', {opacity:0}, {opacity:1, duration:.3}, 575.90);
+  pop('#m2-p1-i0-s0', 575.90);
+  pop('#m2-p1-i0-a1', 580.25);
+  pop('#m2-p1-i0-s1', 580.40);
+  pop('#m2-p1-i0-a2', 585.25);
+  pop('#m2-p1-i0-s2', 585.40);
+  tl.fromTo('#m2-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 592.92);
+  tl.to('#m2-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 592.92);
+  tl.to('#m2-c3', {backgroundColor:'#ef8a6f', color:'#ffffff', duration:.3, ease:'power2.out'}, 592.92);
+  slide('#m2-p2-i0', 593.20, 50);
+  slide('#m2-p2-i1', 613.30, 50);
+  }
+
+  // m3  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m3-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 626.20);
+  tl.to('#m3-sc', {opacity:0, duration:.35, ease:'power2.in'}, 723.430);
+  rise('#m3-pf', 626.40); up('#m3-lab', 626.30, 10);
+  up('#m3-c0', 626.40, 10);
+  up('#m3-c1', 626.48, 10);
+  up('#m3-c2', 626.56, 10);
+  up('#m3-c3', 626.64, 10);
+  pop('#m3-t0', 635.00);
+  pop('#m3-t1', 642.00);
+  pop('#m3-t2', 659.00);
+  tl.fromTo('#m3-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 634.75);
+  tl.to('#m3-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 646.73);
+  tl.to('#m3-c0', {backgroundColor:'#3fa877', color:'#ffffff', duration:.3, ease:'power2.out'}, 634.75);
+  slide('#m3-p0-i0', 635.00, 50);
+  slide('#m3-p0-i1', 641.90, 50);
+  tl.fromTo('#m3-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 647.05);
+  tl.to('#m3-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 666.65);
+  tl.to('#m3-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 647.05);
+  tl.to('#m3-c1', {backgroundColor:'#3fa877', color:'#ffffff', duration:.3, ease:'power2.out'}, 647.05);
+  tl.fromTo('#m3-p1-i0', {opacity:0}, {opacity:1, duration:.3}, 647.40);
+  pop('#m3-p1-i0-s0', 647.40);
+  pop('#m3-p1-i0-a1', 652.35);
+  pop('#m3-p1-i0-s1', 652.50);
+  pop('#m3-p1-i0-a2', 658.75);
+  pop('#m3-p1-i0-s2', 658.90);
+  up('#m3-p1-i0-sub', 659.50, 12);
+  tl.fromTo('#m3-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 666.97);
+  tl.to('#m3-p2', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 692.75);
+  tl.to('#m3-c1', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 666.97);
+  tl.to('#m3-c2', {backgroundColor:'#3fa877', color:'#ffffff', duration:.3, ease:'power2.out'}, 666.97);
+  slide('#m3-p2-i0', 672.00, 50);
+  slide('#m3-p2-i1', 677.70, 50);
+  slide('#m3-p2-i2', 686.60, 50);
+  tl.fromTo('#m3-p3', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 693.07);
+  tl.to('#m3-c2', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 693.07);
+  tl.to('#m3-c3', {backgroundColor:'#3fa877', color:'#ffffff', duration:.3, ease:'power2.out'}, 693.07);
+  slide('#m3-p3-i0', 697.00, 50);
+  slide('#m3-p3-i1', 713.30, 50);
+  }
+
+  // m4  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m4-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 723.80);
+  tl.to('#m4-sc', {opacity:0, duration:.35, ease:'power2.in'}, 813.130);
+  rise('#m4-pf', 724.00); up('#m4-lab', 723.90, 10);
+  up('#m4-c0', 724.00, 10);
+  up('#m4-c1', 724.08, 10);
+  up('#m4-c2', 724.16, 10);
+  up('#m4-c3', 724.24, 10);
+  pop('#m4-t0', 730.00);
+  pop('#m4-t1', 741.30);
+  pop('#m4-t2', 747.60);
+  tl.fromTo('#m4-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 729.35);
+  tl.to('#m4-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 758.61);
+  tl.to('#m4-c0', {backgroundColor:'#8a78e0', color:'#ffffff', duration:.3, ease:'power2.out'}, 729.35);
+  slide('#m4-p0-i0', 729.70, 50);
+  slide('#m4-p0-i1', 741.30, 50);
+  pop('#m4-p0-i2', 747.60);
+  tl.fromTo('#m4-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 758.93);
+  tl.to('#m4-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 779.91);
+  tl.to('#m4-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 758.93);
+  tl.to('#m4-c1', {backgroundColor:'#8a78e0', color:'#ffffff', duration:.3, ease:'power2.out'}, 758.93);
+  slide('#m4-p1-i0', 761.00, 50);
+  tl.fromTo('#m4-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 780.23);
+  tl.to('#m4-p2', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 793.83);
+  tl.to('#m4-c1', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 780.23);
+  tl.to('#m4-c2', {backgroundColor:'#8a78e0', color:'#ffffff', duration:.3, ease:'power2.out'}, 780.23);
+  tl.fromTo('#m4-p2-i0', {opacity:0}, {opacity:1, duration:.3}, 784.00);
+  pop('#m4-p2-i0-s0', 784.00);
+  pop('#m4-p2-i0-a1', 786.35);
+  pop('#m4-p2-i0-s1', 786.50);
+  pop('#m4-p2-i0-a2', 788.85);
+  pop('#m4-p2-i0-s2', 789.00);
+  slide('#m4-p2-i1', 791.00, 50);
+  tl.fromTo('#m4-p3', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 794.15);
+  tl.to('#m4-c2', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 794.15);
+  tl.to('#m4-c3', {backgroundColor:'#8a78e0', color:'#ffffff', duration:.3, ease:'power2.out'}, 794.15);
+  slide('#m4-p3-i0', 796.00, 50);
+  slide('#m4-p3-i1', 799.00, 50);
+  }
+
+  // m5  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m5-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 813.50);
+  tl.to('#m5-sc', {opacity:0, duration:.35, ease:'power2.in'}, 892.430);
+  rise('#m5-pf', 813.70); up('#m5-lab', 813.60, 10);
+  up('#m5-c0', 813.70, 10);
+  up('#m5-c1', 813.78, 10);
+  up('#m5-c2', 813.86, 10);
+  up('#m5-c3', 813.94, 10);
+  pop('#m5-t0', 829.50);
+  pop('#m5-t1', 836.00);
+  pop('#m5-t2', 843.00);
+  tl.fromTo('#m5-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 829.25);
+  tl.to('#m5-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 842.57);
+  tl.to('#m5-c0', {backgroundColor:'#ef8a6f', color:'#ffffff', duration:.3, ease:'power2.out'}, 829.25);
+  slide('#m5-p0-i0', 829.50, 50);
+  slide('#m5-p0-i1', 836.20, 50);
+  slide('#m5-p0-i2', 838.80, 50);
+  tl.fromTo('#m5-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 842.89);
+  tl.to('#m5-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 877.27);
+  tl.to('#m5-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 842.89);
+  tl.to('#m5-c2', {backgroundColor:'#ef8a6f', color:'#ffffff', duration:.3, ease:'power2.out'}, 842.89);
+  slide('#m5-p1-i0', 843.30, 50);
+  slide('#m5-p1-i1', 856.80, 50);
+  slide('#m5-p1-i2', 868.30, 50);
+  tl.fromTo('#m5-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 877.59);
+  tl.to('#m5-c2', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 877.59);
+  tl.to('#m5-c3', {backgroundColor:'#ef8a6f', color:'#ffffff', duration:.3, ease:'power2.out'}, 877.59);
+  slide('#m5-p2-i0', 878.00, 50);
+  slide('#m5-p2-i1', 882.00, 50);
+  }
+
+  // m6  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m6-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 892.80);
+  tl.to('#m6-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1008.330);
+  rise('#m6-pf', 893.00); up('#m6-lab', 892.90, 10);
+  up('#m6-c0', 893.00, 10);
+  up('#m6-c1', 893.08, 10);
+  up('#m6-c2', 893.16, 10);
+  up('#m6-c3', 893.24, 10);
+  pop('#m6-t0', 902.40);
+  pop('#m6-t1', 924.30);
+  pop('#m6-t2', 935.00);
+  tl.fromTo('#m6-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 902.15);
+  tl.to('#m6-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 923.73);
+  tl.to('#m6-c0', {backgroundColor:'#b8820f', color:'#ffffff', duration:.3, ease:'power2.out'}, 902.15);
+  slide('#m6-p0-i0', 902.40, 50);
+  slide('#m6-p0-i1', 911.10, 50);
+  slide('#m6-p0-i2', 917.90, 50);
+  tl.fromTo('#m6-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 924.05);
+  tl.to('#m6-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 954.37);
+  tl.to('#m6-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 924.05);
+  tl.to('#m6-c1', {backgroundColor:'#b8820f', color:'#ffffff', duration:.3, ease:'power2.out'}, 924.05);
+  slide('#m6-p1-i0', 924.30, 50);
+  pop('#m6-p1-i1', 935.00);
+  slide('#m6-p1-i2', 944.20, 50);
+  tl.fromTo('#m6-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 954.69);
+  tl.to('#m6-p2', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 976.43);
+  tl.to('#m6-c1', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 954.69);
+  tl.to('#m6-c3', {backgroundColor:'#b8820f', color:'#ffffff', duration:.3, ease:'power2.out'}, 954.69);
+  tl.fromTo('#m6-p2-i0', {opacity:0}, {opacity:1, duration:.3}, 955.00);
+  pop('#m6-p2-i0-s0', 955.00);
+  pop('#m6-p2-i0-a1', 959.85);
+  pop('#m6-p2-i0-s1', 960.00);
+  pop('#m6-p2-i0-a2', 963.35);
+  pop('#m6-p2-i0-s2', 963.50);
+  up('#m6-p2-i0-sub', 964.10, 12);
+  tl.fromTo('#m6-p3', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 976.75);
+  tl.to('#m6-c3', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 976.75);
+  tl.to('#m6-c2', {backgroundColor:'#b8820f', color:'#ffffff', duration:.3, ease:'power2.out'}, 976.75);
+  slide('#m6-p3-i0', 977.00, 50);
+  pop('#m6-p3-i1', 979.50);
+  slide('#m6-p3-i2', 989.00, 50);
+  }
+
+  // m7  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m7-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1008.70);
+  tl.to('#m7-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1166.930);
+  rise('#m7-pf', 1008.90); up('#m7-lab', 1008.80, 10);
+  up('#m7-c0', 1008.90, 10);
+  up('#m7-c1', 1008.98, 10);
+  up('#m7-c2', 1009.06, 10);
+  up('#m7-c3', 1009.14, 10);
+  pop('#m7-t0', 1015.00);
+  pop('#m7-t1', 1040.00);
+  pop('#m7-t2', 1056.00);
+  tl.fromTo('#m7-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1014.89);
+  tl.to('#m7-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1050.23);
+  tl.to('#m7-c0', {backgroundColor:'#5b93dc', color:'#ffffff', duration:.3, ease:'power2.out'}, 1014.89);
+  slide('#m7-p0-i0', 1015.10, 50);
+  slide('#m7-p0-i1', 1028.40, 50);
+  slide('#m7-p0-i2', 1040.00, 50);
+  tl.fromTo('#m7-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1050.55);
+  tl.to('#m7-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1080.13);
+  tl.to('#m7-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1050.55);
+  tl.to('#m7-c1', {backgroundColor:'#5b93dc', color:'#ffffff', duration:.3, ease:'power2.out'}, 1050.55);
+  pop('#m7-p1-i0', 1055.80);
+  slide('#m7-p1-i1', 1073.50, 50);
+  tl.fromTo('#m7-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1080.45);
+  tl.to('#m7-p2', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1117.95);
+  tl.to('#m7-c1', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1080.45);
+  tl.to('#m7-c3', {backgroundColor:'#5b93dc', color:'#ffffff', duration:.3, ease:'power2.out'}, 1080.45);
+  slide('#m7-p2-i0', 1088.70, 50);
+  slide('#m7-p2-i1', 1109.60, 50);
+  pop('#m7-p2-i2', 1112.20);
+  tl.fromTo('#m7-p3', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1118.27);
+  tl.to('#m7-c3', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1118.27);
+  tl.to('#m7-c0', {backgroundColor:'#5b93dc', color:'#ffffff', duration:.3, ease:'power2.out'}, 1118.27);
+  slide('#m7-p3-i0', 1133.90, 50);
+  slide('#m7-p3-i1', 1142.60, 50);
+  }
+
+  // m8  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m8-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1167.30);
+  tl.to('#m8-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1273.130);
+  rise('#m8-pf', 1167.50); up('#m8-lab', 1167.40, 10);
+  up('#m8-c0', 1167.50, 10);
+  up('#m8-c1', 1167.58, 10);
+  up('#m8-c2', 1167.66, 10);
+  up('#m8-c3', 1167.74, 10);
+  pop('#m8-t0', 1174.30);
+  pop('#m8-t1', 1197.40);
+  pop('#m8-t2', 1214.80);
+  tl.fromTo('#m8-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1174.12);
+  tl.to('#m8-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1196.84);
+  tl.to('#m8-c0', {backgroundColor:'#3fa877', color:'#ffffff', duration:.3, ease:'power2.out'}, 1174.12);
+  slide('#m8-p0-i0', 1174.30, 50);
+  slide('#m8-p0-i1', 1187.40, 50);
+  tl.fromTo('#m8-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1197.16);
+  tl.to('#m8-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1208.92);
+  tl.to('#m8-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1197.16);
+  tl.to('#m8-c1', {backgroundColor:'#3fa877', color:'#ffffff', duration:.3, ease:'power2.out'}, 1197.16);
+  slide('#m8-p1-i0', 1197.40, 50);
+  tl.fromTo('#m8-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1209.24);
+  tl.to('#m8-p2', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1255.64);
+  tl.to('#m8-c1', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1209.24);
+  tl.to('#m8-c2', {backgroundColor:'#3fa877', color:'#ffffff', duration:.3, ease:'power2.out'}, 1209.24);
+  tl.fromTo('#m8-p2-i0', {opacity:0}, {opacity:1, duration:.3}, 1214.80);
+  pop('#m8-p2-i0-s0', 1214.80);
+  pop('#m8-p2-i0-a1', 1246.05);
+  pop('#m8-p2-i0-s1', 1246.20);
+  pop('#m8-p2-i0-a2', 1248.85);
+  pop('#m8-p2-i0-s2', 1249.00);
+  slide('#m8-p2-i1', 1251.50, 50);
+  tl.fromTo('#m8-p3', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1255.96);
+  tl.to('#m8-c2', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1255.96);
+  tl.to('#m8-c3', {backgroundColor:'#3fa877', color:'#ffffff', duration:.3, ease:'power2.out'}, 1255.96);
+  slide('#m8-p3-i0', 1256.40, 50);
+  }
+
+  // m9  (off 11.88)
+  { const tl = SH(11.88); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m9-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1403.00);
+  tl.to('#m9-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1526.640);
+  rise('#m9-pf', 1403.20); up('#m9-lab', 1403.10, 10);
+  up('#m9-c0', 1403.20, 10);
+  up('#m9-c1', 1403.28, 10);
+  up('#m9-c2', 1403.36, 10);
+  up('#m9-c3', 1403.44, 10);
+  pop('#m9-t0', 1424.40);
+  pop('#m9-t1', 1447.10);
+  pop('#m9-t2', 1469.60);
+  tl.fromTo('#m9-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1416.63);
+  tl.to('#m9-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1469.01);
+  tl.to('#m9-c0', {backgroundColor:'#e2678a', color:'#ffffff', duration:.3, ease:'power2.out'}, 1416.63);
+  slide('#m9-p0-i0', 1424.40, 50);
+  slide('#m9-p0-i1', 1447.10, 50);
+  slide('#m9-p0-i2', 1461.60, 50);
+  tl.fromTo('#m9-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1469.33);
+  tl.to('#m9-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1505.19);
+  tl.to('#m9-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1469.33);
+  tl.to('#m9-c2', {backgroundColor:'#e2678a', color:'#ffffff', duration:.3, ease:'power2.out'}, 1469.33);
+  tl.fromTo('#m9-p1-i0', {opacity:0}, {opacity:1, duration:.3}, 1469.60);
+  pop('#m9-p1-i0-s0', 1469.60);
+  pop('#m9-p1-i0-a1', 1491.45);
+  pop('#m9-p1-i0-s1', 1491.60);
+  pop('#m9-p1-i0-a2', 1493.45);
+  pop('#m9-p1-i0-s2', 1493.60);
+  pop('#m9-p1-i0-a3', 1495.25);
+  pop('#m9-p1-i0-s3', 1495.40);
+  slide('#m9-p1-i1', 1477.50, 50);
+  slide('#m9-p1-i2', 1498.00, 50);
+  tl.fromTo('#m9-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1505.51);
+  tl.to('#m9-c2', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1505.51);
+  tl.to('#m9-c3', {backgroundColor:'#e2678a', color:'#ffffff', duration:.3, ease:'power2.out'}, 1505.51);
+  slide('#m9-p2-i0', 1514.00, 50);
+  }
+
+  // m10  (off 12.17)
+  { const tl = SH(12.17); const { pop, up, rise, slide, sweep } = H(tl);
+  tl.fromTo('#m10-sc', {opacity:0}, {opacity:1, duration:.4, ease:'power2.out'}, 1527.30);
+  tl.to('#m10-sc', {opacity:0, duration:.35, ease:'power2.in'}, 1630.530);
+  rise('#m10-pf', 1527.50); up('#m10-lab', 1527.40, 10);
+  up('#m10-c0', 1527.50, 10);
+  up('#m10-c1', 1527.58, 10);
+  up('#m10-c2', 1527.66, 10);
+  up('#m10-c3', 1527.74, 10);
+  pop('#m10-t0', 1539.50);
+  pop('#m10-t1', 1547.20);
+  pop('#m10-t2', 1578.70);
+  tl.fromTo('#m10-p0', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1539.26);
+  tl.to('#m10-p0', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1561.32);
+  tl.to('#m10-c0', {backgroundColor:'#8a78e0', color:'#ffffff', duration:.3, ease:'power2.out'}, 1539.26);
+  slide('#m10-p0-i0', 1539.50, 50);
+  slide('#m10-p0-i1', 1550.00, 50);
+  tl.fromTo('#m10-p1', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1561.64);
+  tl.to('#m10-p1', {opacity:0, y:-24, duration:.3, ease:'power2.in'}, 1596.40);
+  tl.to('#m10-c0', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1561.64);
+  tl.to('#m10-c2', {backgroundColor:'#8a78e0', color:'#ffffff', duration:.3, ease:'power2.out'}, 1561.64);
+  tl.fromTo('#m10-p1-i0', {opacity:0}, {opacity:1, duration:.3}, 1562.00);
+  pop('#m10-p1-i0-s0', 1562.00);
+  pop('#m10-p1-i0-a1', 1571.85);
+  pop('#m10-p1-i0-s1', 1572.00);
+  pop('#m10-p1-i0-a2', 1579.85);
+  pop('#m10-p1-i0-s2', 1580.00);
+  pop('#m10-p1-i0-a3', 1587.85);
+  pop('#m10-p1-i0-s3', 1588.00);
+  slide('#m10-p1-i1', 1578.70, 50);
+  tl.fromTo('#m10-p2', {opacity:0, y:30}, {opacity:1, y:0, duration:.45, ease:'power3.out'}, 1596.72);
+  tl.to('#m10-c2', {backgroundColor:'rgba(255,255,255,.7)', color:'#8d89a3', duration:.3}, 1596.72);
+  tl.to('#m10-c3', {backgroundColor:'#8a78e0', color:'#ffffff', duration:.3, ease:'power2.out'}, 1596.72);
+  slide('#m10-p2-i0', 1597.20, 50);
+  slide('#m10-p2-i1', 1615.00, 50);
+  }
+  tl.fromTo('#endfade', { opacity: 0 }, { opacity: 1, duration: .8, ease: 'power1.in' }, 1779.700);
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+})();
+</script>
+</body>
+</html>
