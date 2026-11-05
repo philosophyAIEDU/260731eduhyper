@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>교수님들을 위한 Claude Code CLI 4편 (반복 업무 자동화)</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+@font-face { font-family: "Pretendard"; src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations"); font-weight: 45 920; font-style: normal; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #fdf6ee; }
+:root {
+  --ink: #34314a; --ink-soft: #5b5873; --cream: #fdf6ee;
+  --hl-y: rgba(255, 220, 120, .85); --hl-m: rgba(140, 222, 190, .75); --hl-p: rgba(248, 180, 200, .8);
+}
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Pretendard", sans-serif; color: var(--ink); background: #000; }
+#vwrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+#vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#endfade { position: absolute; inset: 0; z-index: 20; background: #000; opacity: 0; pointer-events: none; }
+
+/* cover (motion-graphics-only spans) */
+.cover { position: absolute; inset: 0; z-index: 2; }
+.cov-in { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, #fff6ee 0%, #fdf1f4 45%, #f1f0ff 100%); }
+.blob { position: absolute; border-radius: 50%; opacity: .75; filter: blur(30px); }
+.dc { position: absolute; display: block; }
+.dc-dot { border-radius: 50%; background: var(--c); opacity: .75; }
+.dc-ring { border-radius: 50%; border: 4px solid var(--c); opacity: .8; }
+.dc-dia { background: var(--c); opacity: .7; border-radius: 4px; transform: rotate(45deg); }
+
+/* captions in covered spans — same look as the burned-in captions */
+.cap { position: absolute; left: 0; right: 0; bottom: 56px; z-index: 8; display: flex; justify-content: center; pointer-events: none; }
+.cap span { display: block; max-width: 1500px; padding: 6px 22px 10px; background: #000; color: #fff;
+  font-size: 54px; font-weight: 700; line-height: 1.3; text-align: center; word-break: keep-all; letter-spacing: -.01em; }
+
+.scene { position: absolute; inset: 0; }
+.scene.full { z-index: 3; }
+.scene.ov { z-index: 4; }
+.sc { position: absolute; inset: 0; opacity: 0; }
+
+/* shared pieces */
+.card { position: absolute; display: block; background: rgba(255, 255, 255, .95); border: 2px solid #fff; border-radius: 44px;
+  box-shadow: 0 30px 70px rgba(80, 60, 70, .2), 0 6px 18px rgba(80, 60, 70, .08); }
+.center-col { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+.pill { display: inline-flex; align-items: center; gap: 14px; padding: 14px 28px; border-radius: 999px; background: #fff;
+  box-shadow: 0 8px 22px rgba(120, 92, 80, .12); font-size: 30px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.pill-soft { background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e8da; }
+.pill-sm { font-size: 22px; padding: 8px 18px; gap: 10px; align-self: flex-start; }
+.pill-sm .pdot { width: 12px; height: 12px; }
+.pdot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; }
+.okpill { display: inline-flex; align-items: center; gap: 16px; padding: 14px 30px 14px 16px; border-radius: 999px; background: #e3f6ec;
+  font-size: 34px; font-weight: 750; color: #24533f; box-shadow: 0 10px 24px rgba(60, 140, 100, .14); white-space: nowrap; }
+.okc { display: block; width: 48px; height: 48px; border-radius: 50%; background: #3fa877; padding: 7px; }
+.okc svg { display: block; width: 100%; height: 100%; }
+.nopill { background: #fde8ec; color: #8a3550; box-shadow: 0 10px 24px rgba(200, 80, 110, .12); }
+.nopill .okc { background: #e0607f; }
+.ok-xs { font-size: 24px; padding: 6px 18px 6px 6px; gap: 10px; align-self: flex-start; }
+.ok-xs .okc { width: 34px; height: 34px; padding: 5px; }
+.h1 { font-size: 104px; font-weight: 900; line-height: 1.12; letter-spacing: -.035em; word-break: keep-all; }
+.h1.center { text-align: center; }
+.h2 { font-size: 70px; font-weight: 850; line-height: 1.22; letter-spacing: -.03em; word-break: keep-all; text-align: center; }
+.hl { background-image: linear-gradient(var(--hlc), var(--hlc)); background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 38%; padding: 0 4px; }
+.ico { display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; border-radius: 50%; padding: 34px; flex: 0 0 auto;
+  box-shadow: 0 12px 26px rgba(120, 92, 80, .12), inset 0 0 0 6px rgba(255, 255, 255, .7); }
+.ico svg { display: block; width: 100%; height: 100%; }
+.ico.sm { width: 120px; height: 120px; padding: 27px; }
+.ico.xs { width: 70px; height: 70px; padding: 15px; }
+.ico.xxs { width: 46px; height: 46px; padding: 10px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .7); }
+.arrow { display: block; width: 90px; height: 24px; flex: 0 0 auto; }
+.arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.arrow-sm { width: 60px; }
+.subline { padding: 16px 36px; border-radius: 999px; background: rgba(255, 255, 255, .9); box-shadow: 0 12px 30px rgba(80, 60, 70, .12); font-size: 40px; font-weight: 600; letter-spacing: -.02em; }
+.subline b { font-weight: 900; color: #d0603f; }
+.row { display: flex; align-items: center; gap: 18px; }
+.col { display: flex; flex-direction: column; gap: 12px; }
+
+/* title */
+.phwrap { position: absolute; left: 110px; top: 170px; width: 480px; }
+.phwrap.end { left: 90px; top: 200px; width: 430px; }
+.phimg { display: block; width: 100%; height: auto; filter: drop-shadow(0 24px 30px rgba(80, 60, 90, .22)); }
+.titlecard { left: 660px; top: 170px; width: 1120px; display: flex; flex-direction: column; align-items: center; gap: 34px; padding: 60px 60px 64px; }
+.term { display: flex; align-items: center; gap: 16px; min-width: 420px; padding: 18px 30px; border-radius: 20px; background: #2c2a3d;
+  font-family: Consolas, "Courier New", monospace; font-size: 40px; font-weight: 700; color: #f4efe6; box-shadow: 0 14px 30px rgba(44, 42, 61, .3); }
+.tprompt { color: #ef8a6f; }
+.tcur { display: inline-block; width: 18px; height: 40px; background: #f4efe6; }
+
+/* roadmap */
+.road { position: absolute; left: 0; right: 0; top: 380px; display: flex; justify-content: center; align-items: center; gap: 18px; }
+.rcard { position: relative; width: 320px; height: 330px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+  background: rgba(255, 255, 255, .95); border-radius: 40px; box-shadow: 0 24px 56px rgba(80, 60, 70, .16); padding: 0 16px; }
+.rcard.first { box-shadow: 0 0 0 8px rgba(200, 186, 255, .6), 0 26px 60px rgba(154, 139, 230, .3); }
+.rn { font-size: 32px; font-weight: 850; letter-spacing: .04em; }
+.rt { font-size: 40px; font-weight: 900; letter-spacing: -.03em; text-align: center; line-height: 1.15; word-break: keep-all; }
+.rarrow { width: 50px; }
+.rtick { position: absolute; top: 20px; right: 20px; display: block; width: 44px; height: 44px; border-radius: 50%; background: #3fa877; padding: 8px; }
+.rtick svg { display: block; width: 100%; height: 100%; }
+.nowtag { position: absolute; top: -26px; right: -14px; padding: 8px 22px; border-radius: 999px; background: #9a8be6; color: #fff; font-size: 28px; font-weight: 850; }
+
+/* tiles */
+.tiles { position: absolute; left: 0; right: 0; top: 360px; display: flex; justify-content: center; gap: 36px; }
+.tile { position: relative; width: 360px; height: 340px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; padding: 24px; }
+.tile.wide { width: 470px; }
+.tt { font-size: 40px; font-weight: 850; letter-spacing: -.03em; text-align: center; line-height: 1.22; word-break: keep-all; }
+.rep { position: absolute; top: 22px; right: 22px; width: 50px; height: 50px; opacity: 0; }
+.rep svg { display: block; width: 100%; height: 100%; }
+.seal { position: absolute; top: -20px; right: 24px; padding: 8px 20px; border-radius: 14px; background: #e7a92c; color: #fff; font-size: 26px; font-weight: 900; box-shadow: 0 10px 22px rgba(231, 169, 44, .35); }
+.warnbar { left: 360px; top: 760px; width: 1200px; display: flex; align-items: center; justify-content: center; gap: 24px; padding: 18px 40px; border-radius: 999px; font-size: 40px; font-weight: 650; letter-spacing: -.02em; }
+.warnbar b { font-weight: 900; color: #c4486c; }
+
+/* duo cards */
+.duo2 { position: absolute; left: 0; right: 0; top: 330px; display: flex; justify-content: center; align-items: center; gap: 46px; }
+.dcard { position: relative; width: 640px; height: 440px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 30px; }
+.dt { font-size: 52px; font-weight: 750; letter-spacing: -.03em; }
+.dt b { font-weight: 900; }
+.ds { font-size: 34px; font-weight: 600; color: var(--ink-soft); text-align: center; line-height: 1.3; }
+.bigop { font-size: 80px; font-weight: 900; color: #c9a8e8; }
+.bigop.vs { font-size: 44px; color: #7d62c0; }
+
+/* never */
+.nevercard { left: 380px; top: 340px; width: 1160px; padding: 44px 60px 50px; display: flex; flex-direction: column; gap: 30px; }
+.nhead { display: flex; align-items: center; gap: 30px; }
+.nt { font-size: 56px; font-weight: 700; letter-spacing: -.03em; }
+.nt b { font-weight: 900; color: #c4486c; }
+.nrow { display: flex; gap: 24px; padding-left: 150px; }
+.nchip { display: flex; align-items: center; gap: 14px; padding: 12px 28px 12px 12px; border-radius: 999px; background: #fdf0f3; box-shadow: inset 0 0 0 2px #f6d3dc; font-size: 40px; font-weight: 850; }
+.bigstamp { position: absolute; right: 50px; bottom: 40px; padding: 14px 30px; border: 5px solid #e0607f; border-radius: 18px; color: #c4486c; font-size: 44px; font-weight: 700; background: rgba(255, 255, 255, .9); }
+.bigstamp b { font-weight: 900; }
+.bigstamp.sm { position: relative; right: auto; bottom: auto; font-size: 30px; padding: 8px 18px; border-width: 4px; flex: 0 0 auto; }
+
+/* flow */
+.flow { position: absolute; left: 0; right: 0; top: 290px; display: flex; justify-content: center; align-items: center; gap: 26px; }
+.fcard { position: relative; width: 440px; height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 30px; }
+.fcard.tall { height: 450px; }
+.fw { font-size: 34px; font-weight: 900; letter-spacing: .02em; }
+.ft { font-size: 40px; font-weight: 850; letter-spacing: -.03em; text-align: center; word-break: keep-all; }
+.ft.big { font-size: 42px; margin-top: 6px; }
+.fd { font-size: 28px; font-weight: 600; color: var(--ink-soft); text-align: center; line-height: 1.35; word-break: keep-all; }
+.fnum { position: absolute; left: 28px; top: 24px; width: 56px; height: 56px; border-radius: 50%; background: #ebe6ff; color: #6a55c0; font-size: 32px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+
+/* recap */
+.recap { position: absolute; left: 0; right: 0; top: 220px; display: flex; justify-content: center; gap: 24px; }
+.rtile { position: relative; display: flex; align-items: center; gap: 16px; padding: 18px 30px 18px 18px; border-radius: 30px; font-size: 32px; font-weight: 850; letter-spacing: -.02em; white-space: nowrap; }
+.ocard { position: relative; width: 640px; height: 220px; display: flex; align-items: center; justify-content: center; gap: 24px; padding: 30px; }
+.ocard .dt { font-size: 46px; }
+
+/* end */
+.endcard { left: 600px; top: 120px; width: 1220px; padding: 50px 60px; display: flex; flex-direction: column; align-items: flex-start; gap: 26px; }
+.endbig { font-size: 66px; font-weight: 900; letter-spacing: -.04em; }
+.endok { color: #3fa877; }
+.series { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+.sitem { position: relative; display: flex; align-items: center; gap: 18px; padding: 16px 22px; border-radius: 22px; background: #f0faf5; box-shadow: inset 0 0 0 2px #bfe6d1; }
+.sn { font-size: 28px; font-weight: 900; color: #7d62c0; width: 56px; }
+.st { font-size: 34px; }
+.st b { font-weight: 900; }
+.tick { position: absolute; right: 18px; top: 50%; margin-top: -21px; display: block; width: 42px; height: 42px; border-radius: 50%; background: #3fa877; padding: 7px; }
+.tick svg { display: block; width: 100%; height: 100%; }
+.subrow { display: flex; align-items: center; gap: 12px; padding: 12px 26px; border-radius: 999px; background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e8da; font-size: 32px; font-weight: 850; }
+.thanks { font-size: 44px; font-weight: 800; color: var(--ink-soft); }
+
+/* overlay cards on the practice screen */
+.ovc { position: absolute; display: flex; flex-direction: column; gap: 12px; padding: 18px 26px; border-radius: 26px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 22px 50px rgba(10, 8, 20, .45), inset 0 0 0 2px #f3ebe2; }
+.ovc.row { flex-direction: row; align-items: center; gap: 20px; }
+.ovc.lane { left: 70px; top: 690px; width: 600px; }
+.ovc.top .chain { flex-wrap: nowrap; }
+.bigq { position: absolute; left: 860px; top: 330px; width: 200px; height: 260px; text-align: center; font-size: 240px; line-height: 260px; font-weight: 900; color: #4fb489; text-shadow: 0 20px 40px rgba(79, 180, 137, .3); }
+.ovc.top { right: 40px; top: 74px; max-width: 1180px; }
+.ovc.done { box-shadow: 0 22px 50px rgba(10, 8, 20, .45), inset 0 0 0 3px #9fdcbc; }
+.ovt { display: block; font-size: 32px; font-weight: 650; line-height: 1.28; letter-spacing: -.02em; word-break: keep-all; white-space: nowrap; }
+.ovt b { font-weight: 900; }
+.ovt b.num { color: #2f8a5f; }
+.ovs2 { font-size: 24px; font-weight: 600; color: var(--ink-soft); line-height: 1.35; white-space: nowrap; }
+.ovs2 b { color: var(--ink); font-weight: 850; }
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.chip { padding: 7px 16px; border-radius: 14px; background: #f4f1fa; box-shadow: inset 0 0 0 2px #e4def0; font-size: 24px; font-weight: 800; white-space: nowrap; }
+.chip.hot { background: #fff1cc; box-shadow: inset 0 0 0 2px #f3d98a; color: #7a5410; }
+.chip.mono, .mono-in { font-family: Consolas, "Courier New", monospace; font-weight: 700; }
+.mono-in { font-size: 30px; color: #9a4f35; }
+.cg { font-size: 24px; font-weight: 900; color: #7d6fb0; white-space: nowrap; }
+.stephead { display: flex; align-items: center; gap: 14px; }
+.stepn { padding: 5px 14px; border-radius: 12px; background: #c9583c; color: #fff; font-size: 22px; font-weight: 900; letter-spacing: .04em; white-space: nowrap; }
+.stept { font-size: 32px; font-weight: 900; letter-spacing: -.03em; white-space: nowrap; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.crumb { padding: 7px 16px; border-radius: 14px; background: #f4f1fa; box-shadow: inset 0 0 0 2px #e4def0; font-size: 24px; font-weight: 800; white-space: nowrap; }
+.bigcmd { display: flex; align-items: center; gap: 12px; padding: 12px 22px; border-radius: 18px; background: #2c2a3d; flex: 0 0 auto;
+  font-family: Consolas, "Courier New", monospace; font-size: 36px; font-weight: 700; color: #f4efe6; white-space: nowrap; }
+.bigcmd code { font-family: inherit; }
+.bigcmd .tcur { height: 32px; width: 15px; }
+.duoline { display: flex; align-items: center; gap: 14px; }
+.messy { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.fchip { display: inline-block; padding: 6px 16px; border-radius: 12px; background: #f1f8f4; box-shadow: inset 0 0 0 2px #cfeedd; font-size: 22px; font-weight: 750; color: #2d6b51; white-space: nowrap; font-family: Consolas, "Courier New", monospace; }
+.fchip.bad { background: #fdf0f3; box-shadow: inset 0 0 0 2px #f6d3dc; color: #8a3550; transform: rotate(var(--r)); }
+.tagbadge { padding: 10px 20px; border-radius: 14px; background: #ef8a6f; color: #fff; font-size: 28px; font-weight: 900; white-space: nowrap; transform: rotate(-4deg); }
+.tipbadge { padding: 10px 18px; border-radius: 14px; background: #e7a92c; color: #fff; font-size: 30px; font-weight: 900; letter-spacing: .06em; }
+.clock { width: 84px; height: 84px; flex: 0 0 auto; }
+.clock svg { display: block; width: 100%; height: 100%; }
+.dropbox { position: relative; width: 110px; height: 90px; flex: 0 0 auto; }
+.dropbox > svg { position: absolute; left: 14px; top: 12px; width: 84px; height: 76px; }
+.dropbox .fchip { position: absolute; left: 0; top: -6px; z-index: 2; font-size: 18px; padding: 4px 10px; }
+.cf { position: absolute; display: block; width: 14px; height: 14px; border-radius: 3px; opacity: 0; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="602.2" data-width="1920" data-height="1080">
+  <div id="vwrap"><video id="vid" class="clip" src="assets/media/src.mp4" playsinline data-has-audio="true" data-start="0" data-duration="602.2" data-track-index="0"></video></div>
+
+<div id="cov1" class="cover clip" data-start="0.000" data-duration="93.650" data-track-index="2"><div id="cov1-in" class="cov-in"><span id="cov1-bl0" class="blob" style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cov1-bl1" class="blob" style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cov1-bl2" class="blob" style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cov1-bl3" class="blob" style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cov1-bl4" class="blob" style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span><span id="cov1-d0" class="dc dc-dot" style="--c:#ef8a6f;width:18px;height:18px;left:140px;top:140px"></span><span id="cov1-d1" class="dc dc-ring" style="--c:#9a8be6;width:34px;height:34px;left:1740px;top:120px"></span><span id="cov1-d2" class="dc dc-dia" style="--c:#4fb489;width:22px;height:22px;left:1680px;top:820px"></span><span id="cov1-d3" class="dc dc-dot" style="--c:#e7a92c;width:14px;height:14px;left:260px;top:860px"></span><span id="cov1-d4" class="dc dc-ring" style="--c:#e8708f;width:26px;height:26px;left:90px;top:520px"></span><span id="cov1-d5" class="dc dc-dia" style="--c:#6aa3e6;width:18px;height:18px;left:1820px;top:470px"></span><span id="cov1-d6" class="dc dc-dot" style="--c:#4fb489;width:12px;height:12px;left:960px;top:60px"></span></div></div>
+<div id="cov2" class="cover clip" data-start="530.290" data-duration="71.910" data-track-index="2"><div id="cov2-in" class="cov-in" style="opacity:0"><span id="cov2-bl0" class="blob" style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cov2-bl1" class="blob" style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cov2-bl2" class="blob" style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cov2-bl3" class="blob" style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cov2-bl4" class="blob" style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span><span id="cov2-d0" class="dc dc-dot" style="--c:#ef8a6f;width:18px;height:18px;left:140px;top:140px"></span><span id="cov2-d1" class="dc dc-ring" style="--c:#9a8be6;width:34px;height:34px;left:1740px;top:120px"></span><span id="cov2-d2" class="dc dc-dia" style="--c:#4fb489;width:22px;height:22px;left:1680px;top:820px"></span><span id="cov2-d3" class="dc dc-dot" style="--c:#e7a92c;width:14px;height:14px;left:260px;top:860px"></span><span id="cov2-d4" class="dc dc-ring" style="--c:#e8708f;width:26px;height:26px;left:90px;top:520px"></span><span id="cov2-d5" class="dc dc-dia" style="--c:#6aa3e6;width:18px;height:18px;left:1820px;top:470px"></span><span id="cov2-d6" class="dc dc-dot" style="--c:#4fb489;width:12px;height:12px;left:960px;top:60px"></span></div></div>
+
+<div id="s-title" class="scene full clip" data-start="0.000" data-duration="3.040" data-track-index="3">
+  <div id="s-title-sc" class="sc">
+  <div id="st-ph" class="phwrap"><img id="st-img" class="phimg" src="assets/media/philosophy.png" alt="필로소피 캐릭터"></div>
+  <div id="st-c" class="card titlecard">
+    <div id="st-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>필로소피 AI 교육 · 교수님들을 위한</span></div>
+    <h1 id="st-h" class="h1 center"><span class="hl" style="--hlc:var(--hl-p)">Claude Code</span><br>CLI 수업</h1>
+    <div id="st-term" class="term"><span class="tprompt">&gt;</span><span id="st-tt">claude</span><span id="st-cur" class="tcur"></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="s-road" class="scene full clip" data-start="3.040" data-duration="10.440" data-track-index="3">
+  <div id="s-road-sc" class="sc">
+  <div class="center-col" style="top:120px">
+    <div id="sr-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>교수님들을 위한 Claude Code CLI</span></div>
+    <h2 id="sr-h" class="h2"><span class="hl" style="--hlc:var(--hl-y)">네 번째 시간</span> · 중급 실습</h2>
+  </div>
+  <div class="road">
+    <div id="sr-0" class="rcard "><div id="sr-i0" class="ico sm" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><path d="M27 22l15 10-15 10z" fill="#ef8a6f"/></svg></div><div class="rn" style="color:#ef8a6f">1편</div><div class="rt">설치</div><span id="sr-t0" class="rtick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><svg id="sr-a0" class="arrow rarrow" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="sr-1" class="rcard "><div id="sr-i1" class="ico sm" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="40" rx="6"/><path d="M18 26l8 6-8 6M30 40h14"/></svg></div><div class="rn" style="color:#6aa3e6">2편</div><div class="rt">기초</div><span id="sr-t1" class="rtick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><svg id="sr-a1" class="arrow rarrow" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="sr-2" class="rcard "><div id="sr-i2" class="ico sm" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg></div><div class="rn" style="color:#4fb489">3편</div><div class="rt">폴더 정리</div><span id="sr-t2" class="rtick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><svg id="sr-a2" class="arrow rarrow" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="sr-3" class="rcard first"><div id="sr-i3" class="ico sm" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M36 6L14 36h16l-4 22 22-30H32z" fill="#9a8be6" stroke-width="2"/></svg></div><div class="rn" style="color:#9a8be6">4편</div><div class="rt">반복 업무 자동화</div><div id="sr-now" class="nowtag">오늘</div></div>
+  </div>
+  <div class="center-col" style="top:790px"><div id="sr-sub" class="subline">오늘은 <b>반복 업무</b>를 해결해 가는 과정을 보여 드려요</div></div>
+  </div>
+</div>
+
+<div id="s-good" class="scene full clip" data-start="13.480" data-duration="20.570" data-track-index="3">
+  <div id="s-good-sc" class="sc">
+  <div class="center-col" style="top:100px">
+    <div id="sg-k" class="pill pill-soft"><span class="pdot" style="background:#4fb489"></span><span>자동화하기 좋은 일은 무엇일까요?</span></div>
+    <h2 id="sg-h" class="h2">규칙이 <span class="hl" style="--hlc:var(--hl-m)">분명</span>하고 <span class="hl" style="--hlc:var(--hl-y)">반복</span>되는 일</h2>
+  </div>
+  <div id="sg-q" class="bigq">?</div>
+  <div class="tiles">
+    <div id="sg-0" class="card tile"><div id="sg-i0" class="ico sm" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8h18l10 10v30H20z"/><path d="M38 8v10h10"/><path d="M14 16v40h28"/></svg></div><div class="tt">파일 이름 정리</div><span id="sg-r0" class="rep"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></span></div><div id="sg-1" class="card tile"><div id="sg-i1" class="ico sm" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></div><div class="tt">제출 여부 확인</div><span id="sg-r1" class="rep"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></span></div><div id="sg-2" class="card tile"><div id="sg-i2" class="ico sm" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="40" rx="5"/><path d="M8 24h48M8 38h48M24 12v40M40 12v40"/></svg></div><div class="tt">표 만들기</div><span id="sg-r2" class="rep"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></span></div><div id="sg-3" class="card tile"><div id="sg-i3" class="ico sm" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="22" y="8" width="30" height="38" rx="4"/><path d="M16 14v36a4 4 0 0 0 4 4h26"/><path d="M10 20v36"/><path d="M29 20h16M29 28h16M29 36h10"/></svg></div><div class="tt">같은 형식 문서<br>여러 개 만들기</div><span id="sg-r3" class="rep"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></span></div>
+  </div>
+  <div class="center-col" style="top:770px"><div id="sg-ok" class="okpill "><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>Claude Code CLI로 하면 좋은 작업들</span></div></div>
+  </div>
+</div>
+
+<div id="s-check" class="scene full clip" data-start="34.050" data-duration="19.360" data-track-index="3">
+  <div id="s-check-sc" class="sc">
+  <div class="center-col" style="top:100px">
+    <div id="sc-k" class="pill pill-soft"><span class="pdot" style="background:#e7a92c"></span><span>자동화하더라도</span></div>
+    <h2 id="sc-h" class="h2">사람이 <span class="hl" style="--hlc:var(--hl-y)">꼭 확인</span>해야 할 일</h2>
+  </div>
+  <div class="tiles three">
+    <div id="sc-0" class="card tile wide"><div id="sc-i0" class="ico sm" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="42" rx="6"/><path d="M8 24h48M20 6v12M44 6v12"/><path d="M18 34h6M30 34h6M42 34h6M18 44h6M30 44h6"/></svg></div><div class="tt">지각을 인정할지 말지</div><span id="sc-s0" class="seal">사람 확인</span></div><div id="sc-1" class="card tile wide"><div id="sc-i1" class="ico sm" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 32s10-16 26-16 26 16 26 16-10 16-26 16S6 32 6 32z"/><circle cx="32" cy="32" r="7"/></svg></div><div class="tt">예외 사정 확인</div><span id="sc-s1" class="seal">사람 확인</span></div><div id="sc-2" class="card tile wide"><div id="sc-i2" class="ico sm" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><div class="tt">공지문의 톤 · 말투 · 내용</div><span id="sc-s2" class="seal">사람 확인</span></div>
+  </div>
+  <div id="sc-w" class="card warnbar"><div id="sc-wi" class="ico xs" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#e8708f"/></svg></div><span>무조건 자동화하면 <b>나중에 문제</b>가 생길 수 있어요</span></div>
+  </div>
+</div>
+
+<div id="s-split" class="scene full clip" data-start="53.410" data-duration="8.850" data-track-index="3">
+  <div id="s-split-sc" class="sc">
+  <div class="center-col" style="top:110px">
+    <h2 id="sp-h" class="h2">AI에게 맡기되, <span class="hl" style="--hlc:var(--hl-p)">사람의 몫</span>은 분명히</h2>
+  </div>
+  <div class="duo2">
+    <div id="sp-a" class="card dcard">
+      <div id="sp-ai" class="ico " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#ef8a6f" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#ef8a6f" stroke-width="1.5"/></svg></div>
+      <div class="dt"><b>AI</b>에게 맡기기</div>
+      <div class="ds">반복되고 규칙이 분명한 일</div>
+    </div>
+    <div id="sp-plus" class="bigop">+</div>
+    <div id="sp-b" class="card dcard">
+      <div id="sp-bi" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="22" r="10"/><path d="M12 54c2-11 10-17 20-17s18 6 20 17"/></svg></div>
+      <div class="dt"><b>사람</b>이 신경 쓰기</div>
+      <div class="ds">확인 · 판단이 필요한 일</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="s-never" class="scene full clip" data-start="62.260" data-duration="13.270" data-track-index="3">
+  <div id="s-never-sc" class="sc">
+  <div class="center-col" style="top:96px">
+    <div id="sn-k" class="pill pill-soft"><span class="pdot" style="background:#e8708f"></span><span>특히</span></div>
+    <h2 id="sn-h" class="h2"><span class="hl" style="--hlc:var(--hl-p)">자동화하면 안 되는</span> 일</h2>
+  </div>
+  <div id="sn-c" class="card nevercard">
+    <div class="nhead"><div id="sn-ci" class="ico sm" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8v46M18 54h28M12 16h40"/><path d="M12 16L4 34h16zM52 16l-8 18h16z"/></svg></div><div class="nt">학생을 판단하는 <b>최종 결정</b></div></div>
+    <div class="nrow">
+      <div id="sn-0" class="nchip"><div id="sn-l0" class="ico xxs" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="28" width="40" height="28" rx="6"/><path d="M20 28v-8a12 12 0 0 1 24 0v8"/><circle cx="32" cy="42" r="3" fill="#e8708f"/></svg></div><span>성적</span></div>
+      <div id="sn-1" class="nchip"><div id="sn-l1" class="ico xxs" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="28" width="40" height="28" rx="6"/><path d="M20 28v-8a12 12 0 0 1 24 0v8"/><circle cx="32" cy="42" r="3" fill="#e8708f"/></svg></div><span>부정행위 판단</span></div>
+    </div>
+    <div id="sn-st" class="bigstamp">교수님이 <b>직접</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="s-human" class="scene full clip" data-start="75.530" data-duration="8.030" data-track-index="3">
+  <div id="s-human-sc" class="sc">
+  <div class="center-col" style="top:220px">
+    <div id="sh-i" class="ico " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#e8708f"/></svg></div>
+    <h2 id="sh-h" class="h2">학생과의 관계에서 나오는 <br><span class="hl" style="--hlc:var(--hl-p)">피드백 · 이야기</span>는</h2>
+    <div id="sh-s" class="subline">교수님이 <b>따로 작성</b>하셔야겠죠</div>
+  </div>
+  </div>
+</div>
+
+<div id="s-flow" class="scene full clip" data-start="83.560" data-duration="10.090" data-track-index="3">
+  <div id="s-flow-sc" class="sc">
+  <div class="center-col" style="top:120px">
+    <div id="sf-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>이렇게 나눠 주세요</span></div>
+  </div>
+  <div class="flow">
+    <div id="sf-0" class="card fcard"><div id="sf-i0" class="ico sm" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#ef8a6f" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#ef8a6f" stroke-width="1.5"/></svg></div><div class="fw" style="color:#ef8a6f">AI</div><div class="ft">반복되는 일 처리</div></div><svg id="sf-a0" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="sf-1" class="card fcard"><div id="sf-i1" class="ico sm" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50l4-14 26-26 10 10-26 26z"/><path d="M38 16l10 10"/></svg></div><div class="fw" style="color:#9a8be6">교수님</div><div class="ft">세심한 피드백 추가</div></div><svg id="sf-a1" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="sf-2" class="card fcard"><div id="sf-i2" class="ico sm" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="22" cy="22" r="8"/><circle cx="44" cy="24" r="7"/><path d="M6 52c1-10 7-15 16-15s15 5 16 15M38 38c8 0 14 4 15 14"/></svg></div><div class="fw" style="color:#4fb489">학생</div><div class="ft">마음이 닿는 피드백</div></div>
+  </div>
+  <div class="center-col" style="top:770px"><div id="sf-s" class="subline">마지막 한 줄은 <b>교수님</b>이 더해 주세요</div></div>
+  </div>
+</div>
+
+<div id="o-file" class="scene ov clip" data-start="107.150" data-duration="14.330" data-track-index="4">
+  <div id="o-file-sc" class="sc">
+  <div id="of-c" class="ovc lane">
+    <div id="of-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#e7a92c"></span><span>실습 프롬프트 텍스트 파일</span></div>
+    <div class="row"><div id="of-i" class="ico xs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 36a10 10 0 0 0 14 0l8-8a10 10 0 0 0-14-14l-3 3"/><path d="M36 28a10 10 0 0 0-14 0l-8 8a10 10 0 0 0 14 14l3-3"/></svg></div><div id="of-t" class="ovt">고정 댓글 링크에서<br><b>다운로드</b></div></div>
+    <div id="of-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>내 상황에 맞게 고쳐 써도 좋아요</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-custom" class="scene ov clip" data-start="130.280" data-duration="26.950" data-track-index="4">
+  <div id="o-custom-sc" class="sc">
+  <div id="ou-c" class="ovc lane">
+    <div id="ou-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>교수님만을 위한 프롬프트로</span></div>
+    <div class="chain"><span id="ou-0" class="chip">텍스트 파일</span><span id="ou-g0" class="cg">+</span><span id="ou-1" class="chip">할 작업 자세히</span><span id="ou-g1" class="cg">›</span><span id="ou-2" class="chip hot">Claude · ChatGPT · Gemini</span></div>
+    <div id="ou-t" class="ovs2">프롬프트의 <span class="hl" style="--hlc:var(--hl-y)">로직 · 순서는 그대로</span>, 내용만 바꾸기</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-step" class="scene ov clip" data-start="162.560" data-duration="10.820" data-track-index="4">
+  <div id="o-step-sc" class="sc">
+  <div id="os-c" class="ovc lane">
+    <div class="stephead"><span class="stepn">STEP 1</span><span class="stept">빈 작업 폴더 열기</span></div>
+    <div class="crumbs"><span id="os-b0" class="crumb">File</span><span id="os-g1" class="cg">›</span><span id="os-b1" class="crumb">Open Folder</span><span id="os-g2" class="cg">›</span><span id="os-b2" class="crumb">새 폴더</span><span id="os-g3" class="cg">›</span><span id="os-b3" class="crumb">Select Folder</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-fake" class="scene ov clip" data-start="179.460" data-duration="17.850" data-track-index="4">
+  <div id="o-fake-sc" class="sc">
+  <div id="ok-c" class="ovc lane">
+    <div class="stephead"><span class="stepn">프롬프트 1</span><span class="stept">가상 수업 자료 만들기</span></div>
+    <div id="ok-n" class="okpill nopill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><span>실제 사람 이름은 절대 쓰지 않기</span></div>
+    <div class="chain"><span id="ok-0" class="chip mono">roster.csv</span><span id="ok-1" class="chip">수강생 30명</span><span id="ok-g" class="cg">›</span><span id="ok-2" class="chip hot">학생01 ~ 학생30</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-messy" class="scene ov clip" data-start="213.640" data-duration="21.290" data-track-index="4">
+  <div id="o-messy-sc" class="sc">
+  <div id="om-c" class="ovc top row">
+    <div class="messy"><span id="om-0" class="fchip bad" style="--r:-4deg">과제 제출합니다.txt</span><span id="om-1" class="fchip bad" style="--r:3deg">학생07 과제.txt</span><span id="om-2" class="fchip bad" style="--r:-2deg">과제1_최종(2).txt</span></div>
+    <svg id="om-a" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="om-t" class="ovt">반복되고 규칙 있는 일<br>= <span class="hl" style="--hlc:var(--hl-y)">자동화</span>하기 좋은 일</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-plan" class="scene ov clip" data-start="270.910" data-duration="20.620" data-track-index="4">
+  <div id="o-plan-sc" class="sc">
+  <div id="op-c" class="ovc top row">
+    <div id="op-cmd" class="bigcmd"><span class="tprompt">&gt;</span><code id="op-tt">/plan</code><span id="op-cur" class="tcur"></span></div>
+    <div class="col">
+      <div class="duoline"><div id="op-n" class="okpill nopill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><span>바로 실행</span></div><svg id="op-a" class="arrow arrow-sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="op-t" class="ovt"><b>계획을 먼저</b> 보여 줘요</div></div>
+      <div id="op-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>계획을 보고 진행할지 내가 결정</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-rename" class="scene ov clip" data-start="291.530" data-duration="14.850" data-track-index="4">
+  <div id="o-rename-sc" class="sc">
+  <div id="or-c" class="ovc top row">
+    <div id="or-i" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="8" width="40" height="48" rx="5"/><path d="M22 6h20v8H22z"/><path d="M20 26l4 4 7-7M20 40l4 4 7-7M36 28h10M36 42h10"/></svg></div>
+    <div class="col">
+      <div class="chain"><span id="or-0" class="chip mono">roster.csv</span><span class="cg">대조</span><span id="or-g" class="cg">›</span><span id="or-1" class="chip mono hot">학번_이름_과제1.txt</span></div>
+      <div id="or-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>원본은 백업 폴더에 먼저 넣어 두기</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-done" class="scene ov clip" data-start="311.470" data-duration="21.380" data-track-index="4">
+  <div id="o-done-sc" class="sc">
+  <div id="od-c" class="ovc top row done">
+    <div id="od-i" class="ico xs" style="background:#3fa877"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></div>
+    <div class="ovt">파일 이름 <b class="num"><span id="od-n">0</span>개</b> 같은 형식으로 통일</div>
+    <div id="od-r" class="chain"><span class="chip">미제출</span><span class="chip">지각</span><span class="chip">중복 제출</span><span class="cg">체크까지</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-skill" class="scene ov clip" data-start="337.960" data-duration="15.860" data-track-index="4">
+  <div id="o-skill-sc" class="sc">
+  <div id="ok2-c" class="ovc top row">
+    <div id="ok2-i" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 54L40 24"/><path d="M36 20l8 8"/><path d="M46 8v8M42 12h8M54 22v6M51 25h6M28 8v5M25.5 10.5h5"/></svg></div>
+    <div class="ovt"><b>스킬</b> = 반복하는 업무를<br><span class="hl" style="--hlc:var(--hl-y)">명령어 하나</span>로 정리해 두기</div>
+    <div id="ok2-s" class="tagbadge">척하면 척!</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-weekly" class="scene ov clip" data-start="353.820" data-duration="28.880" data-track-index="4">
+  <div id="o-weekly-sc" class="sc">
+  <div id="ow-c" class="ovc top row">
+    <div id="ow-cmd" class="bigcmd"><span class="tprompt">&gt;</span><code id="ow-tt">/weekly-notice 3</code></div>
+    <div class="chain"><span id="ow-0" class="chip mono">syllabus.md</span><span class="cg">읽고</span><span id="ow-g" class="cg">›</span><span id="ow-1" class="chip mono hot">3주차 공지문.md</span></div>
+    <div id="ow-s" class="bigstamp sm">스킬 = <b>약속</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-15" class="scene ov clip" data-start="388.960" data-duration="8.460" data-track-index="4">
+  <div id="o-15-sc" class="sc">
+  <div id="o15-c" class="ovc top row">
+    <div class="bigcmd"><span class="tprompt">&gt;</span><code id="o15-tt">/weekly-notice 15</code></div>
+    <div id="o15-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>15만 쳐도 약속한 작업을 쭉</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-tip" class="scene ov clip" data-start="401.310" data-duration="19.800" data-track-index="4">
+  <div id="o-tip-sc" class="sc">
+  <div id="ot-c" class="ovc top row tipcard">
+    <span id="ot-b" class="tipbadge">TIP</span>
+    <div class="col">
+      <div class="ovt">작업이 끝나면 꼭 → “<span class="hl" style="--hlc:var(--hl-y)">스킬로 만들어 줘</span>”</div>
+      <div id="ot-s" class="ovs2">스킬 이름도 알아서 정해 달라고 하면 돼요</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-daily" class="scene ov clip" data-start="430.970" data-duration="19.140" data-track-index="4">
+  <div id="o-daily-sc" class="sc">
+  <div id="oy-c" class="ovc top row">
+    <div id="oy-clk" class="clock"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="#fff7ee" stroke="#e7a92c" stroke-width="5"/><path id="oy-h" d="M32 32V19" stroke="#34314a" stroke-width="5" stroke-linecap="round"/><path id="oy-m" d="M32 32V12" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round"/></svg></div>
+    <div class="col">
+      <div class="ovt">매일 아침 <b>8시</b> · 새 제출물 → <b>피드백 초안</b></div>
+      <div class="chain"><span id="oy-0" class="chip">① 주장이 분명한가</span><span id="oy-1" class="chip">② 근거가 있는가</span><span id="oy-2" class="chip">③ 반론을 고려했는가</span><div id="oy-n" class="okpill nopill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><span>점수는 매기지 않기</span></div></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-prof" class="scene ov clip" data-start="452.210" data-duration="14.970" data-track-index="4">
+  <div id="o-prof-sc" class="sc">
+  <div id="opf-c" class="ovc top row">
+    <div id="opf-i" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50l4-14 26-26 10 10-26 26z"/><path d="M38 16l10 10"/></svg></div>
+    <div class="col">
+      <div class="ovt">맨 아래 “<b>교수님 한마디</b>” = <span class="hl" style="--hlc:var(--hl-p)">교수님의 몫</span></div>
+      <div id="opf-s" class="ovs2">오해가 생길 수 있는 주관적인 내용은 AI에게 맡기지 않기</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="o-drop" class="scene ov clip" data-start="478.880" data-duration="11.590" data-track-index="4">
+  <div id="o-drop-sc" class="sc">
+  <div id="odr-c" class="ovc top row">
+    <div class="dropbox"><span id="odr-f" class="fchip">과제.txt</span><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg></div>
+    <div class="ovt"><code class="mono-in">submissions</code> 폴더에 <b>넣기만</b> 하면<br>→ 매일 8시에 피드백 초안</div>
+  </div>
+  </div>
+</div>
+
+<div id="o-notice" class="scene ov clip" data-start="504.580" data-duration="14.790" data-track-index="4">
+  <div id="o-notice-sc" class="sc">
+  <div id="on-c" class="ovc top row done">
+    <div class="bigcmd"><span class="tprompt">&gt;</span><code id="on-tt">/weekly-notice 15</code></div>
+    <svg id="on-a" class="arrow arrow-sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div class="col"><span id="on-0" class="chip mono hot">notices/week15_notice.md</span><div id="on-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>학생들에게 올릴 공지문 완성</span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-auto" class="scene ov clip" data-start="525.810" data-duration="4.430" data-track-index="4">
+  <div id="o-auto-sc" class="sc">
+  <div id="oa-c" class="ovc top row">
+    <div id="oa-i" class="ico xs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M36 6L14 36h16l-4 22 22-30H32z" fill="#e7a92c" stroke-width="2"/></svg></div>
+    <div class="ovt">자주 하는 업무는 <b>Claude Code CLI</b>로 <span class="hl" style="--hlc:var(--hl-y)">자동화</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="s-recap" class="scene full clip" data-start="530.640" data-duration="8.670" data-track-index="3">
+  <div id="s-recap-sc" class="sc">
+  <div class="center-col" style="top:90px"><div id="se-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>오늘 해 본 실습</span></div></div>
+  <div class="recap">
+    <div id="se-0" class="card rtile"><div id="se-i0" class="ico xs" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 8h18l10 10v30H20z"/><path d="M38 8v10h10"/><path d="M14 16v40h28"/></svg></div><span>가상 수업 자료</span></div><div id="se-1" class="card rtile"><div id="se-i1" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="8" width="40" height="48" rx="5"/><path d="M22 6h20v8H22z"/><path d="M20 26l4 4 7-7M20 40l4 4 7-7M36 28h10M36 42h10"/></svg></div><span>/plan → 이름 통일</span></div><div id="se-2" class="card rtile"><div id="se-i2" class="ico xs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 54L40 24"/><path d="M36 20l8 8"/><path d="M46 8v8M42 12h8M54 22v6M51 25h6M28 8v5M25.5 10.5h5"/></svg></div><span>스킬 /weekly-notice</span></div><div id="se-3" class="card rtile"><div id="se-i3" class="ico xs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><path d="M32 18v14l10 6"/></svg></div><span>매일 8시 피드백 초안</span></div>
+  </div>
+  <div class="duo2" style="top:500px">
+    <div id="se-a" class="card ocard"><div id="se-ai" class="ico xs" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><path d="M27 22l15 10-15 10z" fill="#4fb489"/></svg></div><div class="dt">프롬프트 <b>그대로</b></div></div>
+    <div id="se-or" class="bigop vs">또는</div>
+    <div id="se-b" class="card ocard"><div id="se-bi" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50l4-14 26-26 10 10-26 26z"/><path d="M38 16l10 10"/></svg></div><div class="dt">원하는 방향으로 <b>고쳐서</b></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="s-how" class="scene full clip" data-start="539.310" data-duration="26.970" data-track-index="3">
+  <div id="s-how-sc" class="sc">
+  <div class="center-col" style="top:96px">
+    <div id="sh2-k" class="pill pill-soft"><span class="pdot" style="background:#6aa3e6"></span><span>나만의 프롬프트 만드는 법</span></div>
+  </div>
+  <div class="flow" style="top:250px">
+    <div id="sh2-0" class="card fcard tall"><span class="fnum">1</span><div id="sh2-i0" class="ico sm" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8v32M20 28l12 12 12-12"/><path d="M10 46v8h44v-8"/></svg></div><div class="ft big">텍스트 파일 받기</div><div class="fd">고정 댓글 링크</div></div><svg id="sh2-a0" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="sh2-1" class="card fcard tall"><span class="fnum">2</span><div id="sh2-i1" class="ico sm" style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><div class="ft big">AI에게 주고 설명</div><div class="fd">Claude · ChatGPT · Gemini에<br>할 작업을 자세히</div></div><svg id="sh2-a1" class="arrow " viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="sh2-2" class="card fcard tall"><span class="fnum">3</span><div id="sh2-i2" class="ico sm" style="background:#34314a"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="12" width="48" height="40" rx="6"/><path d="M18 26l8 6-8 6M30 40h14"/></svg></div><div class="ft big">내 작업에 맞게<br>고쳐 달라</div><div class="fd">Claude Code에서 직접 실행</div></div>
+  </div>
+  <div class="center-col" style="top:780px"><div id="sh2-ok" class="okpill "><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>로직은 그대로 · 내용은 교수님 방향대로</span></div></div>
+  </div>
+</div>
+
+<div id="s-privacy" class="scene full clip" data-start="566.280" data-duration="7.940" data-track-index="3">
+  <div id="s-privacy-sc" class="sc">
+  <div class="center-col" style="top:150px">
+    <div id="sv-k" class="pill pill-soft"><span class="pdot" style="background:#e8708f"></span><span>그리고 중요한 것</span></div>
+    <div id="sv-i" class="ico " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6l22 8v16c0 14-9 24-22 28C19 54 10 44 10 30V14z"/><path d="M22 31l7 7 13-14"/></svg></div>
+    <h2 id="sv-h" class="h2">학생의 <span class="hl" style="--hlc:var(--hl-p)">개인 정보</span>는<br>AI에 넣지 않기</h2>
+    <div class="row"><div id="sv-n" class="okpill nopill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><span>실제 이름</span></div><div id="sv-n2" class="okpill nopill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></span><span>개인 정보</span></div><div id="sv-o" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>가상 데이터로 작업</span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="s-end" class="scene full clip" data-start="574.220" data-duration="27.980" data-track-index="3">
+  <div id="s-end-sc" class="sc">
+  <div id="sx-ph" class="phwrap end"><img class="phimg" src="assets/media/philosophy.png" alt="필로소피 캐릭터"></div>
+  <div id="sx-c" class="card endcard">
+    <div id="sx-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>교수님들을 위한 Claude Code CLI</span></div>
+    <div id="sx-h" class="endbig">4편 · 반복 업무 자동화 <span class="endok">완료</span></div>
+    <div class="series"><div id="sx-0" class="sitem done"><span class="sn">1편</span><span class="st"><b>설치</b></span><span id="sx-t0" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="sx-1" class="sitem done"><span class="sn">2편</span><span class="st"><b>기초</b></span><span id="sx-t1" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="sx-2" class="sitem done"><span class="sn">3편</span><span class="st"><b>폴더 정리</b></span><span id="sx-t2" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="sx-3" class="sitem done"><span class="sn">4편</span><span class="st"><b>반복 업무 자동화</b></span><span id="sx-t3" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div></div>
+    <div id="sx-sub" class="subrow"><div id="sx-hh" class="ico xxs" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#e8708f"/></svg></div><span>좋아요</span><div id="sx-bb" class="ico xxs" style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 44V30a14 14 0 0 1 28 0v14l4 6H14z"/><path d="M27 54a5 5 0 0 0 10 0"/></svg></div><span>구독</span></div>
+    <div id="sx-ty" class="thanks">감사합니다</div>
+  </div>
+  </div>
+</div>
+<div id="cap0" class="cap clip" data-start="0.000" data-duration="1.630" data-track-index="8"><span>안녕하세요 필로소피입니다 :)</span></div>
+<div id="cap1" class="cap clip" data-start="1.630" data-duration="1.410" data-track-index="8"><span>오늘은 교수님들을 위한</span></div>
+<div id="cap2" class="cap clip" data-start="3.040" data-duration="1.100" data-track-index="8"><span>클로드 코드 CLI</span></div>
+<div id="cap3" class="cap clip" data-start="4.140" data-duration="1.030" data-track-index="8"><span>네 번째 시간입니다</span></div>
+<div id="cap4" class="cap clip" data-start="5.170" data-duration="3.270" data-track-index="8"><span>그래서 중급 실습을 한번 해보려고 하는데요</span></div>
+<div id="cap5" class="cap clip" data-start="8.440" data-duration="5.040" data-track-index="8"><span>오늘은 반복 업무를 이제 해결해 가는 과정을 보여드리려고 합니다</span></div>
+<div id="cap6" class="cap clip" data-start="13.480" data-duration="2.700" data-track-index="8"><span>자동화하기 좋은 일은 무엇일까요?</span></div>
+<div id="cap7" class="cap clip" data-start="16.180" data-duration="2.150" data-track-index="8"><span>그 이야기 먼저 해드리자면</span></div>
+<div id="cap8" class="cap clip" data-start="18.330" data-duration="2.640" data-track-index="8"><span>먼저 자동화하기 좋은 일은</span></div>
+<div id="cap9" class="cap clip" data-start="20.970" data-duration="2.330" data-track-index="8"><span>규칙이 분명하고 반복되는 일입니다</span></div>
+<div id="cap10" class="cap clip" data-start="23.300" data-duration="1.460" data-track-index="8"><span>파일 이름을 정리한다든가</span></div>
+<div id="cap11" class="cap clip" data-start="24.760" data-duration="1.620" data-track-index="8"><span>제출 여부를 확인한다든가</span></div>
+<div id="cap12" class="cap clip" data-start="26.380" data-duration="0.810" data-track-index="8"><span>표를 만들고</span></div>
+<div id="cap13" class="cap clip" data-start="27.190" data-duration="2.440" data-track-index="8"><span>같은 형식의 문서를 여러 개 만든다든가</span></div>
+<div id="cap14" class="cap clip" data-start="29.630" data-duration="1.840" data-track-index="8"><span>이러한 일들은 자동화하기 좋습니다</span></div>
+<div id="cap15" class="cap clip" data-start="31.470" data-duration="1.650" data-track-index="8"><span>그래서 그런 작업들이 클로드 코드 CLI로 하면</span></div>
+<div id="cap16" class="cap clip" data-start="33.120" data-duration="0.930" data-track-index="8"><span>좋은 작업들이고요</span></div>
+<div id="cap17" class="cap clip" data-start="34.050" data-duration="3.720" data-track-index="8"><span>자동화를 하지만 사람이 꼭 확인해야 할 일들도 있습니다</span></div>
+<div id="cap18" class="cap clip" data-start="37.770" data-duration="2.430" data-track-index="8"><span>지각을 인정할지 말지</span></div>
+<div id="cap19" class="cap clip" data-start="40.200" data-duration="1.240" data-track-index="8"><span>예외를 인정할지</span></div>
+<div id="cap20" class="cap clip" data-start="41.440" data-duration="2.400" data-track-index="8"><span>예외 사정을 또 확인해야 되고</span></div>
+<div id="cap21" class="cap clip" data-start="43.840" data-duration="4.150" data-track-index="8"><span>그리고 공지문의 톤, 말투, 내용 같은 거는</span></div>
+<div id="cap22" class="cap clip" data-start="47.990" data-duration="1.820" data-track-index="8"><span>사람이 꼭 확인하고 내보내야 됩니다</span></div>
+<div id="cap23" class="cap clip" data-start="49.810" data-duration="1.400" data-track-index="8"><span>무조건 자동화를 하면</span></div>
+<div id="cap24" class="cap clip" data-start="51.210" data-duration="2.200" data-track-index="8"><span>나중에 문제가 생길 수가 있어요</span></div>
+<div id="cap25" class="cap clip" data-start="53.410" data-duration="2.760" data-track-index="8"><span>그래서 AI한테 일을 맡기지만</span></div>
+<div id="cap26" class="cap clip" data-start="56.170" data-duration="2.500" data-track-index="8"><span>반복되고 규칙이 분명히 있는 일은</span></div>
+<div id="cap27" class="cap clip" data-start="58.670" data-duration="1.100" data-track-index="8"><span>어느 정도 맡길 수 있지만</span></div>
+<div id="cap28" class="cap clip" data-start="59.770" data-duration="2.490" data-track-index="8"><span>사람이 꼭 신경 써야 되는 부분도 분명히 있습니다</span></div>
+<div id="cap29" class="cap clip" data-start="62.260" data-duration="3.570" data-track-index="8"><span>그리고 특히 자동화하면 안 되는 일들도 있어요</span></div>
+<div id="cap30" class="cap clip" data-start="65.830" data-duration="2.670" data-track-index="8"><span>그거는 학생을 판단하는 최종 결정</span></div>
+<div id="cap31" class="cap clip" data-start="68.500" data-duration="1.310" data-track-index="8"><span>성적이라든가</span></div>
+<div id="cap32" class="cap clip" data-start="69.810" data-duration="1.650" data-track-index="8"><span>부정행위를 판단한다든가</span></div>
+<div id="cap33" class="cap clip" data-start="71.460" data-duration="1.630" data-track-index="8"><span>이러한 판단하는 부분은</span></div>
+<div id="cap34" class="cap clip" data-start="73.090" data-duration="2.440" data-track-index="8"><span>우리 교수님들이 꼭 직접 하셔야 될 부분입니다</span></div>
+<div id="cap35" class="cap clip" data-start="75.530" data-duration="3.700" data-track-index="8"><span>그리고 학생과의 관계에서 나오는 피드백이라든가</span></div>
+<div id="cap36" class="cap clip" data-start="79.230" data-duration="1.270" data-track-index="8"><span>학생들을 위한 이야기는</span></div>
+<div id="cap37" class="cap clip" data-start="80.500" data-duration="1.130" data-track-index="8"><span>당연히 우리 교수님들이</span></div>
+<div id="cap38" class="cap clip" data-start="81.630" data-duration="1.930" data-track-index="8"><span>따로 작성을 하셔야겠죠</span></div>
+<div id="cap39" class="cap clip" data-start="83.560" data-duration="3.060" data-track-index="8"><span>그래서 반복되는 일 제외하고</span></div>
+<div id="cap40" class="cap clip" data-start="86.620" data-duration="1.360" data-track-index="8"><span>학생들을 위한</span></div>
+<div id="cap41" class="cap clip" data-start="87.980" data-duration="2.130" data-track-index="8"><span>이러한 세심한 피드백 같은 거는</span></div>
+<div id="cap42" class="cap clip" data-start="90.110" data-duration="3.340" data-track-index="8"><span>교수님들이 마지막에 추가를 좀 해주시면 좋을 것 같습니다</span></div>
+<div id="cap43" class="cap clip" data-start="530.640" data-duration="1.550" data-track-index="8"><span>오늘 이런 실습을 해보았는데</span></div>
+<div id="cap44" class="cap clip" data-start="532.190" data-duration="1.800" data-track-index="8"><span>제가 준비한 프롬프트를 그대로 넣어서</span></div>
+<div id="cap45" class="cap clip" data-start="533.990" data-duration="1.390" data-track-index="8"><span>한번 해보셔도 좋고,</span></div>
+<div id="cap46" class="cap clip" data-start="535.380" data-duration="1.860" data-track-index="8"><span>교수님들이 원하시는 방향으로</span></div>
+<div id="cap47" class="cap clip" data-start="537.240" data-duration="2.070" data-track-index="8"><span>이 프롬프트를 고쳐주셔도 좋습니다</span></div>
+<div id="cap48" class="cap clip" data-start="539.310" data-duration="0.770" data-track-index="8"><span>이 프롬프트</span></div>
+<div id="cap49" class="cap clip" data-start="540.080" data-duration="1.000" data-track-index="8"><span>이 텍스트 파일은</span></div>
+<div id="cap50" class="cap clip" data-start="541.080" data-duration="1.490" data-track-index="8"><span>고정 댓글 링크 타고 가시면</span></div>
+<div id="cap51" class="cap clip" data-start="542.570" data-duration="1.150" data-track-index="8"><span>다운받으실 수 있고</span></div>
+<div id="cap52" class="cap clip" data-start="543.720" data-duration="3.220" data-track-index="8"><span>이걸 다운받으신 다음에 클로드나 챗GPT, 제미나이에게 주시고</span></div>
+<div id="cap53" class="cap clip" data-start="546.940" data-duration="2.200" data-track-index="8"><span>이 텍스트 파일을 제공하시고</span></div>
+<div id="cap54" class="cap clip" data-start="549.140" data-duration="1.450" data-track-index="8"><span>나는 어떤 작업을 할 거다라고</span></div>
+<div id="cap55" class="cap clip" data-start="550.590" data-duration="1.430" data-track-index="8"><span>자세히 입력하시고</span></div>
+<div id="cap56" class="cap clip" data-start="552.020" data-duration="2.710" data-track-index="8"><span>프롬프트를 내가 할 작업에 맞춰서 바꿔달라</span></div>
+<div id="cap57" class="cap clip" data-start="554.730" data-duration="0.840" data-track-index="8"><span>그래서 클로드 코드에서</span></div>
+<div id="cap58" class="cap clip" data-start="555.570" data-duration="2.140" data-track-index="8"><span>직접 해볼 수 있게 해달라라고 요청하시면</span></div>
+<div id="cap59" class="cap clip" data-start="557.710" data-duration="1.850" data-track-index="8"><span>교수님이 원하시는 방향에 맞게</span></div>
+<div id="cap60" class="cap clip" data-start="559.560" data-duration="1.350" data-track-index="8"><span>프롬프트를 고쳐줄 겁니다</span></div>
+<div id="cap61" class="cap clip" data-start="560.910" data-duration="2.010" data-track-index="8"><span>그리고 이 로직은 활용할 거니까</span></div>
+<div id="cap62" class="cap clip" data-start="562.920" data-duration="3.360" data-track-index="8"><span>요 그 방향대로 한번 해보시면 도움이 되실 겁니다</span></div>
+<div id="cap63" class="cap clip" data-start="566.280" data-duration="0.870" data-track-index="8"><span>그리고 중요한 것은</span></div>
+<div id="cap64" class="cap clip" data-start="567.150" data-duration="2.570" data-track-index="8"><span>학생의 개인 정보는 AI에 들어가지 않도록</span></div>
+<div id="cap65" class="cap clip" data-start="569.720" data-duration="2.300" data-track-index="8"><span>이름이나 그런 내용은 들어가지 않도록</span></div>
+<div id="cap66" class="cap clip" data-start="572.020" data-duration="2.200" data-track-index="8"><span>작업을 하시면 좋을 것 같습니다</span></div>
+<div id="cap67" class="cap clip" data-start="574.220" data-duration="1.220" data-track-index="8"><span>오늘의 영상은 여기까지입니다</span></div>
+<div id="cap68" class="cap clip" data-start="575.440" data-duration="1.650" data-track-index="8"><span>영상이 도움이 되셨다면</span></div>
+<div id="cap69" class="cap clip" data-start="577.090" data-duration="2.730" data-track-index="8"><span>좋아요와 구독을 눌러주시면 감사하겠습니다</span></div>
+<div id="cap70" class="cap clip" data-start="579.820" data-duration="0.410" data-track-index="8"><span>감사합니다</span></div>
+  <div id="endfade"></div>
+</div>
+<script>
+(function () {
+  const tl = gsap.timeline({ paused: true });
+  const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: .6 }, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(1.8)' }, t);
+  const up = (sel, t, dy = 30) => tl.fromTo(sel, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' }, t);
+  const rise = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 60, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .6, ease: 'expo.out' }, t);
+  const slide = (sel, t, dx = 60) => tl.fromTo(sel, { opacity: 0, x: dx }, { opacity: 1, x: 0, duration: .5, ease: 'power3.out' }, t);
+  const sweep = (sel, t) => tl.fromTo(sel, { backgroundSize: '0% 38%' }, { backgroundSize: '100% 38%', duration: .7, ease: 'power2.inOut', immediateRender: false }, t);
+  const draw = (sel, t, d) => tl.fromTo(sel, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: d, ease: 'power2.out' }, t);
+  const ok2 = (sel, t) => tl.to(sel, { backgroundColor: '#e3f6ec', boxShadow: 'inset 0 0 0 2px #9fdcbc', duration: .4, ease: 'power2.out' }, t);
+  const stamp = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: 1.8, rotation: -18 }, { opacity: 1, scale: 1, rotation: -4, duration: .45, ease: 'back.out(2)' }, t);
+  const shake = (sel, t) => tl.fromTo(sel, { rotation: 0 }, { rotation: -12, duration: .16, ease: 'sine.inOut', yoyo: true, repeat: 5, immediateRender: false }, t);
+  const type = (sel, text, t, d) => {
+    const el = document.querySelector(sel); const st = { n: 0 };
+    tl.fromTo(st, { n: 0 }, { n: text.length, duration: d, ease: 'none', onUpdate: () => { el.textContent = text.slice(0, Math.round(st.n)); } }, t);
+  };
+  const count = (sel, to, t, d) => {
+    const el = document.querySelector(sel); const st = { n: 0 };
+    tl.fromTo(st, { n: 0 }, { n: to, duration: d, ease: 'power2.out', onUpdate: () => { el.textContent = String(Math.round(st.n)); } }, t);
+  };
+  const blink = (sel, t0, t1) => {
+    const cyc = .9, n = Math.max(0, Math.floor((t1 - t0) / cyc) - 1);
+    tl.fromTo(sel, { opacity: 1 }, { opacity: 0, duration: cyc / 2, ease: 'steps(1)', yoyo: true, repeat: n * 2 + 1, immediateRender: false }, t0);
+  };
+  const confetti = (pre, t) => {
+    const host = document.getElementById(pre + '-c'); const cols = ['#ef8a6f', '#e7a92c', '#4fb489', '#9a8be6', '#e8708f', '#6aa3e6'];
+    for (let i = 0; i < 18; i++) {
+      const p = document.createElement('span'); p.className = 'cf'; p.style.background = cols[i % 6];
+      p.style.left = '50px'; p.style.top = '50px'; host.appendChild(p);
+      const a = (i / 18) * Math.PI * 2, r = 80 + (i % 4) * 26;
+      tl.fromTo(p, { opacity: 1, x: 0, y: 0, rotation: 0 }, { opacity: 0, x: Math.cos(a) * r, y: Math.sin(a) * r, rotation: 200 + i * 20, duration: 1.1, ease: 'power3.out', immediateRender: false }, t);
+    }
+  };
+
+  // cover backgrounds
+  
+  
+  tl.to('#cov1-in', {opacity:0, duration:0.45, ease:'power2.in'}, 93.20);
+  tl.fromTo('#cov1-bl0', {x:0, y:0}, {x:60, y:40, duration:7, ease:'sine.inOut', yoyo:true, repeat:12}, 0.00);
+  tl.fromTo('#cov1-bl1', {x:0, y:0}, {x:-70, y:-50, duration:7, ease:'sine.inOut', yoyo:true, repeat:12}, 0.00);
+  tl.fromTo('#cov1-bl2', {x:0, y:0}, {x:-50, y:60, duration:7, ease:'sine.inOut', yoyo:true, repeat:12}, 0.00);
+  tl.fromTo('#cov1-bl3', {x:0, y:0}, {x:70, y:-40, duration:7, ease:'sine.inOut', yoyo:true, repeat:12}, 0.00);
+  tl.fromTo('#cov1-bl4', {x:0, y:0}, {x:40, y:-60, duration:7, ease:'sine.inOut', yoyo:true, repeat:12}, 0.00);
+  tl.fromTo('#cov1-d0', {y:0, rotation:0}, {y:-22, rotation:-40, duration:3.5, ease:'sine.inOut', yoyo:true, repeat:25}, 0.00);
+  tl.fromTo('#cov1-d1', {y:0, rotation:0}, {y:22, rotation:40, duration:3.8, ease:'sine.inOut', yoyo:true, repeat:23}, 0.00);
+  tl.fromTo('#cov1-d2', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.1, ease:'sine.inOut', yoyo:true, repeat:21}, 0.00);
+  tl.fromTo('#cov1-d3', {y:0, rotation:0}, {y:22, rotation:40, duration:4.4, ease:'sine.inOut', yoyo:true, repeat:20}, 0.00);
+  tl.fromTo('#cov1-d4', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.7, ease:'sine.inOut', yoyo:true, repeat:18}, 0.00);
+  tl.fromTo('#cov1-d5', {y:0, rotation:0}, {y:22, rotation:40, duration:5, ease:'sine.inOut', yoyo:true, repeat:17}, 0.00);
+  tl.fromTo('#cov1-d6', {y:0, rotation:0}, {y:-22, rotation:-40, duration:5.3, ease:'sine.inOut', yoyo:true, repeat:16}, 0.00);
+  tl.fromTo('#cov2-in', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 530.29);
+  
+  tl.fromTo('#cov2-bl0', {x:0, y:0}, {x:60, y:40, duration:7, ease:'sine.inOut', yoyo:true, repeat:9}, 530.29);
+  tl.fromTo('#cov2-bl1', {x:0, y:0}, {x:-70, y:-50, duration:7, ease:'sine.inOut', yoyo:true, repeat:9}, 530.29);
+  tl.fromTo('#cov2-bl2', {x:0, y:0}, {x:-50, y:60, duration:7, ease:'sine.inOut', yoyo:true, repeat:9}, 530.29);
+  tl.fromTo('#cov2-bl3', {x:0, y:0}, {x:70, y:-40, duration:7, ease:'sine.inOut', yoyo:true, repeat:9}, 530.29);
+  tl.fromTo('#cov2-bl4', {x:0, y:0}, {x:40, y:-60, duration:7, ease:'sine.inOut', yoyo:true, repeat:9}, 530.29);
+  tl.fromTo('#cov2-d0', {y:0, rotation:0}, {y:-22, rotation:-40, duration:3.5, ease:'sine.inOut', yoyo:true, repeat:19}, 530.29);
+  tl.fromTo('#cov2-d1', {y:0, rotation:0}, {y:22, rotation:40, duration:3.8, ease:'sine.inOut', yoyo:true, repeat:17}, 530.29);
+  tl.fromTo('#cov2-d2', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.1, ease:'sine.inOut', yoyo:true, repeat:16}, 530.29);
+  tl.fromTo('#cov2-d3', {y:0, rotation:0}, {y:22, rotation:40, duration:4.4, ease:'sine.inOut', yoyo:true, repeat:15}, 530.29);
+  tl.fromTo('#cov2-d4', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.7, ease:'sine.inOut', yoyo:true, repeat:14}, 530.29);
+  tl.fromTo('#cov2-d5', {y:0, rotation:0}, {y:22, rotation:40, duration:5, ease:'sine.inOut', yoyo:true, repeat:13}, 530.29);
+  tl.fromTo('#cov2-d6', {y:0, rotation:0}, {y:-22, rotation:-40, duration:5.3, ease:'sine.inOut', yoyo:true, repeat:12}, 530.29);
+
+  // graphics
+
+  // s-title
+  tl.fromTo('#s-title-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 0.00);
+  tl.to('#s-title-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 2.720);
+  tl.fromTo('#st-ph', {opacity:0, y:220}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, .15);
+  rise('#st-c', .3); up('#st-k', .55, 16); up('#st-h', .7, 34); sweep('#st-h .hl', 1.3);
+  up('#st-term', 1.4, 20); type('#st-tt', 'claude', 1.65, .6); blink('#st-cur', 1.4, 3.04);
+
+  // s-road
+  tl.fromTo('#s-road-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 3.04);
+  tl.to('#s-road-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 13.160);
+  up('#sr-k', 3.14, 16); up('#sr-h', 4.14, 30); sweep('#sr-h .hl', 4.64);
+  rise('#sr-0', 3.39);  pop('#sr-t0', 4.44);
+  rise('#sr-1', 3.61); draw('#sr-a0 path', 3.51, .3); pop('#sr-t1', 4.59);
+  rise('#sr-2', 3.83); draw('#sr-a1 path', 3.73, .3); pop('#sr-t2', 4.74);
+  rise('#sr-3', 4.05); draw('#sr-a2 path', 3.95, .3); 
+  tl.to(['#sr-0','#sr-1','#sr-2'], {opacity:.55, duration:.5, ease:'power2.out'}, 5.47);
+  tl.to('#sr-3', {scale:1.08, duration:.5, ease:'back.out(2)'}, 5.47);
+  pop('#sr-now', 5.77);
+  up('#sr-sub', 8.54, 20);
+
+  // s-good
+  tl.fromTo('#s-good-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 13.48);
+  tl.to('#s-good-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 33.730);
+  up('#sg-k', 13.58, 16);
+  tl.fromTo('#sg-q', {opacity:0, scale:.4, rotation:-30}, {opacity:1, scale:1, rotation:0, duration:.7, ease:'back.out(2)'}, 13.78);
+  tl.fromTo('#sg-q', {y:0}, {y:-18, duration:.6, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 14.48);
+  tl.to('#sg-q', {opacity:0, scale:.6, duration:.35, ease:'power2.in'}, 21.27);
+  up('#sg-h', 18.53, 30); sweep('#sg-h .hl:nth-of-type(1)', 21.17); sweep('#sg-h .hl:nth-of-type(2)', 21.97);
+  rise('#sg-0', 23.35); pop('#sg-i0', 23.55); tl.fromTo('#sg-r0', {opacity:0, rotation:-180}, {opacity:1, rotation:0, duration:.7, ease:'back.out(1.6)'}, 29.63);
+  rise('#sg-1', 24.81); pop('#sg-i1', 25.01); tl.fromTo('#sg-r1', {opacity:0, rotation:-180}, {opacity:1, rotation:0, duration:.7, ease:'back.out(1.6)'}, 29.78);
+  rise('#sg-2', 26.43); pop('#sg-i2', 26.63); tl.fromTo('#sg-r2', {opacity:0, rotation:-180}, {opacity:1, rotation:0, duration:.7, ease:'back.out(1.6)'}, 29.93);
+  rise('#sg-3', 27.24); pop('#sg-i3', 27.44); tl.fromTo('#sg-r3', {opacity:0, rotation:-180}, {opacity:1, rotation:0, duration:.7, ease:'back.out(1.6)'}, 30.08);
+  pop('#sg-ok', 31.77);
+
+  // s-check
+  tl.fromTo('#s-check-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 34.05);
+  tl.to('#s-check-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 53.090);
+  up('#sc-k', 34.15, 16); up('#sc-h', 34.45, 30); sweep('#sc-h .hl', 35.25);
+  rise('#sc-0', 37.82); pop('#sc-i0', 38.02); stamp('#sc-s0', 40.20);
+  rise('#sc-1', 40.25); pop('#sc-i1', 40.45); stamp('#sc-s1', 41.44);
+  rise('#sc-2', 43.89); pop('#sc-i2', 44.09); stamp('#sc-s2', 47.99);
+  rise('#sc-w', 49.91); shake('#sc-wi', 51.31);
+
+  // s-split
+  tl.fromTo('#s-split-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 53.41);
+  tl.to('#s-split-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 61.940);
+  up('#sp-h', 53.51, 30); sweep('#sp-h .hl', 59.77);
+  rise('#sp-a', 54.01); pop('#sp-ai', 56.17);
+  pop('#sp-plus', 58.97);
+  rise('#sp-b', 59.77); pop('#sp-bi', 59.97);
+
+  // s-never
+  tl.fromTo('#s-never-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 62.26);
+  tl.to('#s-never-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 75.210);
+  up('#sn-k', 62.36, 16); up('#sn-h', 62.66, 30); sweep('#sn-h .hl', 63.56);
+  rise('#sn-c', 65.83); pop('#sn-ci', 66.13);
+  slide('#sn-0', 68.50, -40); slide('#sn-1', 69.81, -40);
+  tl.fromTo('#sn-st', {opacity:0, scale:1.8, rotation:-20}, {opacity:1, scale:1, rotation:-6, duration:.5, ease:'back.out(2)'}, 73.39);
+
+  // s-human
+  tl.fromTo('#s-human-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 75.53);
+  tl.to('#s-human-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 83.240);
+  pop('#sh-i', 75.63); tl.fromTo('#sh-i', {scale:1}, {scale:1.1, duration:.45, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 79.23);
+  up('#sh-h', 75.93, 30); sweep('#sh-h .hl', 79.43); up('#sh-s', 80.70, 20);
+
+  // s-flow
+  tl.fromTo('#s-flow-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 83.56);
+  tl.to('#s-flow-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 93.330);
+  up('#sf-k', 83.66, 16);
+   rise('#sf-0', 83.61); pop('#sf-i0', 83.81);
+  draw('#sf-a0 path', 87.68, .4); rise('#sf-1', 88.03); pop('#sf-i1', 88.23);
+  draw('#sf-a1 path', 89.81, .4); rise('#sf-2', 90.16); pop('#sf-i2', 90.36);
+  tl.to('#sf-1', {scale:1.06, duration:.5, ease:'back.out(2)'}, 90.91);
+  up('#sf-s', 91.11, 18);
+
+  // o-file
+  tl.fromTo('#o-file-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 107.15);
+  tl.to('#o-file-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 121.110);
+  rise('#of-c', 107.25); up('#of-k', 107.45, 12); pop('#of-i', 109.00); up('#of-t', 109.10, 14); tl.fromTo('#of-i', {y:0}, {y:-6, duration:.3, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 112.88); pop('#of-ok', 117.61);
+
+  // o-custom
+  tl.fromTo('#o-custom-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 130.28);
+  tl.to('#o-custom-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 156.860);
+  rise('#ou-c', 130.38); up('#ou-k', 130.58, 12); pop('#ou-0', 133.43); pop('#ou-g0', 138.99); pop('#ou-1', 139.14); pop('#ou-g1', 142.90); pop('#ou-2', 143.05); up('#ou-t', 147.78, 12); sweep('#ou-t .hl', 149.53);
+
+  // o-step
+  tl.fromTo('#o-step-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 162.56);
+  tl.to('#o-step-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 173.010);
+  rise('#os-c', 162.66); pop('#os-b0', 162.71); pop('#os-g1', 164.42); pop('#os-b1', 164.57); pop('#os-g2', 167.24); pop('#os-b2', 167.39); pop('#os-g3', 168.73); pop('#os-b3', 168.88); ok2('#os-b3', 171.32);
+
+  // o-fake
+  tl.fromTo('#o-fake-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 179.46);
+  tl.to('#o-fake-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 196.940);
+  rise('#ok-c', 179.56); pop('#ok-n', 182.48); pop('#ok-0', 185.25); pop('#ok-1', 188.55); pop('#ok-g', 192.02); pop('#ok-2', 192.17);
+
+  // o-messy
+  tl.fromTo('#o-messy-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 213.64);
+  tl.to('#o-messy-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 234.560);
+  rise('#om-c', 213.74); tl.fromTo('#om-0', {opacity:0, y:-30, rotation:0}, {opacity:1, y:0, rotation:-4, duration:.5, ease:'back.out(2)'}, 215.82); tl.fromTo('#om-1', {opacity:0, y:-30, rotation:0}, {opacity:1, y:0, rotation:3, duration:.5, ease:'back.out(2)'}, 216.32); tl.fromTo('#om-2', {opacity:0, y:-30, rotation:0}, {opacity:1, y:0, rotation:-2, duration:.5, ease:'back.out(2)'}, 216.82); draw('#om-a path', 224.95, .4); up('#om-t', 225.15, 14); sweep('#om-t .hl', 227.88);
+
+  // o-plan
+  tl.fromTo('#o-plan-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 270.91);
+  tl.to('#o-plan-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 291.160);
+  rise('#op-c', 271.01); type('#op-tt', '/plan', 271.31, .5); blink('#op-cur', 271.11, 283.73); pop('#op-n', 283.83); draw('#op-a path', 285.22, .35); up('#op-t', 285.42, 12); pop('#op-ok', 288.78);
+
+  // o-rename
+  tl.fromTo('#o-rename-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 291.53);
+  tl.to('#o-rename-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 306.010);
+  rise('#or-c', 291.63); pop('#or-i', 291.83); pop('#or-0', 296.94); pop('#or-g', 297.74); pop('#or-1', 297.94); pop('#or-ok', 301.91);
+
+  // o-done
+  tl.fromTo('#o-done-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 311.47);
+  tl.to('#o-done-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 332.480);
+  rise('#od-c', 311.57); tl.fromTo('#od-i', {opacity:0, scale:.3, rotation:-90}, {opacity:1, scale:1, rotation:0, duration:.6, ease:'back.out(2)'}, 314.32); count('#od-n', 27, 314.42, 1.2); confetti('od', 315.62); slide('#od-r', 328.94, 30);
+
+  // o-skill
+  tl.fromTo('#o-skill-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 337.96);
+  tl.to('#o-skill-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 353.450);
+  rise('#ok2-c', 338.06); pop('#ok2-i', 338.26); sweep('#ok2-c .hl', 339.41); tl.fromTo('#ok2-i', {rotation:0}, {rotation:-18, duration:.2, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 342.97); stamp('#ok2-s', 347.88);
+
+  // o-weekly
+  tl.fromTo('#o-weekly-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 353.82);
+  tl.to('#o-weekly-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 382.330);
+  rise('#ow-c', 353.92); type('#ow-tt', '/weekly-notice 3', 354.12, 1.0); pop('#ow-0', 357.16); pop('#ow-g', 358.51); pop('#ow-1', 358.71); tl.fromTo('#ow-s', {opacity:0, scale:1.8, rotation:-20}, {opacity:1, scale:1, rotation:-6, duration:.5, ease:'back.out(2)'}, 375.24);
+
+  // o-15
+  tl.fromTo('#o-15-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 388.96);
+  tl.to('#o-15-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 397.050);
+  rise('#o15-c', 389.06); type('#o15-tt', '/weekly-notice 15', 389.26, 1.0); pop('#o15-ok', 392.73);
+
+  // o-tip
+  tl.fromTo('#o-tip-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 401.31);
+  tl.to('#o-tip-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 420.740);
+  rise('#ot-c', 401.41); pop('#ot-b', 401.61); sweep('#ot-c .hl', 402.44); up('#ot-s', 417.25, 12);
+
+  // o-daily
+  tl.fromTo('#o-daily-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 430.97);
+  tl.to('#o-daily-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 449.740);
+  rise('#oy-c', 431.07); tl.fromTo('#oy-m', {rotation:0, svgOrigin:'32 32'}, {rotation:720, svgOrigin:'32 32', duration:1.4, ease:'power2.inOut'}, 432.12); tl.fromTo('#oy-h', {rotation:-60, svgOrigin:'32 32'}, {rotation:-120, svgOrigin:'32 32', duration:1.4, ease:'power2.inOut'}, 432.12); pop('#oy-0', 441.38); pop('#oy-1', 442.62); pop('#oy-2', 444.06); pop('#oy-n', 448.78);
+
+  // o-prof
+  tl.fromTo('#o-prof-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 452.21);
+  tl.to('#o-prof-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 466.810);
+  rise('#opf-c', 452.31); pop('#opf-i', 452.51); sweep('#opf-c .hl', 453.93); up('#opf-s', 462.33, 12);
+
+  // o-drop
+  tl.fromTo('#o-drop-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 478.88);
+  tl.to('#o-drop-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 490.100);
+  rise('#odr-c', 478.98); tl.fromTo('#odr-f', {opacity:0, x:-80, y:-50}, {opacity:1, x:0, y:0, duration:.8, ease:'power2.inOut'}, 480.83); tl.to('#odr-f', {opacity:0, y:22, scale:.7, duration:.4, ease:'power2.in'}, 481.73); tl.fromTo('#odr-f', {opacity:0, x:-80, y:-50, scale:1}, {opacity:1, x:0, y:0, duration:.8, ease:'power2.inOut', immediateRender:false}, 485.63); tl.to('#odr-f', {opacity:0, y:22, scale:.7, duration:.4, ease:'power2.in'}, 486.53);
+
+  // o-notice
+  tl.fromTo('#o-notice-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 504.58);
+  tl.to('#o-notice-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 519.000);
+  rise('#on-c', 504.68); type('#on-tt', '/weekly-notice 15', 506.87, 1.0); draw('#on-a path', 511.98, .35); pop('#on-0', 512.28); pop('#on-ok', 513.43);
+
+  // o-auto
+  tl.fromTo('#o-auto-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 525.81);
+  tl.to('#o-auto-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 529.870);
+  rise('#oa-c', 525.91); pop('#oa-i', 526.11); sweep('#oa-c .hl', 529.15);
+
+  // s-recap
+  tl.fromTo('#s-recap-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 530.64);
+  tl.to('#s-recap-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 538.990);
+  up('#se-k', 530.74, 16);
+  rise('#se-0', 531.04); rise('#se-1', 531.34); rise('#se-2', 531.64); rise('#se-3', 531.94);
+  rise('#se-a', 532.29); pop('#se-ai', 532.49);
+  pop('#se-or', 535.38); rise('#se-b', 535.58); pop('#se-bi', 535.78);
+
+  // s-how
+  tl.fromTo('#s-how-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 539.31);
+  tl.to('#s-how-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 565.960);
+  up('#sh2-k', 539.41, 16);
+   rise('#sh2-0', 539.36); pop('#sh2-i0', 539.56);
+  draw('#sh2-a0 path', 543.42, .4); rise('#sh2-1', 543.77); pop('#sh2-i1', 543.97);
+  draw('#sh2-a1 path', 551.72, .4); rise('#sh2-2', 552.07); pop('#sh2-i2', 552.27);
+  tl.to('#sh2-2', {scale:1.05, duration:.5, ease:'back.out(2)'}, 557.71);
+  pop('#sh2-ok', 561.11);
+
+  // s-privacy
+  tl.fromTo('#s-privacy-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 566.28);
+  tl.to('#s-privacy-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 573.900);
+  up('#sv-k', 566.38, 16); pop('#sv-i', 567.15); up('#sv-h', 567.45, 30); sweep('#sv-h .hl', 568.15);
+  pop('#sv-n', 569.82); pop('#sv-n2', 570.22); pop('#sv-o', 572.22);
+
+  // s-end
+  tl.fromTo('#s-end-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 574.22);
+  
+  tl.fromTo('#sx-ph', {opacity:0, y:220}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, 574.37);
+  rise('#sx-c', 574.52); up('#sx-k', 574.72, 14); up('#sx-h', 574.92, 26);
+  slide('#sx-0', 575.22, 30); pop('#sx-t0', 575.52); slide('#sx-1', 575.42, 30); pop('#sx-t1', 575.77); slide('#sx-2', 575.62, 30); pop('#sx-t2', 576.02); slide('#sx-3', 575.82, 30); pop('#sx-t3', 576.27);
+  rise('#sx-sub', 577.09); pop('#sx-hh', 577.39); pop('#sx-bb', 577.69);
+  up('#sx-ty', 579.82, 20);
+  tl.fromTo('#sx-ph', {y:0}, {y:-14, duration:1.6, ease:'sine.inOut', yoyo:true, repeat:15, immediateRender:false}, 575.44);
+
+  tl.fromTo('#endfade', { opacity: 0 }, { opacity: 1, duration: .8, ease: 'power1.in' }, 601.400);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+})();
+</script>
+</body>
+</html>
