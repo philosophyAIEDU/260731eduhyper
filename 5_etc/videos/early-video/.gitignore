@@ -1,0 +1,12 @@
+# 원본·중간 산출물 (용량 큼) — 저장소에는 코드와 컷 목록만
+edit/audio.wav
+edit/layout.raw
+edit/parts/
+edit/frames/
+edit/transcript.json
+edit/transcript.txt
+edit/outscript.txt
+edit/*.log
+assets/media/src.mp4
+out/
+snapshots/
