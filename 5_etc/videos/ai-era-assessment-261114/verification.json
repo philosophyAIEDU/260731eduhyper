@@ -1,0 +1,26 @@
+{
+  "programs": [],
+  "stream_groups": [],
+  "streams": [
+    {
+      "codec_name": "h264",
+      "width": 1920,
+      "height": 1080,
+      "r_frame_rate": "30/1",
+      "side_data_list": [
+        {}
+      ]
+    },
+    {
+      "codec_name": "aac",
+      "r_frame_rate": "0/0"
+    }
+  ],
+  "format": {
+    "duration": "274.566667",
+    "size": "11179116"
+  },
+  "audio_sha256": "SHA256=741ad513c9378dc55c882cff61a2f31b9f2eb3cbd242385cb96514161d5ec6c5",
+  "decode_check": "passed",
+  "original_audio_match": true
+}
