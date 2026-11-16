@@ -1,0 +1,1434 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>로컬 AI 사용법 — 필로소피 로컬 AI</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+@font-face { font-family: "Pretendard"; src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations"); font-weight: 45 920; font-style: normal; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #fdf6ee; }
+:root {
+  --ink: #34314a; --ink-soft: #5b5873; --cream: #fdf6ee;
+  --hl-y: rgba(255, 220, 120, .85); --hl-m: rgba(140, 222, 190, .75); --hl-p: rgba(248, 180, 200, .8);
+}
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Pretendard", sans-serif; color: var(--ink); background: #000; }
+#vwrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+#vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#endfade { position: absolute; inset: 0; z-index: 20; background: #000; opacity: 0; pointer-events: none; }
+
+.cover { position: absolute; inset: 0; z-index: 2; }
+.cov-in { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, #fff6ee 0%, #fdf1f4 45%, #f1f0ff 100%); }
+.blob { position: absolute; border-radius: 50%; opacity: .75; filter: blur(30px); }
+.dc { position: absolute; display: block; }
+.dc-dot { border-radius: 50%; background: var(--c); opacity: .75; }
+.dc-ring { border-radius: 50%; border: 4px solid var(--c); opacity: .8; }
+.dc-dia { background: var(--c); opacity: .7; border-radius: 4px; transform: rotate(45deg); }
+
+/* captions — black box, white text (같은 모양으로 영상 전체) */
+.cap { position: absolute; left: 0; right: 0; bottom: 56px; z-index: 9; display: flex; justify-content: center; pointer-events: none; }
+.cap span { display: block; max-width: 1500px; padding: 6px 22px 10px; background: #000; color: #fff;
+  font-size: 52px; font-weight: 700; line-height: 1.3; text-align: center; word-break: keep-all; letter-spacing: -.01em; }
+
+.scene { position: absolute; inset: 0; }
+.scene.full { z-index: 3; }
+.scene.ov { z-index: 4; }
+.scene.pop { z-index: 5; }
+.sc { position: absolute; inset: 0; opacity: 0; }
+
+.card { position: absolute; display: block; background: rgba(255, 255, 255, .95); border: 2px solid #fff; border-radius: 44px;
+  box-shadow: 0 30px 70px rgba(80, 60, 70, .2), 0 6px 18px rgba(80, 60, 70, .08); }
+.center-col { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+.pill { display: inline-flex; align-items: center; gap: 14px; padding: 14px 28px; border-radius: 999px; background: #fff;
+  box-shadow: 0 8px 22px rgba(120, 92, 80, .12); font-size: 30px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.pill-soft { background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e8da; }
+.pill-sm { font-size: 22px; padding: 8px 18px; gap: 10px; align-self: flex-start; }
+.pill-sm .pdot { width: 12px; height: 12px; }
+.pdot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; }
+.okpill { display: inline-flex; align-items: center; gap: 16px; padding: 14px 30px 14px 16px; border-radius: 999px; background: #e3f6ec;
+  font-size: 34px; font-weight: 750; color: #24533f; box-shadow: 0 10px 24px rgba(60, 140, 100, .14); white-space: nowrap; }
+.okc { display: block; width: 48px; height: 48px; border-radius: 50%; background: #3fa877; padding: 7px; flex: 0 0 auto; }
+.okc svg { display: block; width: 100%; height: 100%; }
+.ok-xs { font-size: 22px; padding: 8px 18px 8px 8px; gap: 10px; align-self: flex-start; white-space: normal; }
+.ok-xs .okc { width: 34px; height: 34px; padding: 5px; }
+.h1 { font-size: 104px; font-weight: 900; line-height: 1.12; letter-spacing: -.035em; word-break: keep-all; }
+.h1.center { text-align: center; }
+.h2 { font-size: 66px; font-weight: 850; line-height: 1.22; letter-spacing: -.03em; word-break: keep-all; text-align: center; }
+.hl { background-image: linear-gradient(var(--hlc), var(--hlc)); background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 38%; padding: 0 4px; }
+.red { color: #d2486c; }
+.grn { color: #2f9a68; }
+.ico { display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; border-radius: 50%; padding: 34px; flex: 0 0 auto;
+  box-shadow: 0 12px 26px rgba(120, 92, 80, .12), inset 0 0 0 6px rgba(255, 255, 255, .7); }
+.ico svg { display: block; width: 100%; height: 100%; }
+.ico.sm { width: 120px; height: 120px; padding: 27px; }
+.ico.xs { width: 76px; height: 76px; padding: 17px; }
+.ico.xxs { width: 48px; height: 48px; padding: 10px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .5); }
+.arrow { display: block; width: 90px; height: 24px; flex: 0 0 auto; }
+.arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.arrow-sm { width: 56px; }
+.arrow-lg { width: 150px; height: 30px; }
+.applogo { display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; border-radius: 36px; background: #1f2747; color: #fff;
+  font-size: 84px; font-weight: 800; box-shadow: 0 18px 36px rgba(31, 39, 71, .35); flex: 0 0 auto; }
+.applogo.sm { width: 64px; height: 64px; border-radius: 16px; font-size: 36px; box-shadow: 0 8px 16px rgba(31, 39, 71, .3); }
+
+/* intro title */
+.phwrap { position: absolute; left: 110px; top: 170px; width: 480px; }
+.phimg { display: block; width: 480px; height: auto; filter: drop-shadow(0 24px 30px rgba(80, 60, 90, .22)); }
+.titlecard { left: 660px; top: 150px; width: 1120px; display: flex; flex-direction: column; align-items: center; gap: 32px; padding: 56px 60px 60px; }
+.appchip { display: flex; align-items: center; gap: 20px; padding: 14px 34px 14px 16px; border-radius: 999px; background: #eef0fa; font-size: 34px; color: var(--ink-soft); font-weight: 600; }
+.appchip b { font-size: 42px; font-weight: 900; color: #1f2747; }
+.survey { display: flex; align-items: center; gap: 16px; padding: 12px 28px 12px 12px; border-radius: 999px; background: #eef4ff; font-size: 30px; font-weight: 600; color: #3d5a8a; }
+.survey b { font-weight: 900; }
+
+.quote { left: 300px; top: 300px; width: 1320px; padding: 60px 70px; }
+.qrow2 { display: flex; align-items: center; gap: 44px; }
+.qmark { position: absolute; right: 54px; top: -10px; font-size: 200px; line-height: 1; font-weight: 900; color: #f6dccf; }
+.qbody { font-size: 70px; font-weight: 900; line-height: 1.28; letter-spacing: -.03em; word-break: keep-all; }
+
+.cloudrow { position: absolute; left: 0; right: 0; top: 380px; display: flex; justify-content: center; align-items: center; gap: 40px; }
+.doccol { display: flex; flex-direction: column; gap: 22px; }
+.docc { position: relative; display: flex; align-items: center; gap: 22px; width: 520px; padding: 18px 26px; border-radius: 30px; font-size: 38px; font-weight: 850; }
+.blockwrap { position: relative; width: 170px; height: 120px; display: flex; align-items: center; justify-content: center; }
+.bigx { position: absolute; left: 40px; top: 15px; width: 90px; height: 90px; border-radius: 50%; background: #e0607f; padding: 18px; box-shadow: 0 12px 26px rgba(224, 96, 127, .4); }
+.bigx svg { display: block; width: 100%; height: 100%; }
+.cloudbox { position: relative; width: 560px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.cloudico { width: 150px; height: 120px; }
+.cloudico svg { display: block; width: 100%; height: 100%; }
+.cloudl { font-size: 44px; font-weight: 900; }
+.cchips { display: flex; gap: 12px; }
+.cchip { display: inline-block; padding: 10px 20px; border-radius: 16px; background: #f1eefc; box-shadow: inset 0 0 0 2px #ddd5f6; font-size: 28px; font-weight: 800; color: #4b3f8a; }
+
+.verbs { position: absolute; left: 0; right: 0; top: 470px; display: flex; justify-content: center; gap: 50px; }
+.verb { position: relative; width: 440px; height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+.verb b { font-size: 54px; font-weight: 900; letter-spacing: -.03em; }
+.wtag { position: absolute; right: 30px; top: 26px; width: 60px; height: 60px; }
+.wtag svg { display: block; width: 100%; height: 100%; }
+
+.pcbig { position: absolute; left: 610px; top: 440px; width: 700px; display: flex; flex-direction: column; align-items: center; }
+.pcscreen { width: 700px; height: 380px; border-radius: 34px; background: #1f2747; border: 14px solid #2c3560; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+  box-shadow: 0 30px 60px rgba(31, 39, 71, .3); }
+.pcl { font-size: 38px; font-weight: 800; color: #fff; }
+.pcneck { width: 80px; height: 50px; background: #2c3560; }
+.pcbase { width: 300px; height: 22px; border-radius: 12px; background: #2c3560; }
+.feat { display: flex; align-items: center; gap: 20px; padding: 20px 30px 20px 20px; border-radius: 30px; font-size: 34px; font-weight: 600; line-height: 1.3; }
+.feat b { font-weight: 900; }
+
+.bars { left: 310px; top: 470px; width: 1300px; padding: 40px 56px; border-radius: 40px; display: flex; flex-direction: column; gap: 26px; }
+.bhead { font-size: 28px; font-weight: 800; color: var(--ink-soft); letter-spacing: .08em; }
+.brow { display: flex; align-items: center; gap: 26px; }
+.bl { width: 240px; font-size: 40px; font-weight: 700; }
+.bl b { font-weight: 900; }
+.btrack { flex: 1 1 auto; height: 40px; border-radius: 999px; background: #f2eff6; overflow: hidden; }
+.bfill { display: block; height: 100%; width: 0%; border-radius: 999px; }
+.bnote { width: 290px; font-size: 24px; font-weight: 700; color: var(--ink-soft); }
+.bmax { width: 290px; font-size: 40px; font-weight: 900; color: #2f9a68; }
+
+.appcard { left: 410px; top: 140px; width: 1100px; display: flex; align-items: center; gap: 44px; padding: 44px 56px; }
+.appt { display: flex; flex-direction: column; gap: 8px; }
+.appt span { font-size: 34px; font-weight: 650; color: var(--ink-soft); }
+.appt b { font-size: 84px; font-weight: 900; letter-spacing: -.035em; color: #1f2747; }
+.route { position: absolute; left: 0; right: 0; top: 560px; display: flex; justify-content: center; align-items: center; gap: 16px; }
+.rstep { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; width: 330px; padding: 30px 20px; border-radius: 34px; font-size: 34px; font-weight: 850; }
+.cf { position: absolute; display: block; width: 16px; height: 16px; border-radius: 3px; opacity: 0; }
+
+.stack { position: absolute; left: 330px; top: 260px; width: 860px; display: flex; flex-direction: column; gap: 22px; }
+.layer { display: flex; align-items: center; gap: 24px; padding: 30px 40px; border-radius: 34px; box-shadow: 0 20px 44px rgba(80, 60, 70, .14); font-size: 40px; }
+.layer b { font-weight: 900; }
+.layer span { font-weight: 600; color: var(--ink-soft); font-size: 30px; }
+.l-app { background: #fff; }
+.l-model { background: #f4f1ff; }
+.l-eng { background: #1f2747; color: #fff; }
+.l-eng span.ltag { color: #c9cff0; }
+.l-eng b { font-size: 48px; }
+.ltag { font-size: 28px !important; font-weight: 800 !important; letter-spacing: .02em; width: 220px; }
+.mchip { display: inline-block; padding: 10px 28px; border-radius: 18px; background: #fff; box-shadow: inset 0 0 0 3px #c9bdf3; font-size: 40px !important; font-weight: 900 !important; color: #4b3f8a !important; }
+.sidechips { position: absolute; left: 1250px; top: 380px; display: flex; flex-direction: column; gap: 30px; }
+
+.listcard { left: 300px; top: 110px; width: 1320px; padding: 50px 64px; display: flex; flex-direction: column; gap: 28px; }
+.listcard .pill { align-self: flex-start; }
+.plist { display: flex; flex-direction: column; gap: 20px; }
+.pro { position: relative; display: flex; align-items: center; gap: 26px; padding: 16px 90px 16px 20px; border-radius: 30px; background: #faf8fd; box-shadow: inset 0 0 0 2px #efebf5; }
+.ptxt { font-size: 42px; font-weight: 600; letter-spacing: -.02em; }
+.ptxt b { font-weight: 900; }
+.ptxt.sm { font-size: 36px; }
+.tick { position: absolute; right: 24px; top: 50%; margin-top: -25px; display: block; width: 50px; height: 50px; border-radius: 50%; background: #3fa877; padding: 8px; }
+.tick svg { display: block; width: 100%; height: 100%; }
+.listcard.two { left: 160px; top: 200px; width: 1600px; gap: 34px; }
+.listcard.two .pro { padding-top: 24px; padding-bottom: 24px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid2 .pro { padding-right: 24px; }
+
+.outrow { position: absolute; left: 0; right: 0; top: 440px; display: flex; justify-content: center; align-items: center; gap: 40px; }
+.shieldbox { position: relative; width: 440px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 0 0 10px rgba(140, 222, 190, .5), 0 30px 70px rgba(63, 168, 119, .2); }
+.shieldbox b { font-size: 48px; font-weight: 900; }
+.shieldbox span { font-size: 30px; font-weight: 650; color: var(--ink-soft); }
+.filebox { position: relative; width: 640px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 34px; border: 4px dashed #e9a3b6; }
+.frow { display: flex; gap: 18px; }
+.fchip { display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 18px; background: #f1f8f4; box-shadow: inset 0 0 0 2px #cfeedd; font-size: 34px; font-weight: 800; color: #2d6b51; }
+.fchip svg { width: 40px; height: 40px; }
+.warnbig { display: flex; align-items: center; gap: 16px; font-size: 56px; font-weight: 900; color: #c4486c; }
+.warnbig svg { width: 64px; height: 64px; }
+
+.tips { position: absolute; left: 0; right: 0; top: 300px; display: flex; justify-content: center; gap: 44px; }
+.tip { position: relative; width: 500px; height: 440px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+.tnum { position: absolute; left: 30px; top: 24px; width: 62px; height: 62px; border-radius: 50%; background: #ffe6dc; color: #d0603f; font-size: 36px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.tt { font-size: 42px; font-weight: 600; line-height: 1.3; text-align: center; letter-spacing: -.02em; }
+.tt b { font-weight: 900; }
+.endrib { position: absolute; left: 660px; top: 790px; width: 600px; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 18px 30px; border-radius: 999px; background: #3fa877; color: #fff; font-size: 38px; font-weight: 850; box-shadow: 0 16px 34px rgba(63, 168, 119, .35); }
+.endrib svg { width: 46px; height: 46px; }
+
+/* practice overlay cards */
+.ovc { position: absolute; display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; border-radius: 26px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 2px #f3ebe2; }
+.ovc.side { right: 28px; top: 120px; width: 400px; }
+.ovc.warnc { box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 3px #f2a9bd; }
+.ovs2 { font-size: 23px; font-weight: 600; color: var(--ink-soft); line-height: 1.38; }
+.ovs2 b { color: var(--ink); font-weight: 850; }
+.ovhead { display: flex; align-items: center; gap: 14px; }
+.stephead { display: flex; align-items: center; gap: 14px; }
+.stepn { padding: 5px 12px; border-radius: 10px; background: #d2603f; color: #fff; font-size: 20px; font-weight: 900; letter-spacing: .06em; }
+.stept { font-size: 32px; font-weight: 900; letter-spacing: -.03em; }
+.stept.sm { font-size: 28px; }
+.flow { position: relative; display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 650; line-height: 1.3; }
+.flow b { font-weight: 900; }
+.fnum { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; background: #ebe6ff; color: #7d62c0; font-size: 21px; font-weight: 900; display: flex; align-items: center; justify-content: center; padding: 7px; }
+.fnum svg { display: block; width: 100%; height: 100%; }
+.sm2 { font-size: 19px; font-weight: 650; color: var(--ink-soft); }
+.tick.sm { position: static; margin: 0 0 0 auto; width: 30px; height: 30px; padding: 5px; flex: 0 0 auto; }
+.urlbox { padding: 12px 18px; border-radius: 14px; background: #2c2a3d; color: #ffd27a; font-family: Consolas, "Courier New", monospace; font-size: 30px; font-weight: 700; line-height: 1.25; }
+.dlbtn { display: flex; align-items: center; gap: 12px; align-self: flex-start; padding: 12px 22px; border-radius: 14px; background: #b8923a; color: #fff; font-size: 24px; font-weight: 850; box-shadow: 0 10px 20px rgba(184, 146, 58, .35); }
+.dlbtn svg { width: 30px; height: 30px; }
+.frow2 { display: flex; align-items: flex-start; gap: 14px; }
+.ftx { display: flex; flex-direction: column; gap: 2px; font-size: 25px; font-weight: 650; }
+.ftx b { font-weight: 900; }
+.ftx small { font-size: 19px; font-weight: 650; color: var(--ink-soft); }
+.cangrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.canitem { display: flex; align-items: center; gap: 8px; padding: 10px 10px; border-radius: 14px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; font-size: 20px; font-weight: 800; }
+.canitem svg { width: 28px; height: 28px; flex: 0 0 auto; }
+.osrow { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--ink-soft); }
+.os { padding: 4px 12px; border-radius: 10px; background: #e9e4f7; color: #5a4aa8; font-size: 20px; font-weight: 850; }
+.os.win { background: #dceaff; color: #2f5fa8; }
+.specrow { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-radius: 14px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.sk { font-size: 20px; font-weight: 750; color: var(--ink-soft); }
+.specrow b { font-size: 26px; font-weight: 900; }
+.recrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; border-radius: 14px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.recrow code { font-family: Consolas, "Courier New", monospace; font-size: 24px; font-weight: 700; }
+.recrow span { font-size: 19px; font-weight: 750; color: var(--ink-soft); text-align: right; }
+.recrow.pick span { color: #2f7a55; font-weight: 900; }
+.namefx { display: flex; align-items: center; gap: 14px; }
+.nm { padding: 8px 18px; border-radius: 14px; font-size: 30px; font-weight: 900; }
+.nm.real { background: #fde8ec; color: #8a3550; }
+.nm.alias { background: #e3f6ec; color: #24533f; }
+.cg { font-size: 30px; font-weight: 900; color: #b4a9d3; }
+.speed { display: flex; align-items: center; gap: 10px; align-self: flex-start; padding: 8px 16px; border-radius: 14px; background: #fff1cc; font-size: 24px; font-weight: 700; color: #8a6414; }
+.speed b { font-weight: 900; }
+.speed svg { width: 30px; height: 30px; }
+.offbadge { position: absolute; right: 28px; top: 120px; display: flex; align-items: center; gap: 12px; padding: 10px 22px 10px 12px; border-radius: 999px; background: #e0607f; color: #fff;
+  font-size: 24px; font-weight: 850; box-shadow: 0 12px 26px rgba(224, 96, 127, .4); }
+.offbadge svg { width: 38px; height: 38px; padding: 4px; }
+
+/* practice impact pops (화면 가운데, 몇 초만) */
+.impact { left: 560px; top: 330px; width: 800px; display: flex; align-items: center; gap: 40px; padding: 40px 54px; }
+.imico { flex: 0 0 auto; width: 170px; height: 170px; border-radius: 50%; padding: 36px; box-shadow: 0 16px 34px rgba(0, 0, 0, .18); }
+.imico svg { display: block; width: 100%; height: 100%; }
+.imtx { display: flex; flex-direction: column; gap: 6px; }
+.imtx small { font-size: 36px; font-weight: 700; color: var(--ink-soft); }
+.imtx b { font-size: 84px; font-weight: 900; letter-spacing: -.035em; line-height: 1.05; }
+.impact.wide { left: 360px; top: 300px; width: 1200px; flex-direction: column; gap: 30px; padding: 46px 56px; }
+.whyrow { display: flex; align-items: center; gap: 30px; }
+.whyc { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 26px 30px; border-radius: 28px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.whyc small { font-size: 30px; font-weight: 750; color: var(--ink-soft); }
+.whyc.on { background: #e3f6ec; box-shadow: inset 0 0 0 3px #3fa877; }
+.whyc.on svg { width: 110px; height: 90px; }
+.whyc.on b { font-size: 42px; font-weight: 900; color: #24533f; }
+.whyt { font-size: 52px; font-weight: 800; letter-spacing: -.03em; }
+
+/* outro */
+.duo2 { position: absolute; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 46px; }
+.dcard { position: relative; width: 640px; height: 460px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 30px; }
+.dcard.glow { box-shadow: 0 0 0 10px rgba(255, 228, 160, .6), 0 30px 70px rgba(231, 169, 44, .22); }
+.dt { font-size: 48px; font-weight: 750; letter-spacing: -.03em; }
+.dt b { font-weight: 900; color: #1f2747; }
+.ds { font-size: 34px; font-weight: 600; color: var(--ink-soft); text-align: center; line-height: 1.35; }
+.ds b { color: var(--ink); font-weight: 900; }
+.notec { left: 460px; top: 640px; width: 1000px; display: flex; align-items: center; gap: 26px; padding: 26px 40px; border-radius: 34px; font-size: 36px; font-weight: 600; line-height: 1.35; }
+.notec b { font-weight: 900; }
+.endbtns { display: flex; gap: 26px; }
+.ebtn { display: flex; align-items: center; gap: 14px; padding: 18px 40px; border-radius: 999px; color: #fff; font-size: 40px; font-weight: 900; }
+.ebtn svg { width: 46px; height: 46px; }
+.ebtn.like { background: #6aa3e6; box-shadow: 0 14px 30px rgba(106, 163, 230, .4); }
+.ebtn.sub { background: #e0405f; box-shadow: 0 14px 30px rgba(224, 64, 95, .4); }
+.thanks { display: flex; align-items: center; gap: 14px; font-size: 44px; font-weight: 850; color: var(--ink-soft); }
+.thanks svg { width: 48px; height: 48px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="1176.4" data-width="1920" data-height="1080">
+  <div id="vwrap"><video id="vid" class="clip" src="assets/media/src.mp4" playsinline data-has-audio="true" data-start="0" data-duration="1176.4" data-track-index="0"></video></div>
+
+<div id="cov1" class="cover clip" data-start="0.000" data-duration="145.387" data-track-index="2"><div id="cov1-in" class="cov-in"><span id="cov1-bl0" class="blob" style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cov1-bl1" class="blob" style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cov1-bl2" class="blob" style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cov1-bl3" class="blob" style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cov1-bl4" class="blob" style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span><span id="cov1-d0" class="dc dc-dot" style="--c:#ef8a6f;width:18px;height:18px;left:140px;top:140px"></span><span id="cov1-d1" class="dc dc-ring" style="--c:#9a8be6;width:34px;height:34px;left:1740px;top:120px"></span><span id="cov1-d2" class="dc dc-dia" style="--c:#4fb489;width:22px;height:22px;left:1680px;top:820px"></span><span id="cov1-d3" class="dc dc-dot" style="--c:#e7a92c;width:14px;height:14px;left:260px;top:860px"></span><span id="cov1-d4" class="dc dc-ring" style="--c:#e8708f;width:26px;height:26px;left:90px;top:520px"></span><span id="cov1-d5" class="dc dc-dia" style="--c:#6aa3e6;width:18px;height:18px;left:1820px;top:470px"></span><span id="cov1-d6" class="dc dc-dot" style="--c:#4fb489;width:12px;height:12px;left:960px;top:60px"></span></div></div>
+<div id="cov2" class="cover clip" data-start="1095.420" data-duration="80.980" data-track-index="2"><div id="cov2-in" class="cov-in" style="opacity:0"><span id="cov2-bl0" class="blob" style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cov2-bl1" class="blob" style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cov2-bl2" class="blob" style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cov2-bl3" class="blob" style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cov2-bl4" class="blob" style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span><span id="cov2-d0" class="dc dc-dot" style="--c:#ef8a6f;width:18px;height:18px;left:140px;top:140px"></span><span id="cov2-d1" class="dc dc-ring" style="--c:#9a8be6;width:34px;height:34px;left:1740px;top:120px"></span><span id="cov2-d2" class="dc dc-dia" style="--c:#4fb489;width:22px;height:22px;left:1680px;top:820px"></span><span id="cov2-d3" class="dc dc-dot" style="--c:#e7a92c;width:14px;height:14px;left:260px;top:860px"></span><span id="cov2-d4" class="dc dc-ring" style="--c:#e8708f;width:26px;height:26px;left:90px;top:520px"></span><span id="cov2-d5" class="dc dc-dia" style="--c:#6aa3e6;width:18px;height:18px;left:1820px;top:470px"></span><span id="cov2-d6" class="dc dc-dot" style="--c:#4fb489;width:12px;height:12px;left:960px;top:60px"></span></div></div>
+
+<div id="i-title" class="scene full clip" data-start="0.000" data-duration="7.300" data-track-index="3">
+  <div id="i-title-sc" class="sc">
+  <div id="it-ph" class="phwrap"><img id="it-img" class="phimg" src="assets/media/philosophy.png" alt="필로소피 캐릭터"></div>
+  <div id="it-c" class="card titlecard">
+    <div id="it-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>필로소피 AI 교육 · 교수님들을 위한</span></div>
+    <h1 id="it-h" class="h1 center"><span class="hl" style="--hlc:var(--hl-m)">로컬 AI</span> 사용법</h1>
+    <div id="it-app" class="appchip"><div id="it-lg" class="applogo sm"><span>Φ</span></div><b>필로소피 로컬 AI</b><span>앱으로 시작하기</span></div>
+    <div id="it-sv" class="survey"><div id="it-si" class="ico xxs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></div><span>AI 교육 전 <b>설문조사</b> — 어떤 고민이 있으세요?</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="i-worry" class="scene full clip" data-start="7.300" data-duration="7.400" data-track-index="3">
+  <div id="i-worry-sc" class="sc">
+  <div class="center-col" style="top:120px"><div id="iw-k" class="pill pill-soft"><span class="pdot" style="background:#e8708f"></span><span>자주 나오는 고민</span></div></div>
+  <div id="iw-c" class="card quote">
+    <div class="qmark">“</div>
+    <div class="qrow2"><div id="iw-i" class="ico sm" style="background:#e8708f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="28" width="36" height="26" rx="5"/><path d="M21 28v-7a11 11 0 0 1 22 0v7"/><circle cx="32" cy="40" r="3" fill="#ffffff"/><path d="M32 43v5"/></svg></div>
+      <div class="qbody" id="iw-b">AI에 <span class="red">개인정보</span>를 넣지 못해서<br>쓰고 싶어도 <span class="hl" style="--hlc:var(--hl-p)">쓸 수 없어요</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="i-cloud" class="scene full clip" data-start="14.700" data-duration="12.800" data-track-index="3">
+  <div id="i-cloud-sc" class="sc">
+  <div class="center-col" style="top:90px">
+    <h2 id="ic-h" class="h2">교수님 자료 대부분은<br><span class="hl" style="--hlc:var(--hl-y)">클라우드 AI에 주기 어려워요</span></h2>
+  </div>
+  <div class="cloudrow">
+    <div class="doccol"><div id="ic-d-school" class="card docc"><div id="ic-di-school" class="ico xs" style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="20" width="48" height="32" rx="4"/><path d="M24 20v-6h16v6M8 32h48"/></svg></div><span>학교 내부 자료</span></div><div id="ic-d-stud" class="card docc"><div id="ic-di-stud" class="ico xs" style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="52" height="36" rx="5"/><circle cx="22" cy="30" r="6"/><path d="M12 44c2-5 6-7 10-7s8 2 10 7M38 26h12M38 34h12"/></svg></div><span>학생 개인정보</span></div><div id="ic-d-res" class="card docc"><div id="ic-di-res" class="ico xs" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 8h16M27 8v18L12 52a4 4 0 0 0 4 6h32a4 4 0 0 0 4-6L37 26V8"/><path d="M18 42h28"/></svg></div><span>교수님 연구 자료</span></div></div>
+    <div class="blockwrap"><svg id="ic-ar" class="arrow arrow-lg" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="ic-x" class="bigx"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20l24 24M44 20L20 44"/></svg></div></div>
+    <div id="ic-cl" class="card cloudbox">
+      <div class="cloudico"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 48a12 12 0 0 1-1-24 16 16 0 0 1 31 3 10 10 0 0 1-2 21z"/></svg></div>
+      <div class="cloudl">클라우드 AI</div>
+      <div class="cchips"><span id="ic-a0" class="cchip">ChatGPT</span><span id="ic-a1" class="cchip">Claude</span><span id="ic-a2" class="cchip">Gemini</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="i-want" class="scene full clip" data-start="27.500" data-duration="7.500" data-track-index="3">
+  <div id="i-want-sc" class="sc">
+  <div class="center-col" style="top:150px">
+    <h2 id="iv-h" class="h2">정말 도움받고 싶은 일은<br><span class="hl" style="--hlc:var(--hl-p)">AI에 넣을 수 없는 자료</span>로 하는 일</h2>
+  </div>
+  <div class="verbs">
+    <div id="iv-0" class="card verb"><div id="iv-i0" class="ico " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 18a4 4 0 0 1 4-4h12l6 6h22a4 4 0 0 1 4 4v24a4 4 0 0 1-4 4H12a4 4 0 0 1-4-4z"/></svg></div><b>정리</b></div>
+    <div id="iv-1" class="card verb"><div id="iv-i1" class="ico " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50l4-14 26-26 10 10-26 26z"/><path d="M38 16l10 10"/></svg></div><b>수정</b></div>
+    <div id="iv-2" class="card verb"><div id="iv-i2" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#9a8be6" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#9a8be6" stroke-width="1.5"/></svg></div><b>새로 만들기</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="i-local" class="scene full clip" data-start="35.000" data-duration="13.000" data-track-index="3">
+  <div id="i-local-sc" class="sc">
+  <div class="center-col" style="top:90px">
+    <div id="il-k" class="pill pill-soft"><span class="pdot" style="background:#4fb489"></span><span>해법</span></div>
+    <h1 id="il-h" class="h1 center"><span class="hl" style="--hlc:var(--hl-m)">로컬 AI</span></h1>
+  </div>
+  <div id="il-pc" class="pcbig">
+    <div class="pcscreen"><div id="il-ai" class="ico " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#4fb489" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#4fb489" stroke-width="1.5"/></svg></div><div class="pcl">내 컴퓨터 안에서 돌아가는 AI</div></div>
+    <div class="pcneck"></div><div class="pcbase"></div>
+  </div>
+  <div id="il-f0" class="card feat" style="left:150px;top:560px"><div id="il-fi0" class="ico xs" style="background:#6aa3e6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 24a34 34 0 0 1 48 0M16 32a22 22 0 0 1 32 0M24 40a10 10 0 0 1 16 0"/><circle cx="32" cy="49" r="2.5" fill="#ffffff"/><path d="M10 10l44 44"/></svg></div><span>인터넷 연결 <b>없이도</b></span></div>
+  <div id="il-f1" class="card feat" style="left:1330px;top:560px"><div id="il-fi1" class="ico xs" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6l22 8v16c0 14-10 23-22 28C20 53 10 44 10 30V14z"/><path d="M22 31l7 7 13-14"/></svg></div><span>외부로 정보를<br><b>보내지 않아요</b></span></div>
+  </div>
+</div>
+
+<div id="i-safe" class="scene full clip" data-start="48.000" data-duration="7.100" data-track-index="3">
+  <div id="i-safe-sc" class="sc">
+  <div class="center-col" style="top:130px">
+    <h2 id="is-h" class="h2">외부로 보내지 않으니까<br><span class="hl" style="--hlc:var(--hl-m)">보안 측면에서 더 나아요</span></h2>
+  </div>
+  <div id="is-b" class="card bars">
+    <div class="bhead">보안</div>
+    <div class="brow"><span class="bl">클라우드 AI</span><span class="btrack"><span id="is-f0" class="bfill" style="background:#c9c3dc"></span></span><span class="bnote">ChatGPT · Claude · Gemini</span></div>
+    <div class="brow"><span class="bl"><b>로컬 AI</b></span><span class="btrack"><span id="is-f1" class="bfill" style="background:linear-gradient(90deg,#8de0bb,#3fa877)"></span></span><span id="is-ok" class="bmax">더 안전</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="i-hurdle" class="scene full clip" data-start="55.100" data-duration="12.500" data-track-index="3">
+  <div id="i-hurdle-sc" class="sc">
+  <div class="center-col" style="top:120px">
+    <h2 id="ih-h" class="h2">좋지만… 시작하기가 <span class="hl" style="--hlc:var(--hl-y)">조금 어려워요</span></h2>
+  </div>
+  <div class="verbs" style="top:420px"><div id="ih-0" class="card verb"><div id="ih-i0" class="ico " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="32" height="32" rx="4"/><path d="M24 8v8M32 8v8M40 8v8M24 48v8M32 48v8M40 48v8M8 24h8M8 32h8M8 40h8M48 24h8M48 32h8M48 40h8"/><path d="M26 38l6-12 6 12M28 34h8"/></svg></div><b>컴퓨터 성능</b><span id="ih-w0" class="wtag"><svg viewBox="0 0 64 64" fill="none" stroke="#c4486c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#c4486c"/></svg></span></div><div id="ih-1" class="card verb"><div id="ih-i1" class="ico " style="background:#fff1cc"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8v32M20 28l12 12 12-12"/><path d="M10 46v8h44v-8"/></svg></div><b>이것저것 다운로드</b><span id="ih-w1" class="wtag"><svg viewBox="0 0 64 64" fill="none" stroke="#c4486c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#c4486c"/></svg></span></div><div id="ih-2" class="card verb"><div id="ih-i2" class="ico " style="background:#ffe6dc"><svg viewBox="0 0 64 64" fill="none" stroke="#ef8a6f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="40" r="10"/><path d="M27 33l22-22M41 19l6 6M35 25l5 5"/></svg></div><b>초기 세팅</b><span id="ih-w2" class="wtag"><svg viewBox="0 0 64 64" fill="none" stroke="#c4486c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#c4486c"/></svg></span></div></div>
+  </div>
+</div>
+
+<div id="i-app" class="scene full clip" data-start="67.600" data-duration="12.400" data-track-index="3">
+  <div id="i-app-sc" class="sc">
+  <div id="ia-c" class="card appcard">
+    <div id="ia-lg" class="applogo "><span>Φ</span></div>
+    <div class="appt"><span id="ia-k">그래서 교수님들을 위해 만들었어요</span><b id="ia-n">필로소피 로컬 AI</b></div>
+  </div>
+  <div class="route"><div id="ia-r0" class="card rstep"><div id="ia-ri0" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h48v32H26l-12 10V44H8z"/><circle cx="22" cy="28" r="2" fill="#9a8be6"/><circle cx="32" cy="28" r="2" fill="#9a8be6"/><circle cx="42" cy="28" r="2" fill="#9a8be6"/></svg></div><span>유튜브 고정 댓글</span></div><svg id="ia-a1" class="arrow arrow-sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="ia-r1" class="card rstep"><div id="ia-ri1" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><span>네이버 카페</span></div><svg id="ia-a2" class="arrow arrow-sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="ia-r2" class="card rstep"><div id="ia-ri2" class="ico xs" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="52" height="34" rx="4"/><path d="M24 54h16M32 44v10"/></svg></div><span>홈페이지</span></div><svg id="ia-a3" class="arrow arrow-sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg><div id="ia-r3" class="card rstep"><div id="ia-ri3" class="ico xs" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8v32M20 28l12 12 12-12"/><path d="M10 46v8h44v-8"/></svg></div><span>앱 다운로드</span></div></div>
+  </div>
+</div>
+
+<div id="i-inside" class="scene full clip" data-start="80.000" data-duration="14.500" data-track-index="3">
+  <div id="i-inside-sc" class="sc">
+  <div class="center-col" style="top:80px">
+    <h2 id="in-h" class="h2">필로소피 로컬 AI 안에는</h2>
+  </div>
+  <div class="stack">
+    <div id="in-l0" class="layer l-app"><div id="in-lg" class="applogo sm"><span>Φ</span></div><b>필로소피 로컬 AI</b><span>쉽게 쓰는 앱 화면</span></div>
+    <div id="in-l1" class="layer l-model"><span class="ltag">공개 AI 모델</span><span id="in-m0" class="mchip">Qwen</span><span id="in-m1" class="mchip">Gemma</span></div>
+    <div id="in-l2" class="layer l-eng"><span class="ltag">실행 엔진</span><b>Ollama</b></div>
+  </div>
+  <div class="sidechips">
+    <div id="in-o0" class="okpill "><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>교수님 컴퓨터에 설치</span></div>
+    <div id="in-o1" class="okpill "><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>업데이트도 앱에서</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="i-sec" class="scene full clip" data-start="94.500" data-duration="20.500" data-track-index="3">
+  <div id="i-sec-sc" class="sc">
+  <div id="isc-c" class="card listcard">
+    <div id="isc-k" class="pill pill-soft"><span class="pdot" style="background:#4fb489"></span><span>내 자료는 내 컴퓨터 안에</span></div>
+    <div class="plist"><div id="isc-0" class="pro"><div id="isc-i0" class="ico xs" style="background:#6aa3e6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><span class="ptxt">질문·대화가 <b>외부로 나가지 않아요</b></span><span id="isc-t0" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="isc-1" class="pro"><div id="isc-i1" class="ico xs" style="background:#9a8be6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 24a34 34 0 0 1 48 0M16 32a22 22 0 0 1 32 0M24 40a10 10 0 0 1 16 0"/><circle cx="32" cy="49" r="2.5" fill="#ffffff"/><path d="M10 10l44 44"/></svg></div><span class="ptxt">인터넷이 <b>끊겨도 작동</b>해요</span><span id="isc-t1" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="isc-2" class="pro"><div id="isc-i2" class="ico xs" style="background:#e7a92c"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8v32M20 28l12 12 12-12"/><path d="M10 46v8h44v-8"/></svg></div><span class="ptxt">인터넷은 <b>AI 내려받기 · 업데이트</b> 때만</span><span id="isc-t2" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="isc-3" class="pro"><div id="isc-i3" class="ico xs" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="28" width="36" height="26" rx="5"/><path d="M21 28v-7a11 11 0 0 1 22 0v7"/><circle cx="32" cy="40" r="3" fill="#ffffff"/><path d="M32 43v5"/></svg></div><span class="ptxt">기록은 <b>암호화</b> · 잠금 암호로 앱 잠금</span><span id="isc-t3" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="i-out" class="scene full clip" data-start="115.000" data-duration="8.000" data-track-index="3">
+  <div id="i-out-sc" class="sc">
+  <div class="center-col" style="top:110px">
+    <div id="io-k" class="pill pill-soft"><span class="pdot" style="background:#e8708f"></span><span>하나만 기억해 주세요</span></div>
+    <h2 id="io-h" class="h2">앱 밖으로 내보낸 파일은 <span class="hl" style="--hlc:var(--hl-p)">보호 밖</span>이에요</h2>
+  </div>
+  <div class="outrow">
+    <div id="io-in" class="card shieldbox"><div id="io-si" class="ico " style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6l22 8v16c0 14-10 23-22 28C20 53 10 44 10 30V14z"/><path d="M22 31l7 7 13-14"/></svg></div><b>앱 안</b><span>암호화로 보호</span></div>
+    <svg id="io-a" class="arrow arrow-lg" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="io-f" class="card filebox">
+      <div class="frow"><span id="io-f0" class="fchip">복사 · 캡처</span><span id="io-f1" class="fchip"><svg viewBox="0 0 64 64" fill="none" stroke="#2d6b51" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="14" width="48" height="36" rx="4"/><path d="M8 18l24 18 24-18"/></svg>메일 · 메신저</span></div>
+      <b id="io-w" class="warnbig"><svg viewBox="0 0 64 64" fill="none" stroke="#c4486c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#c4486c"/></svg>보호 밖</b>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="i-tips" class="scene full clip" data-start="123.000" data-duration="19.100" data-track-index="3">
+  <div id="i-tips-sc" class="sc">
+  <div class="center-col" style="top:100px">
+    <h2 id="ip-h" class="h2">학생 정보는 이렇게 넣어 주세요</h2>
+  </div>
+  <div class="tips"><div id="ip-0" class="card tip"><span class="tnum">1</span><div id="ip-i0" class="ico " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="20" width="48" height="32" rx="4"/><path d="M24 20v-6h16v6M8 32h48"/></svg></div><div class="tt">학교 규정 확인 ·<br><b>필요한 만큼만</b></div></div><div id="ip-1" class="card tip"><span class="tnum">2</span><div id="ip-i1" class="ico " style="background:#ffe3ea"><svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="52" height="36" rx="5"/><circle cx="22" cy="30" r="6"/><path d="M12 44c2-5 6-7 10-7s8 2 10 7M38 26h12M38 34h12"/></svg></div><div class="tt">주민등록번호 등<br><b>민감정보는 피하기</b></div></div><div id="ip-2" class="card tip"><span class="tnum">3</span><div id="ip-i2" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="22" r="10"/><path d="M12 54c2-11 10-17 20-17s18 6 20 17"/></svg></div><div class="tt">학생 이름은<br><b>조금씩 바꿔서</b></div></div></div>
+  <div id="ip-end" class="endrib"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6l22 8v16c0 14-10 23-22 28C20 53 10 44 10 30V14z"/><path d="M22 31l7 7 13-14"/></svg><span>조심하면서 쓰면 좋아요</span></div>
+  </div>
+</div>
+
+<div id="i-go" class="scene full clip" data-start="142.100" data-duration="3.287" data-track-index="3">
+  <div id="i-go-sc" class="sc">
+  <div class="center-col" style="top:330px">
+    <div id="ig-i" class="ico " style="background:#ef8a6f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><path d="M27 22l15 10-15 10z" fill="#ffffff"/></svg></div>
+    <div id="ig-h" class="h1 center">실습으로 볼까요?</div>
+  </div>
+  </div>
+</div>
+
+<div id="p-url" class="scene ov clip" data-start="153.387" data-duration="28.000" data-track-index="4">
+  <div id="p-url-sc" class="sc">
+  <div id="pu-c" class="ovc side">
+    <div id="pu-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>접속 주소</span></div>
+    <div id="pu-u" class="urlbox">philolocalai<br>.netlify.app</div>
+    <div id="pu-r" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h48v32H26l-12 10V44H8z"/><circle cx="22" cy="28" r="2" fill="#7d62c0"/><circle cx="32" cy="28" r="2" fill="#7d62c0"/><circle cx="42" cy="28" r="2" fill="#7d62c0"/></svg></span><span>유튜브 <b>고정 댓글</b> → 네이버 카페</span></div>
+    <div id="pu-d" class="dlbtn"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8v32M20 28l12 12 12-12"/><path d="M10 46v8h44v-8"/></svg><span>설치 파일 내려받기</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-feat" class="scene ov clip" data-start="200.587" data-duration="49.800" data-track-index="4">
+  <div id="p-feat-sc" class="sc">
+  <div id="pf-c" class="ovc side">
+    <div id="pf-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>이 앱의 특징</span></div>
+    <div id="pf-0" class="frow2"><div id="pf-i0" class="ico xxs" style="background:#9a8be6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#ffffff" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#ffffff" stroke-width="1.5"/></svg></div><div class="ftx"><span>내 컴퓨터에 맞는 <b>AI 추천</b></span><small id="pf-s0">메모리 · 그래픽 · 저장 공간 자동 확인</small></div></div><div id="pf-1" class="frow2"><div id="pf-i1" class="ico xxs" style="background:#e8708f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="28" width="36" height="26" rx="5"/><path d="M21 28v-7a11 11 0 0 1 22 0v7"/><circle cx="32" cy="40" r="3" fill="#ffffff"/><path d="M32 43v5"/></svg></div><div class="ftx"><span>비밀번호로 <b>앱 잠금</b></span><small id="pf-s1">다른 사람이 못 보게</small></div></div><div id="pf-2" class="frow2"><div id="pf-i2" class="ico xxs" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></div><div class="ftx"><span>앱 안에서 <b>업데이트</b></span><small id="pf-s2">새 버전이 나오면 바로</small></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-can" class="scene ov clip" data-start="250.787" data-duration="27.600" data-track-index="4">
+  <div id="p-can-sc" class="sc">
+  <div id="pc-c" class="ovc side">
+    <div id="pc-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#4fb489"></span><span>할 수 있는 일</span></div>
+    <div class="cangrid"><div id="pc-0" class="canitem"><svg viewBox="0 0 64 64" fill="none" stroke="#34314a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg><span>AI와 대화</span></div><div id="pc-1" class="canitem"><svg viewBox="0 0 64 64" fill="none" stroke="#34314a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h16a6 6 0 0 1 6 6v36a5 5 0 0 0-5-5H10z"/><path d="M54 12H38a6 6 0 0 0-6 6v36a5 5 0 0 1 5-5h17z"/></svg><span>강의 자료 분석</span></div><div id="pc-2" class="canitem"><svg viewBox="0 0 64 64" fill="none" stroke="#34314a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="22" r="10"/><path d="M12 54c2-11 10-17 20-17s18 6 20 17"/></svg><span>학생 상담 기록</span></div><div id="pc-3" class="canitem"><svg viewBox="0 0 64 64" fill="none" stroke="#34314a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M24 8h16M27 8v18L12 52a4 4 0 0 0 4 6h32a4 4 0 0 0 4-6L37 26V8"/><path d="M18 42h28"/></svg><span>연구 자료 분석</span></div><div id="pc-4" class="canitem"><svg viewBox="0 0 64 64" fill="none" stroke="#34314a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="20" width="48" height="32" rx="4"/><path d="M24 20v-6h16v6M8 32h48"/></svg><span>행정 업무</span></div><div id="pc-5" class="canitem"><svg viewBox="0 0 64 64" fill="none" stroke="#34314a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 54h44"/><rect x="14" y="34" width="8" height="18"/><rect x="28" y="22" width="8" height="30"/><rect x="42" y="12" width="8" height="40"/></svg><span>Excel 데이터 분석</span></div></div>
+    <div id="pc-os" class="osrow"><span class="os win">Windows</span><span class="os">Mac</span><span>둘 다 OK</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-spec" class="scene ov clip" data-start="312.287" data-duration="27.700" data-track-index="4">
+  <div id="p-spec-sc" class="sc">
+  <div id="ps-c" class="ovc side">
+    <div class="stephead"><span class="stepn">STEP 1</span><span class="stept">컴퓨터 확인</span></div>
+    <div class="ovs2">앱이 <b>자동으로</b> 확인해요</div>
+    <div id="ps-0" class="specrow"><span class="sk">운영체제</span><b>Windows 11</b></div><div id="ps-1" class="specrow"><span class="sk">메모리</span><b>96GB</b></div><div id="ps-2" class="specrow"><span class="sk">그래픽</span><b>RTX 4060</b></div><div id="ps-3" class="specrow"><span class="sk">저장 공간</span><b>140GB 남음</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-rec" class="scene ov clip" data-start="340.287" data-duration="44.700" data-track-index="4">
+  <div id="p-rec-sc" class="sc">
+  <div id="pr-c" class="ovc side">
+    <div class="stephead"><span class="stepn">STEP 2</span><span class="stept">AI 추천 받기</span></div>
+    <div id="pr-0" class="recrow "><code>Qwen3 4B</code><span>가벼움</span></div><div id="pr-1" class="recrow pick"><code>Qwen3 8B</code><span>균형 · 추천</span></div><div id="pr-2" class="recrow "><code>Gemma3 27B</code><span>고성능 · 느릴 수 있음</span></div>
+    <div id="pr-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>Qwen3 8B 다운로드!</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-inst" class="scene ov clip" data-start="385.587" data-duration="29.800" data-track-index="4">
+  <div id="p-inst-sc" class="sc">
+  <div id="pi-c" class="ovc side">
+    <div class="stephead"><span class="stepn">STEP 3</span><span class="stept">설치</span></div>
+    <div id="pi-0" class="flow"><span class="fnum">1</span><span><b>Ollama</b> 실행 엔진</span><span id="pi-t0" class="tick sm"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="pi-1" class="flow"><span class="fnum">2</span><span><b>Qwen3 8B</b> AI 모델</span><span id="pi-t1" class="tick sm"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="pi-2" class="flow"><span class="fnum">3</span><span><b>테스트</b> 잘 되는지 확인</span><span id="pi-t2" class="tick sm"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><div id="pi-3" class="flow"><span class="fnum">4</span><span><b>사용 시작</b> </span><span id="pi-t3" class="tick sm"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-off" class="scene pop clip" data-start="466.987" data-duration="5.800" data-track-index="5">
+  <div id="p-off-sc" class="sc">
+  <div id="po-c" class="card impact">
+    <div id="po-i" class="imico" style="background:#e0607f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 24a34 34 0 0 1 48 0M16 32a22 22 0 0 1 32 0M24 40a10 10 0 0 1 16 0"/><circle cx="32" cy="49" r="2.5" fill="#ffffff"/><path d="M10 10l44 44"/></svg></div>
+    <div class="imtx"><small>랜선을 뽑았어요</small><b>인터넷 <span class="red">OFF</span></b></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-offb" class="scene ov clip" data-start="472.787" data-duration="118.800" data-track-index="4">
+  <div id="p-offb-sc" class="sc">
+  <div id="pob" class="offbadge"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 24a34 34 0 0 1 48 0M16 32a22 22 0 0 1 32 0M24 40a10 10 0 0 1 16 0"/><circle cx="32" cy="49" r="2.5" fill="#ffffff"/><path d="M10 10l44 44"/></svg><span>인터넷 끊긴 상태</span></div>
+  </div>
+</div>
+
+<div id="p-done" class="scene pop clip" data-start="577.187" data-duration="4.600" data-track-index="5">
+  <div id="p-done-sc" class="sc">
+  <div id="pd-c" class="card impact">
+    <div id="pd-i" class="imico" style="background:#3fa877"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></div>
+    <div class="imtx"><small>인터넷 없이도</small><b>답이 <span class="grn">나왔어요!</span></b></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-ppt" class="scene ov clip" data-start="610.487" data-duration="26.900" data-track-index="4">
+  <div id="p-ppt-sc" class="sc">
+  <div id="pp-c" class="ovc side">
+    <div id="pp-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#6aa3e6"></span><span>강의 자료 분석</span></div>
+    <div id="pp-0" class="flow"><span class="fnum">1</span><span>PPT 10장 · 2,374자</span></div><div id="pp-1" class="flow"><span class="fnum">2</span><span>강의 자료 요약</span></div><div id="pp-2" class="flow"><span class="fnum">3</span><span>핵심 개념 추출</span></div>
+    <div id="pp-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>인터넷 없이 빠르게</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-name" class="scene ov clip" data-start="687.087" data-duration="14.300" data-track-index="4">
+  <div id="p-name-sc" class="sc">
+  <div id="pn-c" class="ovc side warnc">
+    <div class="ovhead"><div id="pn-i" class="ico xxs" style="background:#e8708f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="22" r="10"/><path d="M12 54c2-11 10-17 20-17s18 6 20 17"/></svg></div><span class="stept">학생 이름은</span></div>
+    <div class="namefx"><span id="pn-a" class="nm real">실명</span><span class="cg">→</span><span id="pn-b" class="nm alias">학생 A</span></div>
+    <div id="pn-s" class="ovs2">교수님만 아는 <b>별칭</b>으로</div>
+  </div>
+  </div>
+</div>
+
+<div id="p-res" class="scene ov clip" data-start="765.187" data-duration="21.700" data-track-index="4">
+  <div id="p-res-sc" class="sc">
+  <div id="pq-c" class="ovc side">
+    <div id="pq-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#4fb489"></span><span>연구 자료 분석</span></div>
+    <div id="pq-f" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></span><span>연구 자료 <b>1,910자</b></span></div>
+    <div id="pq-g" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50l4-14 26-26 10 10-26 26z"/><path d="M38 16l10 10"/></svg></span><span><b>연구 보고서 초안</b></span></div>
+    <div id="pq-s" class="speed"><svg viewBox="0 0 64 64" fill="none" stroke="#e7a92c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M36 6L14 36h16l-4 22 22-30H32z" fill="#e7a92c" stroke-width="2"/></svg><span>답 속도가 <b>놀라워요</b></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-adm" class="scene ov clip" data-start="808.387" data-duration="13.000" data-track-index="4">
+  <div id="p-adm-sc" class="sc">
+  <div id="pa-c" class="ovc side">
+    <div id="pa-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#e7a92c"></span><span>행정 업무 도우미</span></div>
+    <div id="pa-f" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="20" width="48" height="32" rx="4"/><path d="M24 20v-6h16v6M8 32h48"/></svg></span><span>학과 회의 → <b>회의록 요약</b></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-xls" class="scene ov clip" data-start="836.387" data-duration="22.000" data-track-index="4">
+  <div id="p-xls-sc" class="sc">
+  <div id="px-c" class="ovc side">
+    <div id="px-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#4fb489"></span><span>Excel 데이터 분석</span></div>
+    <div id="px-f" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 54h44"/><rect x="14" y="34" width="8" height="18"/><rect x="28" y="22" width="8" height="30"/><rect x="42" y="12" width="8" height="40"/></svg></span><span>가상 성적 데이터 <b>48명</b></span></div>
+    <div id="px-g" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h22l12 12v36H16z"/><path d="M38 8v12h12"/><path d="M23 32h18M23 40h18M23 48h11"/></svg></span><span><b>분석 결과 보고서</b></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-why" class="scene pop clip" data-start="859.987" data-duration="8.600" data-track-index="5">
+  <div id="p-why-sc" class="sc">
+  <div id="pw-c" class="card impact wide">
+    <div class="whyrow">
+      <div id="pw-a" class="whyc"><span class="cchip">Claude</span><span class="cchip">ChatGPT</span><small>에 주기 어려운 데이터</small></div>
+      <svg id="pw-ar" class="arrow arrow-lg" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+      <div id="pw-b" class="whyc on"><svg viewBox="0 0 64 64" fill="none" stroke="#2d6b51" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="10" width="52" height="34" rx="4"/><path d="M24 54h16M32 44v10"/></svg><b>로컬 AI로 분석</b></div>
+    </div>
+    <div id="pw-t" class="whyt">이게 바로 <span class="hl" style="--hlc:var(--hl-m)">로컬 AI를 쓰는 이유</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-noname" class="scene ov clip" data-start="880.087" data-duration="12.300" data-track-index="4">
+  <div id="p-noname-sc" class="sc">
+  <div id="pk-c" class="ovc side warnc">
+    <div class="ovhead"><div id="pk-i" class="ico xxs" style="background:#e8708f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#ffffff"/></svg></div><span class="stept">이름은 빼고</span></div>
+    <div id="pk-s" class="ovs2">로컬 AI가 더 안전해도<br><b>조심할수록 좋아요</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-model" class="scene ov clip" data-start="908.087" data-duration="32.300" data-track-index="4">
+  <div id="p-model-sc" class="sc">
+  <div id="pm-c" class="ovc side">
+    <div id="pm-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>앱 메뉴 둘러보기</span></div>
+    <div id="pm-0" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="32" height="32" rx="4"/><path d="M24 8v8M32 8v8M40 8v8M24 48v8M32 48v8M40 48v8M8 24h8M8 32h8M8 40h8M48 24h8M48 32h8M48 40h8"/><path d="M26 38l6-12 6 12M28 34h8"/></svg></span><span><b>내 AI 모델 관리</b><br><small class="sm2">용도별 AI 추천</small></span></div>
+    <div id="pm-1" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6l22 8v16c0 14-10 23-22 28C20 53 10 44 10 30V14z"/><path d="M22 31l7 7 13-14"/></svg></span><span><b>개인정보 보호 설정</b><br><small class="sm2">한 번씩 꼭 읽어 보세요</small></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-upd" class="scene ov clip" data-start="948.687" data-duration="37.700" data-track-index="4">
+  <div id="p-upd-sc" class="sc">
+  <div id="pg-c" class="ovc side">
+    <div class="ovhead"><div id="pg-i" class="ico xxs" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30a18 18 0 0 1 32-11l4 4"/><path d="M50 13v10H40"/><path d="M50 34a18 18 0 0 1-32 11l-4-4"/><path d="M14 51V41h10"/></svg></div><span class="stept">앱 업데이트</span></div>
+    <div id="pg-b" class="dlbtn"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8v32M20 28l12 12 12-12"/><path d="M10 46v8h44v-8"/></svg><span>업데이트 확인하기</span></div>
+    <div id="pg-s" class="ovs2"><b>가끔씩</b> 눌러 보세요<br>새 버전이 있으면 설치 → 앱이 바뀌어요</div>
+  </div>
+  </div>
+</div>
+
+<div id="p-rules" class="scene ov clip" data-start="1004.887" data-duration="45.000" data-track-index="4">
+  <div id="p-rules-sc" class="sc">
+  <div id="pl-c" class="ovc side">
+    <div class="ovhead"><div id="pl-i" class="ico xxs" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6l22 8v16c0 14-10 23-22 28C20 53 10 44 10 30V14z"/><path d="M22 31l7 7 13-14"/></svg></div><span class="stept sm">학생 정보 넣을 때</span></div>
+    <div id="pl-n" class="ovs2">앱이 안전해도 <b>처리 허용은 아니에요</b></div>
+    <div id="pl-0" class="flow"><span class="fnum">1</span><span>소속 대학 규정 확인</span></div><div id="pl-1" class="flow"><span class="fnum">2</span><span>보안 점검 모두 초록색</span></div><div id="pl-2" class="flow"><span class="fnum">3</span><span>꼭 필요한 정보만</span></div><div id="pl-3" class="flow"><span class="fnum">4</span><span>내보낸 파일 잘 관리</span></div><div id="pl-4" class="flow"><span class="fnum">5</span><span>다 쓰면 바로 지우기</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-lock" class="scene ov clip" data-start="1050.387" data-duration="14.000" data-track-index="4">
+  <div id="p-lock-sc" class="sc">
+  <div id="pz-c" class="ovc side">
+    <div class="ovhead"><div id="pz-i" class="ico xxs" style="background:#1f2747"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="28" width="36" height="26" rx="5"/><path d="M21 28v-7a11 11 0 0 1 22 0v7"/><circle cx="32" cy="40" r="3" fill="#ffffff"/><path d="M32 43v5"/></svg></div><span class="stept">지금 잠그기</span></div>
+    <div id="pz-s" class="ovs2">암호를 걸어 두고 쓰세요<br>잠금을 풀면 다시 사용</div>
+  </div>
+  </div>
+</div>
+
+<div id="p-idea" class="scene ov clip" data-start="1080.987" data-duration="14.000" data-track-index="4">
+  <div id="p-idea-sc" class="sc">
+  <div id="pj-c" class="ovc side">
+    <div class="ovhead"><div id="pj-i" class="ico xxs" style="background:#ef8a6f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h48v32H26l-12 10V44H8z"/><circle cx="22" cy="28" r="2" fill="#ffffff"/><circle cx="32" cy="28" r="2" fill="#ffffff"/><circle cx="42" cy="28" r="2" fill="#ffffff"/></svg></div><span class="stept">아이디어는 댓글로</span></div>
+    <div id="pj-s" class="ovs2">수정 · 기능 제안을 남겨 주시면<br><b>앱에 반영</b>할게요</div>
+  </div>
+  </div>
+</div>
+
+<div id="q-done" class="scene full clip" data-start="1095.420" data-duration="9.000" data-track-index="3">
+  <div id="q-done-sc" class="sc">
+  <div class="center-col" style="top:110px">
+    <div id="qd-k" class="okpill "><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>실습 끝!</span></div>
+    <h2 id="qd-h" class="h2">로컬 AI를 쓰면<br><span class="hl" style="--hlc:var(--hl-m)">인터넷 연결 없이도</span> 내 컴퓨터에서 AI를</h2>
+  </div>
+  <div id="qd-pc" class="pcbig" style="top:500px">
+    <div class="pcscreen"><div id="qd-ai" class="ico " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#4fb489" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#4fb489" stroke-width="1.5"/></svg></div><div class="pcl">내 컴퓨터 안의 AI</div></div>
+    <div class="pcneck"></div><div class="pcbase"></div>
+  </div>
+  <div id="qd-w" class="card feat" style="left:330px;top:620px"><div id="qd-wi" class="ico xs" style="background:#6aa3e6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 24a34 34 0 0 1 48 0M16 32a22 22 0 0 1 32 0M24 40a10 10 0 0 1 16 0"/><circle cx="32" cy="49" r="2.5" fill="#ffffff"/><path d="M10 10l44 44"/></svg></div><span>인터넷 <b>없이도</b></span></div>
+  </div>
+</div>
+
+<div id="q-help" class="scene full clip" data-start="1104.420" data-duration="12.000" data-track-index="3">
+  <div id="q-help-sc" class="sc">
+  <div class="duo2" style="top:250px">
+    <div id="qh-a" class="card dcard">
+      <div id="qh-ai" class="ico " style="background:#e8708f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="28" width="36" height="26" rx="5"/><path d="M21 28v-7a11 11 0 0 1 22 0v7"/><circle cx="32" cy="40" r="3" fill="#ffffff"/><path d="M32 43v5"/></svg></div>
+      <div class="dt">개인정보 때문에</div>
+      <div class="ds">AI를 쓰고 싶어도<br><b>못 쓰셨던</b> 교수님들께</div>
+    </div>
+    <svg id="qh-ar" class="arrow arrow-lg" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="qh-b" class="card dcard glow">
+      <div id="qh-lg" class="applogo "><span>Φ</span></div>
+      <div class="dt"><b>필로소피 로컬 AI</b></div>
+      <div class="ds">도움이 될 수 있어요</div>
+    </div>
+  </div>
+  </div>
+</div>
+
+<div id="q-rules" class="scene full clip" data-start="1116.420" data-duration="28.200" data-track-index="3">
+  <div id="q-rules-sc" class="sc">
+  <div id="qr-c" class="card listcard two">
+    <div id="qr-k" class="pill pill-soft"><span class="pdot" style="background:#e8708f"></span><span>다만, 쓸 때도 조심해 주세요</span></div>
+    <div class="plist grid2"><div id="qr-0" class="pro"><div id="qr-i0" class="ico xs" style="background:#1f2747"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="14" y="28" width="36" height="26" rx="5"/><path d="M21 28v-7a11 11 0 0 1 22 0v7"/><circle cx="32" cy="40" r="3" fill="#ffffff"/><path d="M32 43v5"/></svg></div><span class="ptxt sm">잠금 암호 <b>꼭 설정</b></span></div><div id="qr-1" class="pro"><div id="qr-i1" class="ico xs" style="background:#9a8be6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="22" r="10"/><path d="M12 54c2-11 10-17 20-17s18 6 20 17"/></svg></div><span class="ptxt sm">학생 정보는 <b>꼭 필요한 만큼만</b></span></div><div id="qr-2" class="pro"><div id="qr-i2" class="ico xs" style="background:#6aa3e6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="52" height="36" rx="5"/><circle cx="22" cy="30" r="6"/><path d="M12 44c2-5 6-7 10-7s8 2 10 7M38 26h12M38 34h12"/></svg></div><span class="ptxt sm">실명 대신 <b>별칭</b></span></div><div id="qr-3" class="pro"><div id="qr-i3" class="ico xs" style="background:#e8708f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 8l26 46H6z"/><path d="M32 26v12"/><circle cx="32" cy="45" r="1.5" fill="#ffffff"/></svg></div><span class="ptxt sm">주민번호 · 건강정보 <b>넣지 않기</b></span></div><div id="qr-4" class="pro"><div id="qr-i4" class="ico xs" style="background:#e7a92c"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="20" width="48" height="32" rx="4"/><path d="M24 20v-6h16v6M8 32h48"/></svg></div><span class="ptxt sm">학교 <b>개인정보 규정</b> 먼저 확인</span></div><div id="qr-5" class="pro"><div id="qr-i5" class="ico xs" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 50l4-14 26-26 10 10-26 26z"/><path d="M38 16l10 10"/></svg></div><span class="ptxt sm">AI 답은 <b>초안</b>으로만</span></div></div>
+  </div>
+  </div>
+</div>
+
+<div id="q-safe" class="scene full clip" data-start="1144.620" data-duration="12.900" data-track-index="3">
+  <div id="q-safe-sc" class="sc">
+  <div id="qs-c" class="card quote" style="top:200px">
+    <div class="qmark">“</div>
+    <div class="qbody" id="qs-b">내 컴퓨터 안의 AI,<br><span class="hl" style="--hlc:var(--hl-m)">안전하게 잘 활용하세요</span></div>
+  </div>
+  <div id="qs-n" class="card notec"><div id="qs-i" class="ico xs" style="background:#ef8a6f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12h48v32H26l-12 10V44H8z"/><circle cx="22" cy="28" r="2" fill="#ffffff"/><circle cx="32" cy="28" r="2" fill="#ffffff"/><circle cx="42" cy="28" r="2" fill="#ffffff"/></svg></div><span>의견을 <b>댓글</b>로 남겨 주시면<br>앱을 계속 다듬어 갈게요</span></div>
+  </div>
+</div>
+
+<div id="q-end" class="scene full clip" data-start="1157.520" data-duration="18.880" data-track-index="3">
+  <div id="q-end-sc" class="sc">
+  <div id="qe-ph" class="phwrap" style="top:200px"><img class="phimg" src="assets/media/philosophy.png" alt="필로소피 캐릭터"></div>
+  <div id="qe-c" class="card titlecard" style="top:200px">
+    <div id="qe-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>필로소피 AI 교육 · 로컬 AI 사용법</span></div>
+    <div id="qe-h" class="h1 center" style="font-size:88px">오늘의 영상<br>여기까지입니다</div>
+    <div class="endbtns">
+      <div id="qe-l" class="ebtn like"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 28v26H10V28zM20 28l10-20c5 0 7 4 6 8l-2 10h16a5 5 0 0 1 5 6l-4 16a6 6 0 0 1-6 6H20"/></svg><span>좋아요</span></div>
+      <div id="qe-s" class="ebtn sub"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 44V30a14 14 0 0 1 28 0v14l4 6H14z"/><path d="M27 54a5 5 0 0 0 10 0"/></svg><span>구독</span></div>
+    </div>
+    <div id="qe-t" class="thanks">감사합니다 <svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#e8708f"/></svg></div>
+  </div>
+  </div>
+</div>
+<div id="cap0" class="cap clip" data-start="0.000" data-duration="2.740" data-track-index="8"><span>저는 교수님들께 AI 교육을 해드리기</span></div>
+<div id="cap1" class="cap clip" data-start="2.760" data-duration="1.780" data-track-index="8"><span>전에 설문조사를 합니다</span></div>
+<div id="cap2" class="cap clip" data-start="4.560" data-duration="2.020" data-track-index="8"><span>AI에 관련해서 어떤 고민이 있으신지</span></div>
+<div id="cap3" class="cap clip" data-start="6.600" data-duration="0.720" data-track-index="8"><span>여쭤봅니다</span></div>
+<div id="cap4" class="cap clip" data-start="7.340" data-duration="1.520" data-track-index="8"><span>그때 자주 나오는 고민이 있습니다</span></div>
+<div id="cap5" class="cap clip" data-start="8.880" data-duration="2.000" data-track-index="8"><span>그것은 바로 "AI에 개인정보를 넣지</span></div>
+<div id="cap6" class="cap clip" data-start="10.900" data-duration="2.160" data-track-index="8"><span>못하기 때문에 AI를 쓰고 싶어도 쓸 수</span></div>
+<div id="cap7" class="cap clip" data-start="13.080" data-duration="1.640" data-track-index="8"><span>없습니다"라는 고민입니다</span></div>
+<div id="cap8" class="cap clip" data-start="14.740" data-duration="1.740" data-track-index="8"><span>사실 교수님들이 다루시는 많은 자료 중에</span></div>
+<div id="cap9" class="cap clip" data-start="16.500" data-duration="2.560" data-track-index="8"><span>대부분은 일반적인 AI인 ChatGPT,</span></div>
+<div id="cap10" class="cap clip" data-start="19.080" data-duration="1.980" data-track-index="8"><span>Claude, Gemini에게 주기 어려운</span></div>
+<div id="cap11" class="cap clip" data-start="21.080" data-duration="0.850" data-track-index="8"><span>자료들입니다</span></div>
+<div id="cap12" class="cap clip" data-start="22.020" data-duration="2.400" data-track-index="8"><span>학교 내부 자료이거나 학생 개인</span></div>
+<div id="cap13" class="cap clip" data-start="24.440" data-duration="2.700" data-track-index="8"><span>정보이거나 교수님 연구 자료이기</span></div>
+<div id="cap14" class="cap clip" data-start="27.160" data-duration="0.340" data-track-index="8"><span>때문입니다</span></div>
+<div id="cap15" class="cap clip" data-start="27.520" data-duration="2.400" data-track-index="8"><span>교수님들이 정말 AI로 도움을 받고 싶은</span></div>
+<div id="cap16" class="cap clip" data-start="29.940" data-duration="1.780" data-track-index="8"><span>일은 AI에 넣을 수 없는 자료들을</span></div>
+<div id="cap17" class="cap clip" data-start="31.740" data-duration="3.280" data-track-index="8"><span>정리하고 수정하고 새로 만드는 일입니다</span></div>
+<div id="cap18" class="cap clip" data-start="35.040" data-duration="1.760" data-track-index="8"><span>이 고민을 해결해드리기 위해 저는</span></div>
+<div id="cap19" class="cap clip" data-start="36.820" data-duration="1.940" data-track-index="8"><span>로컬 AI라는 해법을</span></div>
+<div id="cap20" class="cap clip" data-start="38.780" data-duration="1.140" data-track-index="8"><span>생각해냈습니다</span></div>
+<div id="cap21" class="cap clip" data-start="39.940" data-duration="2.100" data-track-index="8"><span>로컬 AI라는 것은 인터넷 연결</span></div>
+<div id="cap22" class="cap clip" data-start="42.060" data-duration="2.480" data-track-index="8"><span>없이도 내 컴퓨터 안에서 돌아가는 AI입니다</span></div>
+<div id="cap23" class="cap clip" data-start="44.560" data-duration="2.360" data-track-index="8"><span>그렇기 때문에 외부로 정보를</span></div>
+<div id="cap24" class="cap clip" data-start="46.940" data-duration="1.140" data-track-index="8"><span>보내지 않습니다</span></div>
+<div id="cap25" class="cap clip" data-start="48.100" data-duration="1.820" data-track-index="8"><span>외부로 정보를 보내지 않기 때문에</span></div>
+<div id="cap26" class="cap clip" data-start="49.940" data-duration="2.560" data-track-index="8"><span>보안적인 측면에서 ChatGPT나 Claude,</span></div>
+<div id="cap27" class="cap clip" data-start="52.520" data-duration="2.620" data-track-index="8"><span>Gemini보다 더 낫다고 볼 수 있습니다</span></div>
+<div id="cap28" class="cap clip" data-start="55.160" data-duration="2.640" data-track-index="8"><span>로컬 AI가 좋지만 컴퓨터 성능이</span></div>
+<div id="cap29" class="cap clip" data-start="57.820" data-duration="2.040" data-track-index="8"><span>좋아야 되고 또한 이것저것 다운로드</span></div>
+<div id="cap30" class="cap clip" data-start="59.880" data-duration="2.660" data-track-index="8"><span>받아야 하고 쓰기가 ChatGPT나 Claude</span></div>
+<div id="cap31" class="cap clip" data-start="62.560" data-duration="2.200" data-track-index="8"><span>보다 조금 어렵다고 생각할 수 있습니다</span></div>
+<div id="cap32" class="cap clip" data-start="64.780" data-duration="1.260" data-track-index="8"><span>왜냐면 초기에 세팅을 해야 되기</span></div>
+<div id="cap33" class="cap clip" data-start="66.060" data-duration="1.700" data-track-index="8"><span>때문이죠. 그래서 제가 아예 교수님들을</span></div>
+<div id="cap34" class="cap clip" data-start="67.780" data-duration="1.880" data-track-index="8"><span>위해서 '필로소피 로컬 AI'</span></div>
+<div id="cap35" class="cap clip" data-start="69.680" data-duration="1.540" data-track-index="8"><span>앱을 만들었습니다</span></div>
+<div id="cap36" class="cap clip" data-start="71.240" data-duration="1.940" data-track-index="8"><span>홈페이지 주소를 제 네이버 카페에</span></div>
+<div id="cap37" class="cap clip" data-start="73.200" data-duration="0.800" data-track-index="8"><span>올려놓겠습니다</span></div>
+<div id="cap38" class="cap clip" data-start="74.020" data-duration="1.740" data-track-index="8"><span>고정 댓글에 들어가시면 제 카페 주소가</span></div>
+<div id="cap39" class="cap clip" data-start="75.780" data-duration="0.720" data-track-index="8"><span>있을 겁니다</span></div>
+<div id="cap40" class="cap clip" data-start="76.520" data-duration="2.040" data-track-index="8"><span>들어가셔서 앱을 다운로드 받으시고 편하게</span></div>
+<div id="cap41" class="cap clip" data-start="78.580" data-duration="1.400" data-track-index="8"><span>로컬 AI를 쓰실 수 있습니다</span></div>
+<div id="cap42" class="cap clip" data-start="80.000" data-duration="1.320" data-track-index="8"><span>필로소피 로컬 AI는</span></div>
+<div id="cap43" class="cap clip" data-start="81.340" data-duration="1.980" data-track-index="8"><span>공개된 AI, Qwen이라던가</span></div>
+<div id="cap44" class="cap clip" data-start="83.340" data-duration="2.880" data-track-index="8"><span>Gemma 같은 모델을 Ollama 엔진으로</span></div>
+<div id="cap45" class="cap clip" data-start="86.240" data-duration="2.330" data-track-index="8"><span>쓸 수 있게 만들어 놓은 앱입니다</span></div>
+<div id="cap46" class="cap clip" data-start="88.640" data-duration="2.690" data-track-index="8"><span>교수님 컴퓨터에 설치해서 쓰시면 되구요</span></div>
+<div id="cap47" class="cap clip" data-start="91.360" data-duration="1.520" data-track-index="8"><span>업데이트 되게 되면 그 앱에서</span></div>
+<div id="cap48" class="cap clip" data-start="92.900" data-duration="1.610" data-track-index="8"><span>업데이트까지 하실 수 있습니다</span></div>
+<div id="cap49" class="cap clip" data-start="94.700" data-duration="3.020" data-track-index="8"><span>그래서 한 작업들, 질문, 대화가 외부로</span></div>
+<div id="cap50" class="cap clip" data-start="97.740" data-duration="0.920" data-track-index="8"><span>나가지 않습니다</span></div>
+<div id="cap51" class="cap clip" data-start="98.680" data-duration="2.960" data-track-index="8"><span>외부 서버로 전송되지 않으니까 인터넷이</span></div>
+<div id="cap52" class="cap clip" data-start="101.660" data-duration="1.480" data-track-index="8"><span>끊겨도 작동을 합니다</span></div>
+<div id="cap53" class="cap clip" data-start="103.160" data-duration="2.380" data-track-index="8"><span>인터넷은 처음에 AI를 내려받을 때와</span></div>
+<div id="cap54" class="cap clip" data-start="105.560" data-duration="2.640" data-track-index="8"><span>앱을 업데이트할 때만 쓰고 그때도 교수님</span></div>
+<div id="cap55" class="cap clip" data-start="108.220" data-duration="1.360" data-track-index="8"><span>자료는 외부로 보내지 않습니다</span></div>
+<div id="cap56" class="cap clip" data-start="109.600" data-duration="2.720" data-track-index="8"><span>저장되는 기록은 암호화되고, 잠금 암호를</span></div>
+<div id="cap57" class="cap clip" data-start="112.340" data-duration="2.340" data-track-index="8"><span>걸어두면 암호 없이는 앱을 열 수</span></div>
+<div id="cap58" class="cap clip" data-start="114.700" data-duration="0.420" data-track-index="8"><span>없습니다</span></div>
+<div id="cap59" class="cap clip" data-start="115.140" data-duration="2.700" data-track-index="8"><span>잠금 암호를 걸어두면 복사 캡처해서</span></div>
+<div id="cap60" class="cap clip" data-start="117.860" data-duration="2.660" data-track-index="8"><span>메일이나 메신저로 보내시면 그 파일은</span></div>
+<div id="cap61" class="cap clip" data-start="120.540" data-duration="1.540" data-track-index="8"><span>앱의 보호 밖에 있다고 생각하시면</span></div>
+<div id="cap62" class="cap clip" data-start="122.100" data-duration="0.800" data-track-index="8"><span>됩니다</span></div>
+<div id="cap63" class="cap clip" data-start="123.080" data-duration="2.520" data-track-index="8"><span>그래서 학생정보는 학교 규정을 확인하시고</span></div>
+<div id="cap64" class="cap clip" data-start="125.620" data-duration="2.200" data-track-index="8"><span>필요한 만큼만 넣어주시면 좋을 것</span></div>
+<div id="cap65" class="cap clip" data-start="127.840" data-duration="0.930" data-track-index="8"><span>같구요</span></div>
+<div id="cap66" class="cap clip" data-start="129.000" data-duration="2.180" data-track-index="8"><span>그리고 민감한 주민등록번호나 이런 것은</span></div>
+<div id="cap67" class="cap clip" data-start="131.200" data-duration="2.170" data-track-index="8"><span>가급적 피해 주시고,</span></div>
+<div id="cap68" class="cap clip" data-start="133.900" data-duration="2.260" data-track-index="8"><span>그리고 학생이름도 바로 넣지 마시고</span></div>
+<div id="cap69" class="cap clip" data-start="136.180" data-duration="2.300" data-track-index="8"><span>조금씩 바꿔서 넣어주시면 좋겠습니다</span></div>
+<div id="cap70" class="cap clip" data-start="138.500" data-duration="2.720" data-track-index="8"><span>그래서 조심하면서 로컬 AI를 쓰시면</span></div>
+<div id="cap71" class="cap clip" data-start="141.240" data-duration="0.860" data-track-index="8"><span>좋을 것 같습니다</span></div>
+<div id="cap72" class="cap clip" data-start="142.120" data-duration="2.040" data-track-index="8"><span>그러면 그 과정을 제가 자세히</span></div>
+<div id="cap73" class="cap clip" data-start="144.180" data-duration="1.187" data-track-index="8"><span>보여드리도록 하겠습니다</span></div>
+<div id="cap74" class="cap clip" data-start="145.387" data-duration="3.730" data-track-index="8"><span>네 이제 실습을 해보겠습니다</span></div>
+<div id="cap75" class="cap clip" data-start="153.407" data-duration="3.160" data-track-index="8"><span>우선 philolocalai.netlify.app으로</span></div>
+<div id="cap76" class="cap clip" data-start="156.587" data-duration="2.340" data-track-index="8"><span>들어오시면 되구요</span></div>
+<div id="cap77" class="cap clip" data-start="159.947" data-duration="3.160" data-track-index="8"><span>고정 댓글 보시면 제가 네이버 카페</span></div>
+<div id="cap78" class="cap clip" data-start="163.127" data-duration="1.610" data-track-index="8"><span>주소를 올려놨을 겁니다</span></div>
+<div id="cap79" class="cap clip" data-start="164.847" data-duration="4.800" data-track-index="8"><span>거기 들어오시면 제가 수업자료랑 실습자료</span></div>
+<div id="cap80" class="cap clip" data-start="169.667" data-duration="2.120" data-track-index="8"><span>그리고 요 URL 주소를 적어 놨을</span></div>
+<div id="cap81" class="cap clip" data-start="171.807" data-duration="0.320" data-track-index="8"><span>겁니다</span></div>
+<div id="cap82" class="cap clip" data-start="172.147" data-duration="2.730" data-track-index="8"><span>그래서 고정 댓글 보시면 되구요</span></div>
+<div id="cap83" class="cap clip" data-start="175.067" data-duration="2.780" data-track-index="8"><span>이 URL으로 들어오시면 설치 파일 내려</span></div>
+<div id="cap84" class="cap clip" data-start="177.867" data-duration="2.340" data-track-index="8"><span>받기 라고 보실거에요</span></div>
+<div id="cap85" class="cap clip" data-start="180.227" data-duration="2.130" data-track-index="8"><span>요거 다운받으시면 됩니다</span></div>
+<div id="cap86" class="cap clip" data-start="182.547" data-duration="3.720" data-track-index="8"><span>다운받으시면 되고 이 앱은 어떤 분들에게</span></div>
+<div id="cap87" class="cap clip" data-start="186.287" data-duration="4.260" data-track-index="8"><span>필요하냐면 내 컴퓨터 안에서만 AI를</span></div>
+<div id="cap88" class="cap clip" data-start="190.567" data-duration="1.380" data-track-index="8"><span>처리하고 싶은 분들</span></div>
+<div id="cap89" class="cap clip" data-start="191.967" data-duration="3.460" data-track-index="8"><span>그래서 문서 질문 대화가 인터넷으로</span></div>
+<div id="cap90" class="cap clip" data-start="195.447" data-duration="2.950" data-track-index="8"><span>나가지 않는다 라는 것이 장점입니다</span></div>
+<div id="cap91" class="cap clip" data-start="198.427" data-duration="1.680" data-track-index="8"><span>그래서 로컬 전용이라고 생각하시면</span></div>
+<div id="cap92" class="cap clip" data-start="200.127" data-duration="0.480" data-track-index="8"><span>되구요</span></div>
+<div id="cap93" class="cap clip" data-start="200.627" data-duration="3.720" data-track-index="8"><span>그리고 이 앱의 특징은 내 컴퓨터에 맞는</span></div>
+<div id="cap94" class="cap clip" data-start="204.367" data-duration="2.010" data-track-index="8"><span>로컬 AI를 추천해 줘요</span></div>
+<div id="cap95" class="cap clip" data-start="206.907" data-duration="2.220" data-track-index="8"><span>그래서 앱이 자동으로 내 컴퓨터의 메모리</span></div>
+<div id="cap96" class="cap clip" data-start="209.147" data-duration="2.800" data-track-index="8"><span>그래픽 저장 공간을 확인해 주고</span></div>
+<div id="cap97" class="cap clip" data-start="211.967" data-duration="3.850" data-track-index="8"><span>그리고 어떤 AI를 쓸지 추천해 줍니다</span></div>
+<div id="cap98" class="cap clip" data-start="216.227" data-duration="1.600" data-track-index="8"><span>그래서 제가 로컬 AI에 대해서</span></div>
+<div id="cap99" class="cap clip" data-start="217.847" data-duration="1.970" data-track-index="8"><span>다루면 많은 분들이 물어보세요</span></div>
+<div id="cap100" class="cap clip" data-start="219.927" data-duration="1.750" data-track-index="8"><span>어떤 AI를 쓰면 좋을까요?</span></div>
+<div id="cap101" class="cap clip" data-start="222.107" data-duration="3.200" data-track-index="8"><span>그래서 이 앱을 다운로드 받으시면 내</span></div>
+<div id="cap102" class="cap clip" data-start="225.327" data-duration="2.200" data-track-index="8"><span>컴퓨터에 맞는 AI를 추천해 주기 때문에</span></div>
+<div id="cap103" class="cap clip" data-start="227.547" data-duration="1.840" data-track-index="8"><span>이런 부분이 좋습니다</span></div>
+<div id="cap104" class="cap clip" data-start="229.407" data-duration="4.280" data-track-index="8"><span>그리고 앱을 잠금 할 수 있습니다</span></div>
+<div id="cap105" class="cap clip" data-start="233.707" data-duration="2.420" data-track-index="8"><span>그래서 비번을 걸어서 앱을 잠금해서 다른</span></div>
+<div id="cap106" class="cap clip" data-start="236.147" data-duration="3.630" data-track-index="8"><span>사람이 못 보도록 할 수 있구요</span></div>
+<div id="cap107" class="cap clip" data-start="241.087" data-duration="1.960" data-track-index="8"><span>그리고 앱 안에서 업데이트를 계속 할 수</span></div>
+<div id="cap108" class="cap clip" data-start="243.067" data-duration="4.320" data-track-index="8"><span>있습니다. 새로운 버전이 나오게 되면 앱</span></div>
+<div id="cap109" class="cap clip" data-start="247.407" data-duration="3.090" data-track-index="8"><span>안에서 업데이트를 하시면 됩니다</span></div>
+<div id="cap110" class="cap clip" data-start="250.807" data-duration="4.860" data-track-index="8"><span>하실 수 있는 일은 로컬 AI와</span></div>
+<div id="cap111" class="cap clip" data-start="255.687" data-duration="1.600" data-track-index="8"><span>대화를 하실 수 있구요</span></div>
+<div id="cap112" class="cap clip" data-start="257.307" data-duration="3.060" data-track-index="8"><span>강의 자료를 분석하실 수도 있고 학생을</span></div>
+<div id="cap113" class="cap clip" data-start="260.387" data-duration="3.820" data-track-index="8"><span>지도하는 상담 내용을 기록하실 수도</span></div>
+<div id="cap114" class="cap clip" data-start="264.227" data-duration="0.800" data-track-index="8"><span>있구요</span></div>
+<div id="cap115" class="cap clip" data-start="265.047" data-duration="3.200" data-track-index="8"><span>연구 자료 분석, 행정 업무 도움이,</span></div>
+<div id="cap116" class="cap clip" data-start="268.267" data-duration="2.080" data-track-index="8"><span>Excel 데이터 분석 이러한 작업을</span></div>
+<div id="cap117" class="cap clip" data-start="270.367" data-duration="2.000" data-track-index="8"><span>로컬에서 하실 수 있도록</span></div>
+<div id="cap118" class="cap clip" data-start="272.387" data-duration="1.520" data-track-index="8"><span>도와드리려고 합니다</span></div>
+<div id="cap119" class="cap clip" data-start="273.927" data-duration="3.000" data-track-index="8"><span>윈도우 용이나 맥 용으로 다운로드</span></div>
+<div id="cap120" class="cap clip" data-start="276.947" data-duration="1.210" data-track-index="8"><span>받으시면 되구요</span></div>
+<div id="cap121" class="cap clip" data-start="278.287" data-duration="3.210" data-track-index="8"><span>다운로드 받고 나시면</span></div>
+<div id="cap122" class="cap clip" data-start="286.707" data-duration="2.200" data-track-index="8"><span>이런 식으로 보이실 거에요</span></div>
+<div id="cap123" class="cap clip" data-start="288.927" data-duration="3.050" data-track-index="8"><span>다운로드 받으시면 시작하기</span></div>
+<div id="cap124" class="cap clip" data-start="292.087" data-duration="2.280" data-track-index="8"><span>다운로드 받고 설치까지 끝내고 나시면</span></div>
+<div id="cap125" class="cap clip" data-start="294.387" data-duration="1.610" data-track-index="8"><span>이렇게 보이실 거에요</span></div>
+<div id="cap126" class="cap clip" data-start="297.187" data-duration="3.480" data-track-index="8"><span>시작하기 누르면 이 앱은 내 컴퓨터</span></div>
+<div id="cap127" class="cap clip" data-start="300.687" data-duration="3.320" data-track-index="8"><span>안에서만 실행되고 컴퓨터에 맞는 AI를</span></div>
+<div id="cap128" class="cap clip" data-start="304.027" data-duration="1.970" data-track-index="8"><span>골라드립니다 라고 나와요</span></div>
+<div id="cap129" class="cap clip" data-start="312.227" data-duration="1.960" data-track-index="8"><span>시작하기를 누르고 나면 컴퓨터 확인으로</span></div>
+<div id="cap130" class="cap clip" data-start="314.207" data-duration="2.130" data-track-index="8"><span>넘어가구요</span></div>
+<div id="cap131" class="cap clip" data-start="316.367" data-duration="1.480" data-track-index="8"><span>교수님의 컴퓨터를 확인했습니다</span></div>
+<div id="cap132" class="cap clip" data-start="317.867" data-duration="3.240" data-track-index="8"><span>교수님, 제 컴퓨터는 윈도우 11을 쓰고</span></div>
+<div id="cap133" class="cap clip" data-start="321.127" data-duration="4.200" data-track-index="8"><span>있고 프로세서는 이걸 쓰고 있고 메모리는</span></div>
+<div id="cap134" class="cap clip" data-start="325.347" data-duration="4.120" data-track-index="8"><span>96GB이고 그래픽은 엔비디아 RTX</span></div>
+<div id="cap135" class="cap clip" data-start="329.487" data-duration="2.580" data-track-index="8"><span>4060이라고 알려줍니다</span></div>
+<div id="cap136" class="cap clip" data-start="332.087" data-duration="4.200" data-track-index="8"><span>저장 공간은 140GB 남았다고 하네요</span></div>
+<div id="cap137" class="cap clip" data-start="336.307" data-duration="3.180" data-track-index="8"><span>알맞은 AI 추천 받기를 누르면 이렇게</span></div>
+<div id="cap138" class="cap clip" data-start="339.507" data-duration="0.800" data-track-index="8"><span>나와요</span></div>
+<div id="cap139" class="cap clip" data-start="340.327" data-duration="5.520" data-track-index="8"><span>Qwen3 8B, 4B — 4B는</span></div>
+<div id="cap140" class="cap clip" data-start="345.867" data-duration="1.490" data-track-index="8"><span>가볍습니다</span></div>
+<div id="cap141" class="cap clip" data-start="347.567" data-duration="1.800" data-track-index="8"><span>근데 제 컴퓨터는 8B 정도 쓰면</span></div>
+<div id="cap142" class="cap clip" data-start="349.387" data-duration="1.130" data-track-index="8"><span>좋대요</span></div>
+<div id="cap143" class="cap clip" data-start="350.627" data-duration="4.400" data-track-index="8"><span>그리고 Gemma3 27B는 고성능이지만 조금</span></div>
+<div id="cap144" class="cap clip" data-start="355.047" data-duration="1.190" data-track-index="8"><span>느릴 수 있다</span></div>
+<div id="cap145" class="cap clip" data-start="356.267" data-duration="1.730" data-track-index="8"><span>속도가 조금 느릴 수 있다</span></div>
+<div id="cap146" class="cap clip" data-start="358.747" data-duration="0.300" data-track-index="8"><span>좋아요</span></div>
+<div id="cap147" class="cap clip" data-start="358.847" data-duration="3.260" data-track-index="8"><span>그래서 저는 Qwen3 8B를 다운로드</span></div>
+<div id="cap148" class="cap clip" data-start="362.127" data-duration="0.860" data-track-index="8"><span>받았습니다</span></div>
+<div id="cap149" class="cap clip" data-start="363.007" data-duration="4.780" data-track-index="8"><span>이걸 누르면 이 AI를 계속하기를 누르면</span></div>
+<div id="cap150" class="cap clip" data-start="367.807" data-duration="1.790" data-track-index="8"><span>하단에 이렇게 있어요</span></div>
+<div id="cap151" class="cap clip" data-start="369.627" data-duration="1.760" data-track-index="8"><span>이걸 누르면 이제 다운로드 받을 수</span></div>
+<div id="cap152" class="cap clip" data-start="371.407" data-duration="2.060" data-track-index="8"><span>있어요. 그리고 이 AI를 추천하는</span></div>
+<div id="cap153" class="cap clip" data-start="373.487" data-duration="1.200" data-track-index="8"><span>이유도 쭉 나와있습니다</span></div>
+<div id="cap154" class="cap clip" data-start="374.707" data-duration="3.100" data-track-index="8"><span>라이선스가 뭐고 용량은 얼마고</span></div>
+<div id="cap155" class="cap clip" data-start="377.827" data-duration="2.620" data-track-index="8"><span>그래서 처음에 로컬 AI를 다운받고 하실</span></div>
+<div id="cap156" class="cap clip" data-start="380.467" data-duration="3.220" data-track-index="8"><span>때 좀 고민되는 부분을 이 앱이</span></div>
+<div id="cap157" class="cap clip" data-start="383.707" data-duration="1.630" data-track-index="8"><span>도와줘요</span></div>
+<div id="cap158" class="cap clip" data-start="385.607" data-duration="3.560" data-track-index="8"><span>그래서 이걸 딱 누르면 이제 설치할 거냐</span></div>
+<div id="cap159" class="cap clip" data-start="389.187" data-duration="2.850" data-track-index="8"><span>물어봐요. AI 다운로드 하기</span></div>
+<div id="cap160" class="cap clip" data-start="392.107" data-duration="2.170" data-track-index="8"><span>다운로드 쭉 합니다</span></div>
+<div id="cap161" class="cap clip" data-start="394.447" data-duration="3.440" data-track-index="8"><span>실행 엔진, 저희는 Ollama를 활용하는데</span></div>
+<div id="cap162" class="cap clip" data-start="397.907" data-duration="3.820" data-track-index="8"><span>Ollama를 쭉 받고, 다음에 AI 모델</span></div>
+<div id="cap163" class="cap clip" data-start="401.747" data-duration="3.080" data-track-index="8"><span>Qwen3 8B를 다운로드 딱 받습니다</span></div>
+<div id="cap164" class="cap clip" data-start="404.847" data-duration="4.760" data-track-index="8"><span>그리고 테스트까지 해서 AI 사용을</span></div>
+<div id="cap165" class="cap clip" data-start="409.627" data-duration="2.030" data-track-index="8"><span>시작할 수 있습니다</span></div>
+<div id="cap166" class="cap clip" data-start="411.927" data-duration="2.410" data-track-index="8"><span>이렇게 하면 딱 이 화면이 나옵니다</span></div>
+<div id="cap167" class="cap clip" data-start="415.647" data-duration="1.800" data-track-index="8"><span>그래서 이제 본격적으로 앱을 쓰실 수</span></div>
+<div id="cap168" class="cap clip" data-start="417.467" data-duration="2.440" data-track-index="8"><span>있는데 이제 저도 앱을 한번 켜</span></div>
+<div id="cap169" class="cap clip" data-start="419.927" data-duration="2.590" data-track-index="8"><span>보겠습니다</span></div>
+<div id="cap170" class="cap clip" data-start="424.807" data-duration="5.340" data-track-index="8"><span>보시면 홈 화면에 이렇게 전체적인 내용이</span></div>
+<div id="cap171" class="cap clip" data-start="430.167" data-duration="1.060" data-track-index="8"><span>나와 있습니다</span></div>
+<div id="cap172" class="cap clip" data-start="431.247" data-duration="2.840" data-track-index="8"><span>교수님의 연구와 수업을 돕는 나만의 AI</span></div>
+<div id="cap173" class="cap clip" data-start="434.107" data-duration="2.400" data-track-index="8"><span>인터넷 없이도 작동합니다</span></div>
+<div id="cap174" class="cap clip" data-start="436.527" data-duration="2.260" data-track-index="8"><span>자료가 외부 서버로 나가지 않습니다</span></div>
+<div id="cap175" class="cap clip" data-start="439.127" data-duration="2.310" data-track-index="8"><span>클라우드 AI를 사용하지 않습니다</span></div>
+<div id="cap176" class="cap clip" data-start="441.587" data-duration="2.200" data-track-index="8"><span>좋아요. 그러면 우리도</span></div>
+<div id="cap177" class="cap clip" data-start="467.187" data-duration="1.430" data-track-index="8"><span>네 좋아요</span></div>
+<div id="cap178" class="cap clip" data-start="468.767" data-duration="1.810" data-track-index="8"><span>저도 랜선를 지금 뽑았어요</span></div>
+<div id="cap179" class="cap clip" data-start="470.727" data-duration="3.240" data-track-index="8"><span>지금 여기 보시면 지구본하고 이렇게 x</span></div>
+<div id="cap180" class="cap clip" data-start="473.987" data-duration="1.330" data-track-index="8"><span>표시가 이렇게 돼 있죠</span></div>
+<div id="cap181" class="cap clip" data-start="475.567" data-duration="3.350" data-track-index="8"><span>지금 인터넷 연결을 끊어버렸어요</span></div>
+<div id="cap182" class="cap clip" data-start="479.227" data-duration="1.090" data-track-index="8"><span>그렇게 했는데</span></div>
+<div id="cap183" class="cap clip" data-start="487.207" data-duration="2.380" data-track-index="8"><span>그러면 지금</span></div>
+<div id="cap184" class="cap clip" data-start="489.607" data-duration="3.070" data-track-index="8"><span>구글 열리나 볼게요</span></div>
+<div id="cap185" class="cap clip" data-start="492.747" data-duration="3.570" data-track-index="8"><span>지금 아예 크롬이 작동을 안 하네요</span></div>
+<div id="cap186" class="cap clip" data-start="496.347" data-duration="1.370" data-track-index="8"><span>됐어요</span></div>
+<div id="cap187" class="cap clip" data-start="498.647" data-duration="3.550" data-track-index="8"><span>그렇죠. 지금 이렇게 인터넷이 안 돼요</span></div>
+<div id="cap188" class="cap clip" data-start="502.827" data-duration="1.840" data-track-index="8"><span>보이시죠? 이렇게 인터넷이 안 되는</span></div>
+<div id="cap189" class="cap clip" data-start="504.687" data-duration="1.360" data-track-index="8"><span>상태에서</span></div>
+<div id="cap190" class="cap clip" data-start="506.067" data-duration="3.190" data-track-index="8"><span>이 로컬 AI를 써보겠습니다</span></div>
+<div id="cap191" class="cap clip" data-start="509.467" data-duration="3.850" data-track-index="8"><span>이 AI 제가 지금 써봤던 거 보여드리면</span></div>
+<div id="cap192" class="cap clip" data-start="518.147" data-duration="3.940" data-track-index="8"><span>AI와 대화하기 여기 보시면 제가 저는</span></div>
+<div id="cap193" class="cap clip" data-start="522.107" data-duration="1.440" data-track-index="8"><span>교육학과 교수입니다</span></div>
+<div id="cap194" class="cap clip" data-start="523.567" data-duration="2.960" data-track-index="8"><span>교육학과 생성형 AI의 관계에 대해서 수업을</span></div>
+<div id="cap195" class="cap clip" data-start="526.547" data-duration="0.800" data-track-index="8"><span>준비하고 싶습니다</span></div>
+<div id="cap196" class="cap clip" data-start="527.367" data-duration="2.230" data-track-index="8"><span>이렇게 답을 줬어요</span></div>
+<div id="cap197" class="cap clip" data-start="529.627" data-duration="2.480" data-track-index="8"><span>여기 왼쪽에 보이죠</span></div>
+<div id="cap198" class="cap clip" data-start="532.127" data-duration="2.340" data-track-index="8"><span>모델이. 얘가 지금 답을 준 건데</span></div>
+<div id="cap199" class="cap clip" data-start="534.487" data-duration="3.130" data-track-index="8"><span>여기에다가</span></div>
+<div id="cap200" class="cap clip" data-start="544.467" data-duration="3.310" data-track-index="8"><span>추가적인 질문을 넣어 보겠습니다</span></div>
+<div id="cap201" class="cap clip" data-start="550.387" data-duration="5.100" data-track-index="8"><span>그러면 AI와 교육의 윤리적 문제에</span></div>
+<div id="cap202" class="cap clip" data-start="555.507" data-duration="3.910" data-track-index="8"><span>대해서 더 깊이 설명해 주세요</span></div>
+<div id="cap203" class="cap clip" data-start="559.527" data-duration="1.270" data-track-index="8"><span>이렇게 요청해 보겠습니다</span></div>
+<div id="cap204" class="cap clip" data-start="560.867" data-duration="3.500" data-track-index="8"><span>지금 우측에 보면 인터넷 액세스 없으면</span></div>
+<div id="cap205" class="cap clip" data-start="564.387" data-duration="1.270" data-track-index="8"><span>여기 보이시죠?</span></div>
+<div id="cap206" class="cap clip" data-start="568.067" data-duration="6.840" data-track-index="8"><span>이 상태에서 보내기를 눌러도 AI가</span></div>
+<div id="cap207" class="cap clip" data-start="574.927" data-duration="2.030" data-track-index="8"><span>생각을 하고 있습니다</span></div>
+<div id="cap208" class="cap clip" data-start="577.187" data-duration="0.460" data-track-index="8"><span>답 나오죠</span></div>
+<div id="cap209" class="cap clip" data-start="577.667" data-duration="1.500" data-track-index="8"><span>금방 나오네요</span></div>
+<div id="cap210" class="cap clip" data-start="579.187" data-duration="4.000" data-track-index="8"><span>좋습니다. 생성형 AI와 교육 분야에서의</span></div>
+<div id="cap211" class="cap clip" data-start="583.207" data-duration="2.310" data-track-index="8"><span>윤리적 문제는 매우 중요한 주제입니다</span></div>
+<div id="cap212" class="cap clip" data-start="585.867" data-duration="1.420" data-track-index="8"><span>이렇게 나와요</span></div>
+<div id="cap213" class="cap clip" data-start="587.307" data-duration="3.260" data-track-index="8"><span>인터넷 없이도 이렇게 AI를</span></div>
+<div id="cap214" class="cap clip" data-start="590.587" data-duration="0.920" data-track-index="8"><span>쓸 수 있습니다</span></div>
+<div id="cap215" class="cap clip" data-start="591.527" data-duration="4.640" data-track-index="8"><span>새 대화를 누르시면 새 대화를 이어가실</span></div>
+<div id="cap216" class="cap clip" data-start="596.187" data-duration="4.060" data-track-index="8"><span>수 있고 제가 만든 이 로컬 앱 관심</span></div>
+<div id="cap217" class="cap clip" data-start="600.267" data-duration="2.820" data-track-index="8"><span>있으시면 한번 써보시면 좋을 것 같고요</span></div>
+<div id="cap218" class="cap clip" data-start="603.107" data-duration="3.540" data-track-index="8"><span>답변 중지하고 새 대화 누르면 새 대화</span></div>
+<div id="cap219" class="cap clip" data-start="606.667" data-duration="3.390" data-track-index="8"><span>다시 시작할 수 있고요</span></div>
+<div id="cap220" class="cap clip" data-start="610.447" data-duration="1.370" data-track-index="8"><span>강의 자료 분석하기</span></div>
+<div id="cap221" class="cap clip" data-start="611.847" data-duration="2.290" data-track-index="8"><span>여기 PPT를 하나 넣어 놨어요</span></div>
+<div id="cap222" class="cap clip" data-start="614.907" data-duration="3.960" data-track-index="8"><span>2,374자짜리 글자를 넣고 강의 자료</span></div>
+<div id="cap223" class="cap clip" data-start="618.887" data-duration="3.570" data-track-index="8"><span>요약을 했더니 이렇게 쭉 나왔습니다</span></div>
+<div id="cap224" class="cap clip" data-start="622.767" data-duration="2.600" data-track-index="8"><span>요거를 핵심 개념 추출 이렇게</span></div>
+<div id="cap225" class="cap clip" data-start="625.387" data-duration="1.750" data-track-index="8"><span>눌러볼게요</span></div>
+<div id="cap226" class="cap clip" data-start="627.447" data-duration="2.140" data-track-index="8"><span>그랬더니 이 ppt의 핵심 개념을 지금</span></div>
+<div id="cap227" class="cap clip" data-start="629.607" data-duration="2.700" data-track-index="8"><span>이렇게 인터넷 연결 없이도 쭉 답을</span></div>
+<div id="cap228" class="cap clip" data-start="632.327" data-duration="0.810" data-track-index="8"><span>줍니다</span></div>
+<div id="cap229" class="cap clip" data-start="633.767" data-duration="1.710" data-track-index="8"><span>꽤 빠르죠?</span></div>
+<div id="cap230" class="cap clip" data-start="637.567" data-duration="3.350" data-track-index="8"><span>좋아요. 이 ppt가 뭐냐면</span></div>
+<div id="cap231" class="cap clip" data-start="641.687" data-duration="5.560" data-track-index="8"><span>제가 미리 준비한 실습 자료인데요</span></div>
+<div id="cap232" class="cap clip" data-start="647.267" data-duration="2.600" data-track-index="8"><span>강의 자료 AI 시대의 윤리</span></div>
+<div id="cap233" class="cap clip" data-start="649.887" data-duration="2.180" data-track-index="8"><span>이런 자료도 제가 지금 제 네이버 카페</span></div>
+<div id="cap234" class="cap clip" data-start="652.087" data-duration="0.950" data-track-index="8"><span>올려놓겠습니다</span></div>
+<div id="cap235" class="cap clip" data-start="653.087" data-duration="1.830" data-track-index="8"><span>고정 댓글을 봐주세요</span></div>
+<div id="cap236" class="cap clip" data-start="656.227" data-duration="5.260" data-track-index="8"><span>지금 10장짜리 PPT를 제가</span></div>
+<div id="cap237" class="cap clip" data-start="661.507" data-duration="0.950" data-track-index="8"><span>넣은 거죠</span></div>
+<div id="cap238" class="cap clip" data-start="662.727" data-duration="2.480" data-track-index="8"><span>넣었더니 핵심 개념을 이렇게 추출해</span></div>
+<div id="cap239" class="cap clip" data-start="665.227" data-duration="0.600" data-track-index="8"><span>줬습니다</span></div>
+<div id="cap240" class="cap clip" data-start="665.847" data-duration="5.840" data-track-index="8"><span>워드로 저장도 해주고 그리고 학생 지도</span></div>
+<div id="cap241" class="cap clip" data-start="671.707" data-duration="3.020" data-track-index="8"><span>교수님들 뭐 학생들이랑 상담하거나 할 때</span></div>
+<div id="cap242" class="cap clip" data-start="674.747" data-duration="4.420" data-track-index="8"><span>기록을 하고 AI의 도움을 받고 싶으실</span></div>
+<div id="cap243" class="cap clip" data-start="679.187" data-duration="2.580" data-track-index="8"><span>때가 있으실 텐데 개인정보 때문에</span></div>
+<div id="cap244" class="cap clip" data-start="681.787" data-duration="2.900" data-track-index="8"><span>Claude나 ChatGPT 쓰시기 어려우셨을 수</span></div>
+<div id="cap245" class="cap clip" data-start="684.707" data-duration="2.330" data-track-index="8"><span>있습니다. 그래서 학생 이름</span></div>
+<div id="cap246" class="cap clip" data-start="687.087" data-duration="2.660" data-track-index="8"><span>학생 이름은 실명을 넣기보다는</span></div>
+<div id="cap247" class="cap clip" data-start="689.767" data-duration="2.100" data-track-index="8"><span>교수님이 아실 수 있는 별칭으로 하시는</span></div>
+<div id="cap248" class="cap clip" data-start="691.887" data-duration="1.270" data-track-index="8"><span>게 좋을 것 같아요</span></div>
+<div id="cap249" class="cap clip" data-start="693.387" data-duration="2.640" data-track-index="8"><span>이게 로컬 AI가 보안이 된다고 하지만</span></div>
+<div id="cap250" class="cap clip" data-start="696.047" data-duration="2.340" data-track-index="8"><span>그래도 조심할수록 좋죠</span></div>
+<div id="cap251" class="cap clip" data-start="698.407" data-duration="2.150" data-track-index="8"><span>상담 내역을 남겼습니다</span></div>
+<div id="cap252" class="cap clip" data-start="700.627" data-duration="2.480" data-track-index="8"><span>학생 A. 앞으로의 진로에 대한 고민</span></div>
+<div id="cap253" class="cap clip" data-start="703.127" data-duration="2.990" data-track-index="8"><span>상담. 대학원을 갈지 취업을 할지 고민</span></div>
+<div id="cap254" class="cap clip" data-start="706.567" data-duration="3.400" data-track-index="8"><span>이렇게 하고 이 내용을 가지고 지도 계획</span></div>
+<div id="cap255" class="cap clip" data-start="709.987" data-duration="5.060" data-track-index="8"><span>초안 이렇게 누르고 상담내역 내용 요약을</span></div>
+<div id="cap256" class="cap clip" data-start="715.067" data-duration="2.950" data-track-index="8"><span>누르면 AI가 이렇게 밑에</span></div>
+<div id="cap257" class="cap clip" data-start="719.067" data-duration="0.840" data-track-index="8"><span>답을 줍니다</span></div>
+<div id="cap258" class="cap clip" data-start="719.927" data-duration="1.540" data-track-index="8"><span>뭐죠, 지도 계획 초안</span></div>
+<div id="cap259" class="cap clip" data-start="721.487" data-duration="2.190" data-track-index="8"><span>지금 밑에 쭉 나오죠</span></div>
+<div id="cap260" class="cap clip" data-start="723.727" data-duration="1.700" data-track-index="8"><span>인터넷 연결 없이도 AI가 이렇게</span></div>
+<div id="cap261" class="cap clip" data-start="725.447" data-duration="2.370" data-track-index="8"><span>답을 줍니다</span></div>
+<div id="cap262" class="cap clip" data-start="731.327" data-duration="3.040" data-track-index="8"><span>Qwen3 8B, 또 한국어가 뭐 깨지거나</span></div>
+<div id="cap263" class="cap clip" data-start="734.387" data-duration="1.090" data-track-index="8"><span>그런게 없습니다</span></div>
+<div id="cap264" class="cap clip" data-start="735.647" data-duration="1.640" data-track-index="8"><span>이걸 복사해서 쓰셔도 되고 워드로</span></div>
+<div id="cap265" class="cap clip" data-start="737.307" data-duration="1.920" data-track-index="8"><span>저장하실 수도 있고 텍스트로 저장하실</span></div>
+<div id="cap266" class="cap clip" data-start="739.247" data-duration="1.010" data-track-index="8"><span>수도 있습니다</span></div>
+<div id="cap267" class="cap clip" data-start="740.927" data-duration="3.240" data-track-index="8"><span>그리고 연구 자료 분석</span></div>
+<div id="cap268" class="cap clip" data-start="744.187" data-duration="3.620" data-track-index="8"><span>교수님들의 연구 자료를 워드 형태에</span></div>
+<div id="cap269" class="cap clip" data-start="747.827" data-duration="3.330" data-track-index="8"><span>넣으면 1,910자짜리 자료</span></div>
+<div id="cap270" class="cap clip" data-start="751.447" data-duration="1.560" data-track-index="8"><span>이것도 제가 미리 준비해 놓은</span></div>
+<div id="cap271" class="cap clip" data-start="753.027" data-duration="2.230" data-track-index="8"><span>자료인데요</span></div>
+<div id="cap272" class="cap clip" data-start="760.387" data-duration="4.470" data-track-index="8"><span>이렇게 연구 자료입니다</span></div>
+<div id="cap273" class="cap clip" data-start="765.187" data-duration="4.860" data-track-index="8"><span>이것도 이제 넣었더니 이렇게 연구 보고서</span></div>
+<div id="cap274" class="cap clip" data-start="770.067" data-duration="3.860" data-track-index="8"><span>초안 또 쭉 써주고 저는 놀라운게 뭐냐면</span></div>
+<div id="cap275" class="cap clip" data-start="773.947" data-duration="4.410" data-track-index="8"><span>이걸 요청했을 때 나오는 답의 속도에요</span></div>
+<div id="cap276" class="cap clip" data-start="778.547" data-duration="2.640" data-track-index="8"><span>제 컴퓨터에서는 8B 정도는 이렇게</span></div>
+<div id="cap277" class="cap clip" data-start="781.207" data-duration="1.190" data-track-index="8"><span>나옵니다</span></div>
+<div id="cap278" class="cap clip" data-start="783.147" data-duration="0.890" data-track-index="8"><span>와</span></div>
+<div id="cap279" class="cap clip" data-start="786.947" data-duration="3.040" data-track-index="8"><span>이제 좋은 컴퓨터 쓰시는 교수님들도 한번</span></div>
+<div id="cap280" class="cap clip" data-start="790.007" data-duration="1.010" data-track-index="8"><span>꼭 해보세요</span></div>
+<div id="cap281" class="cap clip" data-start="791.807" data-duration="1.880" data-track-index="8"><span>그리고 8B가 좀 부담스러우신 분들은</span></div>
+<div id="cap282" class="cap clip" data-start="793.707" data-duration="2.520" data-track-index="8"><span>이거보다 좀 작은 모델 추천 받아서</span></div>
+<div id="cap283" class="cap clip" data-start="796.247" data-duration="1.330" data-track-index="8"><span>써보셔도 좋을 것 같습니다</span></div>
+<div id="cap284" class="cap clip" data-start="797.767" data-duration="4.560" data-track-index="8"><span>와 이렇게 깔끔하게 나오고 Ollama로 그냥</span></div>
+<div id="cap285" class="cap clip" data-start="802.347" data-duration="2.720" data-track-index="8"><span>쓰셔도 좋은데 이렇게 앱으로 만들어놓고</span></div>
+<div id="cap286" class="cap clip" data-start="805.087" data-duration="3.320" data-track-index="8"><span>보니까 깔끔하고 아주 좋네요</span></div>
+<div id="cap287" class="cap clip" data-start="808.427" data-duration="3.180" data-track-index="8"><span>행정 업무 메모 모음도 있어요</span></div>
+<div id="cap288" class="cap clip" data-start="811.627" data-duration="4.440" data-track-index="8"><span>회의록 요약 하면 제가 넣은 자료인데</span></div>
+<div id="cap289" class="cap clip" data-start="816.087" data-duration="2.590" data-track-index="8"><span>이것도 한번 열어보면</span></div>
+<div id="cap290" class="cap clip" data-start="823.747" data-duration="4.900" data-track-index="8"><span>이렇게 행정 업무 학과 회의 회의록 요약</span></div>
+<div id="cap291" class="cap clip" data-start="828.667" data-duration="2.460" data-track-index="8"><span>이런 식으로 행정 업무 하실 경우도</span></div>
+<div id="cap292" class="cap clip" data-start="831.147" data-duration="3.580" data-track-index="8"><span>많죠. 이런 것도 여기 넣어서 회의록</span></div>
+<div id="cap293" class="cap clip" data-start="834.747" data-duration="1.660" data-track-index="8"><span>요약 쭉 나와요</span></div>
+<div id="cap294" class="cap clip" data-start="836.427" data-duration="3.200" data-track-index="8"><span>이렇게 활용하실 수 있고 엑셀 데이터</span></div>
+<div id="cap295" class="cap clip" data-start="839.647" data-duration="5.030" data-track-index="8"><span>분석 성적 데이터를 가상으로 넣었어요</span></div>
+<div id="cap296" class="cap clip" data-start="845.287" data-duration="3.440" data-track-index="8"><span>넣고 나니까 이 분석 결과 보고서를</span></div>
+<div id="cap297" class="cap clip" data-start="848.747" data-duration="3.420" data-track-index="8"><span>AI에게 해달라고 제가 요청하니까 이렇게</span></div>
+<div id="cap298" class="cap clip" data-start="852.187" data-duration="2.700" data-track-index="8"><span>이 데이터는 48명의 학생 성적이</span></div>
+<div id="cap299" class="cap clip" data-start="854.907" data-duration="0.800" data-track-index="8"><span>들어가있다</span></div>
+<div id="cap300" class="cap clip" data-start="856.287" data-duration="2.920" data-track-index="8"><span>사실 이런 작업하려고 이런 로컬 AI</span></div>
+<div id="cap301" class="cap clip" data-start="859.227" data-duration="0.820" data-track-index="8"><span>쓰는 거죠</span></div>
+<div id="cap302" class="cap clip" data-start="860.067" data-duration="2.480" data-track-index="8"><span>왜냐하면 그냥 Claude에게 주기 어려운</span></div>
+<div id="cap303" class="cap clip" data-start="862.567" data-duration="3.680" data-track-index="8"><span>데이터를 분석해달라고 요청하기 위해서</span></div>
+<div id="cap304" class="cap clip" data-start="866.267" data-duration="2.110" data-track-index="8"><span>우리가 로컬 AI를 쓰는 겁니다</span></div>
+<div id="cap305" class="cap clip" data-start="868.547" data-duration="5.310" data-track-index="8"><span>성적 데이터 자료도 한번 봐볼게요</span></div>
+<div id="cap306" class="cap clip" data-start="875.247" data-duration="3.850" data-track-index="8"><span>이런 거구요</span></div>
+<div id="cap307" class="cap clip" data-start="880.087" data-duration="2.880" data-track-index="8"><span>좋아요. 이름 정도는 빼고 쓰시는 것을</span></div>
+<div id="cap308" class="cap clip" data-start="882.987" data-duration="0.880" data-track-index="8"><span>추천드립니다</span></div>
+<div id="cap309" class="cap clip" data-start="883.887" data-duration="3.900" data-track-index="8"><span>로컬 AI가 보안적으로 훨씬 낫지만</span></div>
+<div id="cap310" class="cap clip" data-start="887.807" data-duration="3.100" data-track-index="8"><span>그래도 조심하면서 쓰면 좋을 것</span></div>
+<div id="cap311" class="cap clip" data-start="890.927" data-duration="1.010" data-track-index="8"><span>같습니다</span></div>
+<div id="cap312" class="cap clip" data-start="892.967" data-duration="3.920" data-track-index="8"><span>이렇게 데이터를 줬더니 데이터 분석을 쭉</span></div>
+<div id="cap313" class="cap clip" data-start="896.907" data-duration="1.250" data-track-index="8"><span>해주고요</span></div>
+<div id="cap314" class="cap clip" data-start="898.227" data-duration="2.550" data-track-index="8"><span>요즘은 로컬 AI도 많이 좋아졌어요</span></div>
+<div id="cap315" class="cap clip" data-start="901.267" data-duration="3.480" data-track-index="8"><span>물론 Claude, Opus 이런 모델 보다는</span></div>
+<div id="cap316" class="cap clip" data-start="904.767" data-duration="3.340" data-track-index="8"><span>안되겠지만 아직은</span></div>
+<div id="cap317" class="cap clip" data-start="908.127" data-duration="3.580" data-track-index="8"><span>이렇게 내 AI 모델 관리 눌러보시면</span></div>
+<div id="cap318" class="cap clip" data-start="911.727" data-duration="2.570" data-track-index="8"><span>설치된 AI가 쭉 나오고요</span></div>
+<div id="cap319" class="cap clip" data-start="914.347" data-duration="3.150" data-track-index="8"><span>제가 추천도 해줘요</span></div>
+<div id="cap320" class="cap clip" data-start="917.607" data-duration="3.440" data-track-index="8"><span>내가 문서 요약을 중심으로 쓸지, 내가</span></div>
+<div id="cap321" class="cap clip" data-start="921.067" data-duration="3.260" data-track-index="8"><span>쓰고 싶은 용도를 누르면 이렇게 추천도</span></div>
+<div id="cap322" class="cap clip" data-start="924.347" data-duration="1.510" data-track-index="8"><span>해주고요</span></div>
+<div id="cap323" class="cap clip" data-start="926.767" data-duration="1.200" data-track-index="8"><span>개인정보 보호 설정</span></div>
+<div id="cap324" class="cap clip" data-start="927.987" data-duration="5.540" data-track-index="8"><span>이거 보시면 이렇게 어떻게 써야 이거를</span></div>
+<div id="cap325" class="cap clip" data-start="933.547" data-duration="2.480" data-track-index="8"><span>안전하게 쓸지도 들어가 있어요</span></div>
+<div id="cap326" class="cap clip" data-start="936.047" data-duration="3.030" data-track-index="8"><span>이거 한번씩 읽어보시면 좋을 것 같아요</span></div>
+<div id="cap327" class="cap clip" data-start="939.487" data-duration="0.950" data-track-index="8"><span>좋구요</span></div>
+<div id="cap328" class="cap clip" data-start="942.007" data-duration="1.830" data-track-index="8"><span>이 앱이 하지 않는 것</span></div>
+<div id="cap329" class="cap clip" data-start="943.927" data-duration="1.700" data-track-index="8"><span>외부 AI 서비스에 자료를 보내지</span></div>
+<div id="cap330" class="cap clip" data-start="945.647" data-duration="1.070" data-track-index="8"><span>않습니다</span></div>
+<div id="cap331" class="cap clip" data-start="947.327" data-duration="0.950" data-track-index="8"><span>좋습니다</span></div>
+<div id="cap332" class="cap clip" data-start="948.667" data-duration="1.330" data-track-index="8"><span>그리고 앱 업데이트</span></div>
+<div id="cap333" class="cap clip" data-start="950.627" data-duration="1.500" data-track-index="8"><span>이거는 가끔씩 이렇게 한번 눌러봐 주시면</span></div>
+<div id="cap334" class="cap clip" data-start="952.147" data-duration="0.800" data-track-index="8"><span>좋을 것 같아요</span></div>
+<div id="cap335" class="cap clip" data-start="952.987" data-duration="1.610" data-track-index="8"><span>업데이트 확인하기</span></div>
+<div id="cap336" class="cap clip" data-start="955.587" data-duration="2.540" data-track-index="8"><span>지금은 네트워크 제가 끊어놔가지고</span></div>
+<div id="cap337" class="cap clip" data-start="958.147" data-duration="4.540" data-track-index="8"><span>안보이는데 이걸 눌렀을 때 업데이트 할</span></div>
+<div id="cap338" class="cap clip" data-start="962.707" data-duration="1.420" data-track-index="8"><span>게 있으면 여기 나와요</span></div>
+<div id="cap339" class="cap clip" data-start="964.147" data-duration="1.380" data-track-index="8"><span>다른 버전 받으세요</span></div>
+<div id="cap340" class="cap clip" data-start="965.547" data-duration="2.540" data-track-index="8"><span>나오면 그걸 눌러서 다운로드 받으시면</span></div>
+<div id="cap341" class="cap clip" data-start="968.107" data-duration="1.460" data-track-index="8"><span>앱이 바뀝니다</span></div>
+<div id="cap342" class="cap clip" data-start="969.587" data-duration="2.320" data-track-index="8"><span>왜냐하면 계속 앱을 수정해야 될 것</span></div>
+<div id="cap343" class="cap clip" data-start="971.927" data-duration="0.800" data-track-index="8"><span>같아요</span></div>
+<div id="cap344" class="cap clip" data-start="973.087" data-duration="1.820" data-track-index="8"><span>새로운 아이디어 주시면 제가 수정을 할</span></div>
+<div id="cap345" class="cap clip" data-start="974.927" data-duration="0.800" data-track-index="8"><span>것 같은데</span></div>
+<div id="cap346" class="cap clip" data-start="976.087" data-duration="1.850" data-track-index="8"><span>그렇기 때문에 앱 업데이트</span></div>
+<div id="cap347" class="cap clip" data-start="978.047" data-duration="0.940" data-track-index="8"><span>이거 누르세요</span></div>
+<div id="cap348" class="cap clip" data-start="979.007" data-duration="2.620" data-track-index="8"><span>가끔씩 눌러보시면 업데이트 할 게 있다고</span></div>
+<div id="cap349" class="cap clip" data-start="981.647" data-duration="0.820" data-track-index="8"><span>나올 겁니다</span></div>
+<div id="cap350" class="cap clip" data-start="982.487" data-duration="3.100" data-track-index="8"><span>그러면 그걸 눌러서 설치를 하시면 앱이</span></div>
+<div id="cap351" class="cap clip" data-start="985.607" data-duration="0.800" data-track-index="8"><span>바뀝니다</span></div>
+<div id="cap352" class="cap clip" data-start="987.127" data-duration="2.180" data-track-index="8"><span>이 앱에 대해서 이렇게 제가 쭉 설명해</span></div>
+<div id="cap353" class="cap clip" data-start="989.327" data-duration="2.800" data-track-index="8"><span>놨고 AI 실행 엔진은 Ollama이고요</span></div>
+<div id="cap354" class="cap clip" data-start="992.147" data-duration="2.680" data-track-index="8"><span>지금 제가 쓰고 있었던 모델은</span></div>
+<div id="cap355" class="cap clip" data-start="994.847" data-duration="0.800" data-track-index="8"><span>Qwen3입니다</span></div>
+<div id="cap356" class="cap clip" data-start="997.407" data-duration="2.440" data-track-index="8"><span>그리고 제가 뭘로 만들었고 이런 게 쭉</span></div>
+<div id="cap357" class="cap clip" data-start="999.867" data-duration="1.570" data-track-index="8"><span>적혀 있습니다</span></div>
+<div id="cap358" class="cap clip" data-start="1001.667" data-duration="2.000" data-track-index="8"><span>이 앱에서 쓸 수 있는 모델도 쭉 적혀</span></div>
+<div id="cap359" class="cap clip" data-start="1003.687" data-duration="1.130" data-track-index="8"><span>있고요</span></div>
+<div id="cap360" class="cap clip" data-start="1004.927" data-duration="1.850" data-track-index="8"><span>학생 정보를 넣어도 되나요?</span></div>
+<div id="cap361" class="cap clip" data-start="1007.807" data-duration="1.820" data-track-index="8"><span>보시면 학생 정보를 외부로 보내지 않고</span></div>
+<div id="cap362" class="cap clip" data-start="1009.647" data-duration="2.200" data-track-index="8"><span>암호화해 이 컴퓨터에만 두도록</span></div>
+<div id="cap363" class="cap clip" data-start="1011.867" data-duration="0.850" data-track-index="8"><span>만들었습니다</span></div>
+<div id="cap364" class="cap clip" data-start="1014.227" data-duration="3.700" data-track-index="8"><span>다만 이게 안전하다고 이 앱이 안전하다고</span></div>
+<div id="cap365" class="cap clip" data-start="1017.947" data-duration="2.360" data-track-index="8"><span>개인정보 처리가 허용되는 것은 아닙니다</span></div>
+<div id="cap366" class="cap clip" data-start="1020.327" data-duration="3.400" data-track-index="8"><span>소속 대학의 규정을 확인하시고,</span></div>
+<div id="cap367" class="cap clip" data-start="1023.747" data-duration="2.870" data-track-index="8"><span>보안 점검을 모두 초록색으로 바꾸시고,</span></div>
+<div id="cap368" class="cap clip" data-start="1027.607" data-duration="3.170" data-track-index="8"><span>그리고 꼭 필요한 정보만 넣으세요</span></div>
+<div id="cap369" class="cap clip" data-start="1032.487" data-duration="2.350" data-track-index="8"><span>그리고 내보낸 파일을 잘 관리하세요</span></div>
+<div id="cap370" class="cap clip" data-start="1034.947" data-duration="3.600" data-track-index="8"><span>여기서 앱으로 만든 파일을 잘</span></div>
+<div id="cap371" class="cap clip" data-start="1038.567" data-duration="1.410" data-track-index="8"><span>관리하시고,</span></div>
+<div id="cap372" class="cap clip" data-start="1040.207" data-duration="2.800" data-track-index="8"><span>다 쓰시고 나면 상담 기록이나 분석</span></div>
+<div id="cap373" class="cap clip" data-start="1043.027" data-duration="2.410" data-track-index="8"><span>기록은 바로 지우시면 좋을 것 같아요</span></div>
+<div id="cap374" class="cap clip" data-start="1046.187" data-duration="2.100" data-track-index="8"><span>좋습니다. 이런 정도로 제가 설명을 해</span></div>
+<div id="cap375" class="cap clip" data-start="1048.307" data-duration="0.950" data-track-index="8"><span>드렸고,</span></div>
+<div id="cap376" class="cap clip" data-start="1050.387" data-duration="3.460" data-track-index="8"><span>지금 잠그기를 누르면 앱을 잠글 수</span></div>
+<div id="cap377" class="cap clip" data-start="1053.867" data-duration="3.800" data-track-index="8"><span>있고, 암호를 걸어 놓고 쓰시면 좋을 것</span></div>
+<div id="cap378" class="cap clip" data-start="1057.687" data-duration="0.320" data-track-index="8"><span>같아요</span></div>
+<div id="cap379" class="cap clip" data-start="1058.027" data-duration="2.200" data-track-index="8"><span>이게 아무래도 정보가 들어가다 보니까,</span></div>
+<div id="cap380" class="cap clip" data-start="1060.247" data-duration="2.900" data-track-index="8"><span>그래서 잠금 풀면 이 앱을 다시 쓰실 수</span></div>
+<div id="cap381" class="cap clip" data-start="1063.167" data-duration="0.800" data-track-index="8"><span>있습니다</span></div>
+<div id="cap382" class="cap clip" data-start="1064.907" data-duration="2.410" data-track-index="8"><span>그래서 교수님들이 많이 하시는 고민,</span></div>
+<div id="cap383" class="cap clip" data-start="1067.547" data-duration="2.630" data-track-index="8"><span>AI에게 내 자료를 줄 수가 없다</span></div>
+<div id="cap384" class="cap clip" data-start="1070.207" data-duration="2.960" data-track-index="8"><span>거기에 개인정보나 많은 내 개인 연구</span></div>
+<div id="cap385" class="cap clip" data-start="1073.187" data-duration="0.920" data-track-index="8"><span>자료가 있다</span></div>
+<div id="cap386" class="cap clip" data-start="1074.127" data-duration="2.840" data-track-index="8"><span>그럼 고민을 해결해 드리기 위해서 제가</span></div>
+<div id="cap387" class="cap clip" data-start="1076.987" data-duration="1.640" data-track-index="8"><span>필로소피 로컬 AI 앱을</span></div>
+<div id="cap388" class="cap clip" data-start="1078.647" data-duration="1.730" data-track-index="8"><span>한번 만들어 봤습니다</span></div>
+<div id="cap389" class="cap clip" data-start="1081.047" data-duration="1.660" data-track-index="8"><span>조금 어떻게 수정됐으면 좋겠다, 어떤</span></div>
+<div id="cap390" class="cap clip" data-start="1082.727" data-duration="1.940" data-track-index="8"><span>기능이 들어갔으면 좋겠다라는 아이디어가</span></div>
+<div id="cap391" class="cap clip" data-start="1084.687" data-duration="3.560" data-track-index="8"><span>있으시면 댓글 달아주시면 제가 반영을</span></div>
+<div id="cap392" class="cap clip" data-start="1088.267" data-duration="1.050" data-track-index="8"><span>하도록 하겠습니다</span></div>
+<div id="cap393" class="cap clip" data-start="1095.420" data-duration="2.140" data-track-index="8"><span>이제 실습까지 끝났습니다</span></div>
+<div id="cap394" class="cap clip" data-start="1097.580" data-duration="1.560" data-track-index="8"><span>제가 보여드린 것처럼 로컬 AI를</span></div>
+<div id="cap395" class="cap clip" data-start="1099.160" data-duration="2.520" data-track-index="8"><span>활용하면 인터넷 연결 없이도 내</span></div>
+<div id="cap396" class="cap clip" data-start="1101.700" data-duration="2.570" data-track-index="8"><span>컴퓨터에서 AI를 활용할 수 있습니다</span></div>
+<div id="cap397" class="cap clip" data-start="1104.420" data-duration="2.020" data-track-index="8"><span>교수님들께서 AI를 쓰시고 싶으셔도</span></div>
+<div id="cap398" class="cap clip" data-start="1106.460" data-duration="1.360" data-track-index="8"><span>개인정보 때문에 쓰시지 못하는</span></div>
+<div id="cap399" class="cap clip" data-start="1107.840" data-duration="2.490" data-track-index="8"><span>경우가 많으셨다고 알고 있습니다</span></div>
+<div id="cap400" class="cap clip" data-start="1110.520" data-duration="1.480" data-track-index="8"><span>오늘 다뤄본 필로소피 로컬 AI</span></div>
+<div id="cap401" class="cap clip" data-start="1112.020" data-duration="2.440" data-track-index="8"><span>앱이 교수님들께 도움이</span></div>
+<div id="cap402" class="cap clip" data-start="1114.480" data-duration="0.680" data-track-index="8"><span>될 수 있다고</span></div>
+<div id="cap403" class="cap clip" data-start="1115.180" data-duration="0.990" data-track-index="8"><span>생각합니다</span></div>
+<div id="cap404" class="cap clip" data-start="1116.440" data-duration="2.960" data-track-index="8"><span>다만 이걸 쓰실 때도 개인정보 관련해서는</span></div>
+<div id="cap405" class="cap clip" data-start="1119.420" data-duration="1.920" data-track-index="8"><span>최대한 조심하시면서 쓰시면</span></div>
+<div id="cap406" class="cap clip" data-start="1121.360" data-duration="0.660" data-track-index="8"><span>좋을 것 같습니다</span></div>
+<div id="cap407" class="cap clip" data-start="1122.040" data-duration="2.920" data-track-index="8"><span>이 앱 잠금 암호 꼭 설정하시고</span></div>
+<div id="cap408" class="cap clip" data-start="1124.980" data-duration="2.360" data-track-index="8"><span>학생정보는 꼭 필요한 만큼만 넣어</span></div>
+<div id="cap409" class="cap clip" data-start="1127.360" data-duration="0.660" data-track-index="8"><span>주세요</span></div>
+<div id="cap410" class="cap clip" data-start="1128.040" data-duration="2.700" data-track-index="8"><span>가능하면 실명 대신 별칭을 쓰시고</span></div>
+<div id="cap411" class="cap clip" data-start="1130.760" data-duration="2.240" data-track-index="8"><span>주민등록번호나 건강정보 같은 민감한</span></div>
+<div id="cap412" class="cap clip" data-start="1133.020" data-duration="2.150" data-track-index="8"><span>정보는 넣지 말아주세요</span></div>
+<div id="cap413" class="cap clip" data-start="1135.280" data-duration="1.600" data-track-index="8"><span>그리고 학교의 개인정보 규정을 먼저</span></div>
+<div id="cap414" class="cap clip" data-start="1136.900" data-duration="1.840" data-track-index="8"><span>확인하시고 이 앱을 쓰시면</span></div>
+<div id="cap415" class="cap clip" data-start="1138.760" data-duration="0.950" data-track-index="8"><span>좋을 것 같습니다</span></div>
+<div id="cap416" class="cap clip" data-start="1139.980" data-duration="2.400" data-track-index="8"><span>그리고 AI가 주는 답은 초안이라고만</span></div>
+<div id="cap417" class="cap clip" data-start="1142.400" data-duration="2.240" data-track-index="8"><span>생각하시고 활용해주시면 좋겠습니다</span></div>
+<div id="cap418" class="cap clip" data-start="1144.660" data-duration="2.160" data-track-index="8"><span>내 컴퓨터 안에 로컬 AI 안전하게</span></div>
+<div id="cap419" class="cap clip" data-start="1146.840" data-duration="1.400" data-track-index="8"><span>잘 활용하시면 좋겠습니다</span></div>
+<div id="cap420" class="cap clip" data-start="1148.260" data-duration="3.060" data-track-index="8"><span>의견이 있으시면 댓글로 남겨주시면 제가</span></div>
+<div id="cap421" class="cap clip" data-start="1151.340" data-duration="2.200" data-track-index="8"><span>이 앱을 잘 수정하고 다듬어서</span></div>
+<div id="cap422" class="cap clip" data-start="1153.560" data-duration="2.880" data-track-index="8"><span>교수님들께 더 도움이 되도록 이 앱을</span></div>
+<div id="cap423" class="cap clip" data-start="1156.460" data-duration="1.100" data-track-index="8"><span>바꿔 나가겠습니다</span></div>
+<div id="cap424" class="cap clip" data-start="1157.580" data-duration="1.100" data-track-index="8"><span>오늘의 영상 여기까지입니다</span></div>
+<div id="cap425" class="cap clip" data-start="1158.700" data-duration="1.620" data-track-index="8"><span>영상이 도움이 되셨다면 좋아요와 구독을</span></div>
+<div id="cap426" class="cap clip" data-start="1160.340" data-duration="1.430" data-track-index="8"><span>눌러주시면 감사하겠습니다</span></div>
+<div id="cap427" class="cap clip" data-start="1161.840" data-duration="0.800" data-track-index="8"><span>감사합니다</span></div>
+  <div id="endfade"></div>
+</div>
+<script>
+(function () {
+  const tl = gsap.timeline({ paused: true });
+  const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: .6 }, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(1.8)' }, t);
+  const up = (sel, t, dy = 30) => tl.fromTo(sel, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' }, t);
+  const rise = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 60, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .6, ease: 'expo.out' }, t);
+  const slide = (sel, t, dx = 60) => tl.fromTo(sel, { opacity: 0, x: dx }, { opacity: 1, x: 0, duration: .5, ease: 'power3.out' }, t);
+  const sweep = (sel, t) => tl.fromTo(sel, { backgroundSize: '0% 38%' }, { backgroundSize: '100% 38%', duration: .7, ease: 'power2.inOut', immediateRender: false }, t);
+  const draw = (sel, t, d) => tl.fromTo(sel, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: d, ease: 'power2.out' }, t);
+  const fill = (sel, t, pct) => tl.fromTo(sel, { width: '0%' }, { width: pct + '%', duration: 1.0, ease: 'power3.out' }, t);
+  const type = () => {};
+  const confetti = (pre, t) => {
+    const host = document.getElementById(pre + '-c'); const cols = ['#ef8a6f', '#e7a92c', '#4fb489', '#9a8be6', '#e8708f', '#6aa3e6'];
+    for (let i = 0; i < 22; i++) {
+      const p = document.createElement('span'); p.className = 'cf'; p.style.background = cols[i % 6];
+      p.style.left = '50%'; p.style.top = '50%'; host.appendChild(p);
+      const a = (i / 22) * Math.PI * 2, r = 260 + (i % 4) * 60;
+      tl.fromTo(p, { opacity: 1, x: 0, y: 0, rotation: 0 }, { opacity: 0, x: Math.cos(a) * r, y: Math.sin(a) * r * .6, rotation: 200 + i * 20, duration: 1.3, ease: 'power3.out', immediateRender: false }, t);
+    }
+  };
+
+  // cover backgrounds
+  
+  
+  tl.to('#cov1-in', {opacity:0, duration:0.45, ease:'power2.in'}, 144.94);
+  tl.fromTo('#cov1-bl0', {x:0, y:0}, {x:60, y:40, duration:7, ease:'sine.inOut', yoyo:true, repeat:19}, 0.00);
+  tl.fromTo('#cov1-bl1', {x:0, y:0}, {x:-70, y:-50, duration:7, ease:'sine.inOut', yoyo:true, repeat:19}, 0.00);
+  tl.fromTo('#cov1-bl2', {x:0, y:0}, {x:-50, y:60, duration:7, ease:'sine.inOut', yoyo:true, repeat:19}, 0.00);
+  tl.fromTo('#cov1-bl3', {x:0, y:0}, {x:70, y:-40, duration:7, ease:'sine.inOut', yoyo:true, repeat:19}, 0.00);
+  tl.fromTo('#cov1-bl4', {x:0, y:0}, {x:40, y:-60, duration:7, ease:'sine.inOut', yoyo:true, repeat:19}, 0.00);
+  tl.fromTo('#cov1-d0', {y:0, rotation:0}, {y:-22, rotation:-40, duration:3.5, ease:'sine.inOut', yoyo:true, repeat:40}, 0.00);
+  tl.fromTo('#cov1-d1', {y:0, rotation:0}, {y:22, rotation:40, duration:3.8, ease:'sine.inOut', yoyo:true, repeat:37}, 0.00);
+  tl.fromTo('#cov1-d2', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.1, ease:'sine.inOut', yoyo:true, repeat:34}, 0.00);
+  tl.fromTo('#cov1-d3', {y:0, rotation:0}, {y:22, rotation:40, duration:4.4, ease:'sine.inOut', yoyo:true, repeat:32}, 0.00);
+  tl.fromTo('#cov1-d4', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.7, ease:'sine.inOut', yoyo:true, repeat:29}, 0.00);
+  tl.fromTo('#cov1-d5', {y:0, rotation:0}, {y:22, rotation:40, duration:5, ease:'sine.inOut', yoyo:true, repeat:28}, 0.00);
+  tl.fromTo('#cov1-d6', {y:0, rotation:0}, {y:-22, rotation:-40, duration:5.3, ease:'sine.inOut', yoyo:true, repeat:26}, 0.00);
+  tl.fromTo('#cov2-in', {opacity:0}, {opacity:1, duration:0.45, ease:'power2.out'}, 1095.42);
+  
+  tl.fromTo('#cov2-bl0', {x:0, y:0}, {x:60, y:40, duration:7, ease:'sine.inOut', yoyo:true, repeat:10}, 1095.42);
+  tl.fromTo('#cov2-bl1', {x:0, y:0}, {x:-70, y:-50, duration:7, ease:'sine.inOut', yoyo:true, repeat:10}, 1095.42);
+  tl.fromTo('#cov2-bl2', {x:0, y:0}, {x:-50, y:60, duration:7, ease:'sine.inOut', yoyo:true, repeat:10}, 1095.42);
+  tl.fromTo('#cov2-bl3', {x:0, y:0}, {x:70, y:-40, duration:7, ease:'sine.inOut', yoyo:true, repeat:10}, 1095.42);
+  tl.fromTo('#cov2-bl4', {x:0, y:0}, {x:40, y:-60, duration:7, ease:'sine.inOut', yoyo:true, repeat:10}, 1095.42);
+  tl.fromTo('#cov2-d0', {y:0, rotation:0}, {y:-22, rotation:-40, duration:3.5, ease:'sine.inOut', yoyo:true, repeat:22}, 1095.42);
+  tl.fromTo('#cov2-d1', {y:0, rotation:0}, {y:22, rotation:40, duration:3.8, ease:'sine.inOut', yoyo:true, repeat:20}, 1095.42);
+  tl.fromTo('#cov2-d2', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.1, ease:'sine.inOut', yoyo:true, repeat:18}, 1095.42);
+  tl.fromTo('#cov2-d3', {y:0, rotation:0}, {y:22, rotation:40, duration:4.4, ease:'sine.inOut', yoyo:true, repeat:17}, 1095.42);
+  tl.fromTo('#cov2-d4', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.7, ease:'sine.inOut', yoyo:true, repeat:16}, 1095.42);
+  tl.fromTo('#cov2-d5', {y:0, rotation:0}, {y:22, rotation:40, duration:5, ease:'sine.inOut', yoyo:true, repeat:15}, 1095.42);
+  tl.fromTo('#cov2-d6', {y:0, rotation:0}, {y:-22, rotation:-40, duration:5.3, ease:'sine.inOut', yoyo:true, repeat:14}, 1095.42);
+
+  // graphics
+
+  // i-title
+  tl.fromTo('#i-title-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 0.00);
+  tl.to('#i-title-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 6.980);
+  tl.fromTo('#it-ph', {opacity:0, y:220}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, .15);
+  rise('#it-c', .3); up('#it-k', .55, 16); up('#it-h', .7, 34); sweep('#it-h .hl', 1.3);
+  pop('#it-app', 1.6); up('#it-sv', 2.8, 20);
+
+  // i-worry
+  tl.fromTo('#i-worry-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 7.30);
+  tl.to('#i-worry-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 14.380);
+  up('#iw-k', 7.45, 16); rise('#iw-c', 8.0); pop('#iw-i', 8.9); sweep('#iw-b .hl', 12.0);
+  tl.fromTo('#iw-i', {rotation:0}, {rotation:-10, duration:.18, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 10.0);
+
+  // i-cloud
+  tl.fromTo('#i-cloud-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 14.70);
+  tl.to('#i-cloud-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 27.180);
+  up('#ic-h', 14.85, 30); sweep('#ic-h .hl', 20.0);
+  rise('#ic-cl', 16.4); pop('#ic-a0', 17.6); pop('#ic-a1', 19.1); pop('#ic-a2', 19.8);
+  slide('#ic-d-school', 22.00, -60); slide('#ic-d-stud', 24.40, -60); slide('#ic-d-res', 25.60, -60);
+  draw('#ic-ar path', 26.0, .4); pop('#ic-x', 26.5);
+
+  // i-want
+  tl.fromTo('#i-want-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 27.50);
+  tl.to('#i-want-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 34.680);
+  up('#iv-h', 27.65, 30); sweep('#iv-h .hl', 30.2);
+  rise('#iv-0', 31.8); rise('#iv-1', 32.5); rise('#iv-2', 33.3);
+
+  // i-local
+  tl.fromTo('#i-local-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 35.00);
+  tl.to('#i-local-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 47.680);
+  up('#il-k', 35.2, 16); up('#il-h', 36.8, 34); sweep('#il-h .hl', 37.5);
+  rise('#il-pc', 39.9); pop('#il-ai', 40.4);
+  slide('#il-f0', 40.9, -60); slide('#il-f1', 45.0, 60);
+
+  // i-safe
+  tl.fromTo('#i-safe-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 48.00);
+  tl.to('#i-safe-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 54.780);
+  up('#is-h', 48.15, 30); sweep('#is-h .hl', 50.0);
+  rise('#is-b', 49.9); fill('#is-f0', 51.0, 45); fill('#is-f1', 52.4, 92); pop('#is-ok', 53.6);
+
+  // i-hurdle
+  tl.fromTo('#i-hurdle-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 55.10);
+  tl.to('#i-hurdle-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 67.280);
+  up('#ih-h', 55.3, 30); sweep('#ih-h .hl', 61.5);
+  rise('#ih-0', 56.60); pop('#ih-w0', 57.10); rise('#ih-1', 58.60); pop('#ih-w1', 59.10); rise('#ih-2', 64.80); pop('#ih-w2', 65.30);
+
+  // i-app
+  tl.fromTo('#i-app-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 67.60);
+  tl.to('#i-app-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 79.680);
+  rise('#ia-c', 67.75); pop('#ia-lg', 68.0); up('#ia-k', 68.2, 14); up('#ia-n', 68.6, 24); confetti('ia', 69.0);
+  pop('#ia-r1', 71.4); draw('#ia-a2 path', 72.2, .3); pop('#ia-r2', 72.5);
+  tl.fromTo('#ia-r0', {opacity:0, x:-40}, {opacity:1, x:0, duration:.5, ease:'power3.out'}, 74.1); draw('#ia-a1 path', 74.5, .3);
+  draw('#ia-a3 path', 76.4, .3); pop('#ia-r3', 76.7);
+
+  // i-inside
+  tl.fromTo('#i-inside-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 80.00);
+  tl.to('#i-inside-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 94.180);
+  up('#in-h', 80.15, 26);
+  rise('#in-l0', 80.6); rise('#in-l1', 81.4); pop('#in-m0', 82.0); pop('#in-m1', 83.4); rise('#in-l2', 84.6);
+  slide('#in-o0', 88.7, 50); slide('#in-o1', 91.4, 50);
+
+  // i-sec
+  tl.fromTo('#i-sec-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 94.50);
+  tl.to('#i-sec-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 114.680);
+  rise('#isc-c', 94.6); up('#isc-k', 94.8, 14);
+  slide('#isc-0', 94.70, -40); pop('#isc-t0', 95.90); slide('#isc-1', 98.70, -40); pop('#isc-t1', 99.90); slide('#isc-2', 103.20, -40); pop('#isc-t2', 104.40); slide('#isc-3', 109.60, -40); pop('#isc-t3', 110.80);
+
+  // i-out
+  tl.fromTo('#i-out-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 115.00);
+  tl.to('#i-out-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 122.680);
+  up('#io-k', 115.2, 14); up('#io-h', 115.5, 28); sweep('#io-h .hl', 120.6);
+  rise('#io-in', 116.0); pop('#io-si', 116.3); draw('#io-a path', 117.2, .4);
+  rise('#io-f', 117.6); pop('#io-f0', 117.9); pop('#io-f1', 118.5); pop('#io-w', 120.5);
+
+  // i-tips
+  tl.fromTo('#i-tips-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 123.00);
+  tl.to('#i-tips-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 141.780);
+  up('#ip-h', 123.2, 28);
+  rise('#ip-0', 123.10); pop('#ip-i0', 123.35); rise('#ip-1', 129.00); pop('#ip-i1', 129.25); rise('#ip-2', 133.90); pop('#ip-i2', 134.15);
+  pop('#ip-end', 138.6);
+
+  // i-go
+  tl.fromTo('#i-go-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 142.10);
+  tl.to('#i-go-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 145.067);
+  pop('#ig-i', 142.2); up('#ig-h', 142.5, 30);
+
+  // p-url
+  tl.fromTo('#p-url-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 153.39);
+  tl.to('#p-url-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 181.017);
+  rise('#pu-c', 153.49); up('#pu-k', 153.69, 12); pop('#pu-u', 153.99);
+  up('#pu-r', 159.99, 14); pop('#pu-d', 175.19);
+
+  // p-feat
+  tl.fromTo('#p-feat-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 200.59);
+  tl.to('#p-feat-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 250.017);
+  rise('#pf-c', 200.69); up('#pf-k', 200.89, 12);
+  slide('#pf-0', 200.69, 30); up('#pf-s0', 206.99, 8); slide('#pf-1', 229.49, 30); up('#pf-s1', 233.79, 8); slide('#pf-2', 241.19, 30); up('#pf-s2', 243.39, 8);
+
+  // p-can
+  tl.fromTo('#p-can-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 250.79);
+  tl.to('#p-can-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 278.017);
+  rise('#pc-c', 250.89); up('#pc-k', 251.09, 12);
+  pop('#pc-0', 255.69); pop('#pc-1', 257.29); pop('#pc-2', 260.39); pop('#pc-3', 265.09); pop('#pc-4', 266.59); pop('#pc-5', 268.29); up('#pc-os', 273.99, 10);
+
+  // p-spec
+  tl.fromTo('#p-spec-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 312.29);
+  tl.to('#p-spec-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 339.617);
+  rise('#ps-c', 312.39);
+  slide('#ps-0', 317.99, 30); slide('#ps-1', 325.39, 30); slide('#ps-2', 329.59, 30); slide('#ps-3', 332.19, 30);
+
+  // p-rec
+  tl.fromTo('#p-rec-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 340.29);
+  tl.to('#p-rec-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 384.617);
+  rise('#pr-c', 340.39);
+  slide('#pr-0', 342.89, 30); slide('#pr-1', 347.59, 30); slide('#pr-2', 350.69, 30);
+  tl.to('#pr-1', {backgroundColor:'#e3f6ec', boxShadow:'inset 0 0 0 3px #3fa877', scale:1.04, duration:.4, ease:'back.out(2)'}, 358.99);
+  pop('#pr-ok', 359.59);
+
+  // p-inst
+  tl.fromTo('#p-inst-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 385.59);
+  tl.to('#p-inst-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 415.017);
+  rise('#pi-c', 385.69);
+  slide('#pi-0', 394.49, 30); pop('#pi-t0', 395.89); slide('#pi-1', 401.79, 30); pop('#pi-t1', 403.19); slide('#pi-2', 404.89, 30); pop('#pi-t2', 406.29); slide('#pi-3', 409.69, 30); pop('#pi-t3', 411.09);
+
+  // p-off
+  tl.fromTo('#p-off-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 466.99);
+  tl.to('#p-off-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 472.417);
+  tl.fromTo('#po-c', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.55, ease:'back.out(1.8)'}, 467.09);
+  tl.fromTo('#po-i', {rotation:0}, {rotation:12, duration:.15, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 467.79);
+
+  // p-offb
+  tl.fromTo('#p-offb-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 472.79);
+  tl.to('#p-offb-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 591.217);
+  pop('#pob', 472.89);
+
+  // p-done
+  tl.fromTo('#p-done-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 577.19);
+  tl.to('#p-done-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 581.417);
+  tl.fromTo('#pd-c', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.55, ease:'back.out(1.8)'}, 577.29); confetti('pd', 577.69);
+
+  // p-ppt
+  tl.fromTo('#p-ppt-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 610.49);
+  tl.to('#p-ppt-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 637.017);
+  rise('#pp-c', 610.59); up('#pp-k', 610.79, 12);
+  slide('#pp-0', 614.99, 30); slide('#pp-1', 618.99, 30); slide('#pp-2', 622.89, 30); pop('#pp-ok', 629.69);
+
+  // p-name
+  tl.fromTo('#p-name-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 687.09);
+  tl.to('#p-name-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 701.017);
+  rise('#pn-c', 687.19); pop('#pn-a', 687.79);
+  tl.to('#pn-a', {opacity:.35, textDecoration:'line-through', duration:.3}, 689.79); pop('#pn-b', 690.09); up('#pn-s', 691.99, 10);
+
+  // p-res
+  tl.fromTo('#p-res-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 765.19);
+  tl.to('#p-res-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 786.517);
+  rise('#pq-c', 765.29); up('#pq-k', 765.49, 12); slide('#pq-f', 765.79, 30); slide('#pq-g', 768.39, 30); pop('#pq-s', 773.99);
+
+  // p-adm
+  tl.fromTo('#p-adm-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 808.39);
+  tl.to('#p-adm-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 821.017);
+  rise('#pa-c', 808.49); up('#pa-k', 808.69, 12); slide('#pa-f', 811.69, 30);
+
+  // p-xls
+  tl.fromTo('#p-xls-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 836.39);
+  tl.to('#p-xls-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 858.017);
+  rise('#px-c', 836.49); up('#px-k', 836.69, 12); slide('#px-f', 839.69, 30); slide('#px-g', 845.29, 30);
+
+  // p-why
+  tl.fromTo('#p-why-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 859.99);
+  tl.to('#p-why-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 868.217);
+  tl.fromTo('#pw-c', {opacity:0, scale:.6}, {opacity:1, scale:1, duration:.55, ease:'back.out(1.6)'}, 860.09);
+  pop('#pw-a', 860.39); draw('#pw-ar path', 862.79, .4); pop('#pw-b', 863.19); up('#pw-t', 864.39, 14); sweep('#pw-t .hl', 864.99);
+
+  // p-noname
+  tl.fromTo('#p-noname-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 880.09);
+  tl.to('#p-noname-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 892.017);
+  rise('#pk-c', 880.19); up('#pk-s', 883.99, 10);
+
+  // p-model
+  tl.fromTo('#p-model-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 908.09);
+  tl.to('#p-model-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 940.017);
+  rise('#pm-c', 908.19); up('#pm-k', 908.39, 12); slide('#pm-0', 908.59, 30); slide('#pm-1', 926.79, 30);
+
+  // p-upd
+  tl.fromTo('#p-upd-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 948.69);
+  tl.to('#p-upd-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 986.017);
+  rise('#pg-c', 948.79); pop('#pg-b', 952.99); up('#pg-s', 964.19, 10);
+  tl.fromTo('#pg-i', {rotation:0}, {rotation:360, duration:1.2, ease:'power2.inOut', immediateRender:false}, 976.09);
+
+  // p-rules
+  tl.fromTo('#p-rules-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 1004.89);
+  tl.to('#p-rules-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 1049.517);
+  rise('#pl-c', 1004.99); up('#pl-n', 1014.29, 10);
+  slide('#pl-0', 1020.29, 30); slide('#pl-1', 1023.79, 30); slide('#pl-2', 1027.59, 30); slide('#pl-3', 1032.49, 30); slide('#pl-4', 1040.19, 30);
+
+  // p-lock
+  tl.fromTo('#p-lock-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 1050.39);
+  tl.to('#p-lock-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 1064.017);
+  rise('#pz-c', 1050.49); up('#pz-s', 1051.89, 10);
+  tl.fromTo('#pz-i', {rotation:0}, {rotation:-12, duration:.15, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 1051.19);
+
+  // p-idea
+  tl.fromTo('#p-idea-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 1080.99);
+  tl.to('#p-idea-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 1094.617);
+  rise('#pj-c', 1081.09); up('#pj-s', 1082.79, 10);
+
+  // q-done
+  tl.fromTo('#q-done-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 1095.42);
+  tl.to('#q-done-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 1104.100);
+  pop('#qd-k', 1095.92); up('#qd-h', 1097.62, 28); sweep('#qd-h .hl', 1099.42);
+  rise('#qd-pc', 1098.42); pop('#qd-ai', 1098.82); slide('#qd-w', 1099.82, -50);
+
+  // q-help
+  tl.fromTo('#q-help-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 1104.42);
+  tl.to('#q-help-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 1116.100);
+  rise('#qh-a', 1104.52); pop('#qh-ai', 1104.82);
+  draw('#qh-ar path', 1110.42, .4); rise('#qh-b', 1110.72); pop('#qh-lg', 1111.02);
+
+  // q-rules
+  tl.fromTo('#q-rules-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 1116.42);
+  tl.to('#q-rules-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 1144.300);
+  rise('#qr-c', 1116.52); up('#qr-k', 1116.72, 14);
+  rise('#qr-0', 1122.12); rise('#qr-1', 1125.02); rise('#qr-2', 1128.12); rise('#qr-3', 1130.82); rise('#qr-4', 1135.32); rise('#qr-5', 1140.02);
+
+  // q-safe
+  tl.fromTo('#q-safe-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 1144.62);
+  tl.to('#q-safe-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 1157.200);
+  rise('#qs-c', 1144.72); sweep('#qs-b .hl', 1146.02);
+  rise('#qs-n', 1148.32); pop('#qs-i', 1148.62);
+
+  // q-end
+  tl.fromTo('#q-end-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 1157.52);
+  
+  tl.fromTo('#qe-ph', {opacity:0, y:200}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, 1157.62);
+  rise('#qe-c', 1157.72); up('#qe-k', 1157.92, 14); up('#qe-h', 1158.02, 28);
+  pop('#qe-l', 1159.02); pop('#qe-s', 1159.82); up('#qe-t', 1161.92, 20);
+  tl.to('#qe-l', {scale:1.12, duration:.25, ease:'power2.out', yoyo:true, repeat:1}, 1160.82);
+  tl.to('#qe-s', {scale:1.12, duration:.25, ease:'power2.out', yoyo:true, repeat:1}, 1161.32);
+
+  tl.fromTo('#endfade', { opacity: 0 }, { opacity: 1, duration: 1.0, ease: 'power1.in' }, 1175.400);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+})();
+</script>
+</body>
+</html>
