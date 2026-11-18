@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1920, height=1080" />
+<title>왕초보 바이브코딩 — 나만의 앱 만들기</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+@font-face { font-family: "Pretendard"; src: url("assets/fonts/PretendardVariable.woff2") format("woff2-variations"); font-weight: 45 920; font-style: normal; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: #fdf6ee; }
+:root {
+  --ink: #34314a; --ink-soft: #5b5873; --cream: #fdf6ee;
+  --hl-y: rgba(255, 220, 120, .85); --hl-m: rgba(140, 222, 190, .75); --hl-p: rgba(248, 180, 200, .8);
+}
+#root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Pretendard", sans-serif; color: var(--ink); background: #000; }
+#vwrap { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+#vid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+#endfade { position: absolute; inset: 0; z-index: 20; background: #000; opacity: 0; pointer-events: none; }
+
+.cover { position: absolute; inset: 0; z-index: 2; }
+.cov-in { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(135deg, #fff6ee 0%, #fdf1f4 45%, #f1f0ff 100%); }
+.blob { position: absolute; border-radius: 50%; opacity: .75; filter: blur(30px); }
+.dc { position: absolute; display: block; }
+.dc-dot { border-radius: 50%; background: var(--c); opacity: .75; }
+.dc-ring { border-radius: 50%; border: 4px solid var(--c); opacity: .8; }
+.dc-dia { background: var(--c); opacity: .7; border-radius: 4px; transform: rotate(45deg); }
+
+/* captions — black box, white text (같은 모양으로 영상 전체) */
+.cap { position: absolute; left: 0; right: 0; bottom: 55px; z-index: 9; display: flex; justify-content: center; pointer-events: none; }
+.cap span { display: block; max-width: 1820px; padding: 10px 26px 14px; background: #000; color: #fff;
+  font-size: 86px; font-weight: 800; line-height: 1.2; text-align: center; word-break: keep-all; letter-spacing: -.01em; }
+
+.scene { position: absolute; inset: 0; }
+.scene.full { z-index: 3; }
+.scene.ov { z-index: 4; }
+.scene.pop { z-index: 5; }
+.sc { position: absolute; inset: 0; opacity: 0; }
+
+.card { position: absolute; display: block; background: rgba(255, 255, 255, .95); border: 2px solid #fff; border-radius: 44px;
+  box-shadow: 0 30px 70px rgba(80, 60, 70, .2), 0 6px 18px rgba(80, 60, 70, .08); }
+.center-col { position: absolute; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+.pill { display: inline-flex; align-items: center; gap: 14px; padding: 14px 28px; border-radius: 999px; background: #fff;
+  box-shadow: 0 8px 22px rgba(120, 92, 80, .12); font-size: 30px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.pill-soft { background: #fff7ee; box-shadow: inset 0 0 0 2px #f6e8da; }
+.pill-sm { font-size: 22px; padding: 8px 18px; gap: 10px; align-self: flex-start; }
+.pill-sm .pdot { width: 12px; height: 12px; }
+.pdot { display: inline-block; width: 16px; height: 16px; border-radius: 50%; }
+.okpill { display: inline-flex; align-items: center; gap: 16px; padding: 14px 30px 14px 16px; border-radius: 999px; background: #e3f6ec;
+  font-size: 34px; font-weight: 750; color: #24533f; box-shadow: 0 10px 24px rgba(60, 140, 100, .14); white-space: nowrap; }
+.okc { display: block; width: 48px; height: 48px; border-radius: 50%; background: #3fa877; padding: 7px; flex: 0 0 auto; }
+.okc svg { display: block; width: 100%; height: 100%; }
+.ok-xs { font-size: 22px; padding: 8px 18px 8px 8px; gap: 10px; align-self: flex-start; white-space: normal; }
+.ok-xs .okc { width: 34px; height: 34px; padding: 5px; }
+.h1 { font-size: 104px; font-weight: 900; line-height: 1.12; letter-spacing: -.035em; word-break: keep-all; }
+.h1.center { text-align: center; }
+.h2 { font-size: 66px; font-weight: 850; line-height: 1.22; letter-spacing: -.03em; word-break: keep-all; text-align: center; }
+.hl { background-image: linear-gradient(var(--hlc), var(--hlc)); background-repeat: no-repeat; background-position: 0 88%; background-size: 0% 38%; padding: 0 4px; }
+.red { color: #d2486c; }
+.grn { color: #2f9a68; }
+.ico { display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; border-radius: 50%; padding: 34px; flex: 0 0 auto;
+  box-shadow: 0 12px 26px rgba(120, 92, 80, .12), inset 0 0 0 6px rgba(255, 255, 255, .7); }
+.ico svg { display: block; width: 100%; height: 100%; }
+.ico.sm { width: 120px; height: 120px; padding: 27px; }
+.ico.xs { width: 76px; height: 76px; padding: 17px; }
+.ico.xxs { width: 48px; height: 48px; padding: 10px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .5); }
+.arrow { display: block; width: 90px; height: 24px; flex: 0 0 auto; }
+.arrow path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.arrow-sm { width: 56px; }
+.arrow-lg { width: 150px; height: 30px; }
+.applogo { display: flex; align-items: center; justify-content: center; width: 150px; height: 150px; border-radius: 36px; background: #1f2747; color: #fff;
+  font-size: 84px; font-weight: 800; box-shadow: 0 18px 36px rgba(31, 39, 71, .35); flex: 0 0 auto; }
+.applogo.sm { width: 64px; height: 64px; border-radius: 16px; font-size: 36px; box-shadow: 0 8px 16px rgba(31, 39, 71, .3); }
+
+/* intro title */
+.phwrap { position: absolute; left: 110px; top: 170px; width: 480px; }
+.phimg { display: block; width: 480px; height: auto; filter: drop-shadow(0 24px 30px rgba(80, 60, 90, .22)); }
+.titlecard { left: 660px; top: 150px; width: 1120px; display: flex; flex-direction: column; align-items: center; gap: 32px; padding: 56px 60px 60px; }
+.appchip { display: flex; align-items: center; gap: 20px; padding: 14px 34px 14px 16px; border-radius: 999px; background: #eef0fa; font-size: 34px; color: var(--ink-soft); font-weight: 600; }
+.appchip b { font-size: 42px; font-weight: 900; color: #1f2747; }
+.survey { display: flex; align-items: center; gap: 16px; padding: 12px 28px 12px 12px; border-radius: 999px; background: #eef4ff; font-size: 30px; font-weight: 600; color: #3d5a8a; }
+.survey b { font-weight: 900; }
+
+.quote { left: 300px; top: 300px; width: 1320px; padding: 60px 70px; }
+.qrow2 { display: flex; align-items: center; gap: 44px; }
+.qmark { position: absolute; right: 54px; top: -10px; font-size: 200px; line-height: 1; font-weight: 900; color: #f6dccf; }
+.qbody { font-size: 70px; font-weight: 900; line-height: 1.28; letter-spacing: -.03em; word-break: keep-all; }
+
+.cloudrow { position: absolute; left: 0; right: 0; top: 380px; display: flex; justify-content: center; align-items: center; gap: 40px; }
+.doccol { display: flex; flex-direction: column; gap: 22px; }
+.docc { position: relative; display: flex; align-items: center; gap: 22px; width: 520px; padding: 18px 26px; border-radius: 30px; font-size: 38px; font-weight: 850; }
+.blockwrap { position: relative; width: 170px; height: 120px; display: flex; align-items: center; justify-content: center; }
+.bigx { position: absolute; left: 40px; top: 15px; width: 90px; height: 90px; border-radius: 50%; background: #e0607f; padding: 18px; box-shadow: 0 12px 26px rgba(224, 96, 127, .4); }
+.bigx svg { display: block; width: 100%; height: 100%; }
+.cloudbox { position: relative; width: 560px; height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+.cloudico { width: 150px; height: 120px; }
+.cloudico svg { display: block; width: 100%; height: 100%; }
+.cloudl { font-size: 44px; font-weight: 900; }
+.cchips { display: flex; gap: 12px; }
+.cchip { display: inline-block; padding: 10px 20px; border-radius: 16px; background: #f1eefc; box-shadow: inset 0 0 0 2px #ddd5f6; font-size: 28px; font-weight: 800; color: #4b3f8a; }
+
+.verbs { position: absolute; left: 0; right: 0; top: 470px; display: flex; justify-content: center; gap: 50px; }
+.verb { position: relative; width: 440px; height: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+.verb b { font-size: 54px; font-weight: 900; letter-spacing: -.03em; }
+.wtag { position: absolute; right: 30px; top: 26px; width: 60px; height: 60px; }
+.wtag svg { display: block; width: 100%; height: 100%; }
+
+.pcbig { position: absolute; left: 610px; top: 440px; width: 700px; display: flex; flex-direction: column; align-items: center; }
+.pcscreen { width: 700px; height: 380px; border-radius: 34px; background: #1f2747; border: 14px solid #2c3560; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px;
+  box-shadow: 0 30px 60px rgba(31, 39, 71, .3); }
+.pcl { font-size: 38px; font-weight: 800; color: #fff; }
+.pcneck { width: 80px; height: 50px; background: #2c3560; }
+.pcbase { width: 300px; height: 22px; border-radius: 12px; background: #2c3560; }
+.feat { display: flex; align-items: center; gap: 20px; padding: 20px 30px 20px 20px; border-radius: 30px; font-size: 34px; font-weight: 600; line-height: 1.3; }
+.feat b { font-weight: 900; }
+
+.bars { left: 310px; top: 470px; width: 1300px; padding: 40px 56px; border-radius: 40px; display: flex; flex-direction: column; gap: 26px; }
+.bhead { font-size: 28px; font-weight: 800; color: var(--ink-soft); letter-spacing: .08em; }
+.brow { display: flex; align-items: center; gap: 26px; }
+.bl { width: 240px; font-size: 40px; font-weight: 700; }
+.bl b { font-weight: 900; }
+.btrack { flex: 1 1 auto; height: 40px; border-radius: 999px; background: #f2eff6; overflow: hidden; }
+.bfill { display: block; height: 100%; width: 0%; border-radius: 999px; }
+.bnote { width: 290px; font-size: 24px; font-weight: 700; color: var(--ink-soft); }
+.bmax { width: 290px; font-size: 40px; font-weight: 900; color: #2f9a68; }
+
+.appcard { left: 410px; top: 140px; width: 1100px; display: flex; align-items: center; gap: 44px; padding: 44px 56px; }
+.appt { display: flex; flex-direction: column; gap: 8px; }
+.appt span { font-size: 34px; font-weight: 650; color: var(--ink-soft); }
+.appt b { font-size: 84px; font-weight: 900; letter-spacing: -.035em; color: #1f2747; }
+.route { position: absolute; left: 0; right: 0; top: 560px; display: flex; justify-content: center; align-items: center; gap: 16px; }
+.rstep { position: relative; display: flex; flex-direction: column; align-items: center; gap: 16px; width: 330px; padding: 30px 20px; border-radius: 34px; font-size: 34px; font-weight: 850; }
+.cf { position: absolute; display: block; width: 16px; height: 16px; border-radius: 3px; opacity: 0; }
+
+.stack { position: absolute; left: 330px; top: 260px; width: 860px; display: flex; flex-direction: column; gap: 22px; }
+.layer { display: flex; align-items: center; gap: 24px; padding: 30px 40px; border-radius: 34px; box-shadow: 0 20px 44px rgba(80, 60, 70, .14); font-size: 40px; }
+.layer b { font-weight: 900; }
+.layer span { font-weight: 600; color: var(--ink-soft); font-size: 30px; }
+.l-app { background: #fff; }
+.l-model { background: #f4f1ff; }
+.l-eng { background: #1f2747; color: #fff; }
+.l-eng span.ltag { color: #c9cff0; }
+.l-eng b { font-size: 48px; }
+.ltag { font-size: 28px !important; font-weight: 800 !important; letter-spacing: .02em; width: 220px; }
+.mchip { display: inline-block; padding: 10px 28px; border-radius: 18px; background: #fff; box-shadow: inset 0 0 0 3px #c9bdf3; font-size: 40px !important; font-weight: 900 !important; color: #4b3f8a !important; }
+.sidechips { position: absolute; left: 1250px; top: 380px; display: flex; flex-direction: column; gap: 30px; }
+
+.listcard { left: 300px; top: 110px; width: 1320px; padding: 50px 64px; display: flex; flex-direction: column; gap: 28px; }
+.listcard .pill { align-self: flex-start; }
+.plist { display: flex; flex-direction: column; gap: 20px; }
+.pro { position: relative; display: flex; align-items: center; gap: 26px; padding: 16px 90px 16px 20px; border-radius: 30px; background: #faf8fd; box-shadow: inset 0 0 0 2px #efebf5; }
+.ptxt { font-size: 42px; font-weight: 600; letter-spacing: -.02em; }
+.ptxt b { font-weight: 900; }
+.ptxt.sm { font-size: 36px; }
+.tick { position: absolute; right: 24px; top: 50%; margin-top: -25px; display: block; width: 50px; height: 50px; border-radius: 50%; background: #3fa877; padding: 8px; }
+.tick svg { display: block; width: 100%; height: 100%; }
+.listcard.two { left: 160px; top: 200px; width: 1600px; gap: 34px; }
+.listcard.two .pro { padding-top: 24px; padding-bottom: 24px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid2 .pro { padding-right: 24px; }
+
+.outrow { position: absolute; left: 0; right: 0; top: 440px; display: flex; justify-content: center; align-items: center; gap: 40px; }
+.shieldbox { position: relative; width: 440px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; box-shadow: 0 0 0 10px rgba(140, 222, 190, .5), 0 30px 70px rgba(63, 168, 119, .2); }
+.shieldbox b { font-size: 48px; font-weight: 900; }
+.shieldbox span { font-size: 30px; font-weight: 650; color: var(--ink-soft); }
+.filebox { position: relative; width: 640px; height: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 34px; border: 4px dashed #e9a3b6; }
+.frow { display: flex; gap: 18px; }
+.fchip { display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; border-radius: 18px; background: #f1f8f4; box-shadow: inset 0 0 0 2px #cfeedd; font-size: 34px; font-weight: 800; color: #2d6b51; }
+.fchip svg { width: 40px; height: 40px; }
+.warnbig { display: flex; align-items: center; gap: 16px; font-size: 56px; font-weight: 900; color: #c4486c; }
+.warnbig svg { width: 64px; height: 64px; }
+
+.tips { position: absolute; left: 0; right: 0; top: 300px; display: flex; justify-content: center; gap: 44px; }
+.tip { position: relative; width: 500px; height: 440px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 30px; }
+.tnum { position: absolute; left: 30px; top: 24px; width: 62px; height: 62px; border-radius: 50%; background: #ffe6dc; color: #d0603f; font-size: 36px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+.tt { font-size: 42px; font-weight: 600; line-height: 1.3; text-align: center; letter-spacing: -.02em; }
+.tt b { font-weight: 900; }
+.endrib { position: absolute; left: 660px; top: 790px; width: 600px; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 18px 30px; border-radius: 999px; background: #3fa877; color: #fff; font-size: 38px; font-weight: 850; box-shadow: 0 16px 34px rgba(63, 168, 119, .35); }
+.endrib svg { width: 46px; height: 46px; }
+
+/* practice overlay cards */
+.ovc { position: absolute; display: flex; flex-direction: column; gap: 14px; padding: 22px 24px; border-radius: 26px; background: rgba(255, 255, 255, .97);
+  box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 2px #f3ebe2; }
+.ovc.side { right: 28px; top: 120px; width: 400px; }
+.ovc.warnc { box-shadow: 0 22px 50px rgba(30, 24, 40, .32), inset 0 0 0 3px #f2a9bd; }
+.ovs2 { font-size: 23px; font-weight: 600; color: var(--ink-soft); line-height: 1.38; }
+.ovs2 b { color: var(--ink); font-weight: 850; }
+.ovhead { display: flex; align-items: center; gap: 14px; }
+.stephead { display: flex; align-items: center; gap: 14px; }
+.stepn { padding: 5px 12px; border-radius: 10px; background: #d2603f; color: #fff; font-size: 20px; font-weight: 900; letter-spacing: .06em; }
+.stept { font-size: 32px; font-weight: 900; letter-spacing: -.03em; }
+.stept.sm { font-size: 28px; }
+.flow { position: relative; display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 650; line-height: 1.3; }
+.flow b { font-weight: 900; }
+.fnum { flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%; background: #ebe6ff; color: #7d62c0; font-size: 21px; font-weight: 900; display: flex; align-items: center; justify-content: center; padding: 7px; }
+.fnum svg { display: block; width: 100%; height: 100%; }
+.sm2 { font-size: 19px; font-weight: 650; color: var(--ink-soft); }
+.tick.sm { position: static; margin: 0 0 0 auto; width: 30px; height: 30px; padding: 5px; flex: 0 0 auto; }
+.urlbox { padding: 12px 18px; border-radius: 14px; background: #2c2a3d; color: #ffd27a; font-family: Consolas, "Courier New", monospace; font-size: 30px; font-weight: 700; line-height: 1.25; }
+.dlbtn { display: flex; align-items: center; gap: 12px; align-self: flex-start; padding: 12px 22px; border-radius: 14px; background: #b8923a; color: #fff; font-size: 24px; font-weight: 850; box-shadow: 0 10px 20px rgba(184, 146, 58, .35); }
+.dlbtn svg { width: 30px; height: 30px; }
+.frow2 { display: flex; align-items: flex-start; gap: 14px; }
+.ftx { display: flex; flex-direction: column; gap: 2px; font-size: 25px; font-weight: 650; }
+.ftx b { font-weight: 900; }
+.ftx small { font-size: 19px; font-weight: 650; color: var(--ink-soft); }
+.cangrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.canitem { display: flex; align-items: center; gap: 8px; padding: 10px 10px; border-radius: 14px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; font-size: 20px; font-weight: 800; }
+.canitem svg { width: 28px; height: 28px; flex: 0 0 auto; }
+.osrow { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 700; color: var(--ink-soft); }
+.os { padding: 4px 12px; border-radius: 10px; background: #e9e4f7; color: #5a4aa8; font-size: 20px; font-weight: 850; }
+.os.win { background: #dceaff; color: #2f5fa8; }
+.specrow { display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; border-radius: 14px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.sk { font-size: 20px; font-weight: 750; color: var(--ink-soft); }
+.specrow b { font-size: 26px; font-weight: 900; }
+.recrow { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px; border-radius: 14px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.recrow code { font-family: Consolas, "Courier New", monospace; font-size: 24px; font-weight: 700; }
+.recrow span { font-size: 19px; font-weight: 750; color: var(--ink-soft); text-align: right; }
+.recrow.pick span { color: #2f7a55; font-weight: 900; }
+.namefx { display: flex; align-items: center; gap: 14px; }
+.nm { padding: 8px 18px; border-radius: 14px; font-size: 30px; font-weight: 900; }
+.nm.real { background: #fde8ec; color: #8a3550; }
+.nm.alias { background: #e3f6ec; color: #24533f; }
+.cg { font-size: 30px; font-weight: 900; color: #b4a9d3; }
+.speed { display: flex; align-items: center; gap: 10px; align-self: flex-start; padding: 8px 16px; border-radius: 14px; background: #fff1cc; font-size: 24px; font-weight: 700; color: #8a6414; }
+.speed b { font-weight: 900; }
+.speed svg { width: 30px; height: 30px; }
+.offbadge { position: absolute; right: 28px; top: 120px; display: flex; align-items: center; gap: 12px; padding: 10px 22px 10px 12px; border-radius: 999px; background: #e0607f; color: #fff;
+  font-size: 24px; font-weight: 850; box-shadow: 0 12px 26px rgba(224, 96, 127, .4); }
+.offbadge svg { width: 38px; height: 38px; padding: 4px; }
+
+/* practice impact pops (화면 가운데, 몇 초만) */
+.impact { left: 560px; top: 330px; width: 800px; display: flex; align-items: center; gap: 40px; padding: 40px 54px; }
+.imico { flex: 0 0 auto; width: 170px; height: 170px; border-radius: 50%; padding: 36px; box-shadow: 0 16px 34px rgba(0, 0, 0, .18); }
+.imico svg { display: block; width: 100%; height: 100%; }
+.imtx { display: flex; flex-direction: column; gap: 6px; }
+.imtx small { font-size: 36px; font-weight: 700; color: var(--ink-soft); }
+.imtx b { font-size: 84px; font-weight: 900; letter-spacing: -.035em; line-height: 1.05; }
+.impact.wide { left: 360px; top: 300px; width: 1200px; flex-direction: column; gap: 30px; padding: 46px 56px; }
+.whyrow { display: flex; align-items: center; gap: 30px; }
+.whyc { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 26px 30px; border-radius: 28px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; }
+.whyc small { font-size: 30px; font-weight: 750; color: var(--ink-soft); }
+.whyc.on { background: #e3f6ec; box-shadow: inset 0 0 0 3px #3fa877; }
+.whyc.on svg { width: 110px; height: 90px; }
+.whyc.on b { font-size: 42px; font-weight: 900; color: #24533f; }
+.whyt { font-size: 52px; font-weight: 800; letter-spacing: -.03em; }
+
+/* outro */
+.duo2 { position: absolute; left: 0; right: 0; display: flex; justify-content: center; align-items: center; gap: 46px; }
+.dcard { position: relative; width: 640px; height: 460px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 30px; }
+.dcard.glow { box-shadow: 0 0 0 10px rgba(255, 228, 160, .6), 0 30px 70px rgba(231, 169, 44, .22); }
+.dt { font-size: 48px; font-weight: 750; letter-spacing: -.03em; }
+.dt b { font-weight: 900; color: #1f2747; }
+.ds { font-size: 34px; font-weight: 600; color: var(--ink-soft); text-align: center; line-height: 1.35; }
+.ds b { color: var(--ink); font-weight: 900; }
+.notec { left: 460px; top: 640px; width: 1000px; display: flex; align-items: center; gap: 26px; padding: 26px 40px; border-radius: 34px; font-size: 36px; font-weight: 600; line-height: 1.35; }
+.notec b { font-weight: 900; }
+.endbtns { display: flex; gap: 26px; }
+.ebtn { display: flex; align-items: center; gap: 14px; padding: 18px 40px; border-radius: 999px; color: #fff; font-size: 40px; font-weight: 900; }
+.ebtn svg { width: 46px; height: 46px; }
+.ebtn.like { background: #3f78c4; box-shadow: 0 14px 30px rgba(106, 163, 230, .4); }
+.ebtn.sub { background: #e0405f; box-shadow: 0 14px 30px rgba(224, 64, 95, .4); }
+.thanks { display: flex; align-items: center; gap: 14px; font-size: 44px; font-weight: 850; color: var(--ink-soft); }
+.thanks svg { width: 48px; height: 48px; }
+
+/* ---- vibe-coding-beginner 추가 ---- */
+.titlecard { gap: 30px; }
+.subrow { display: flex; align-items: center; gap: 18px; }
+.mini { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px 12px 14px; border-radius: 999px; background: #f6f3fd; box-shadow: inset 0 0 0 2px #e6e0f6; font-size: 34px; font-weight: 800; }
+.mini svg { width: 44px; height: 44px; }
+.gochip { display: flex; align-items: center; gap: 14px; padding: 14px 34px 14px 16px; border-radius: 999px; background: #ef8a6f; color: #fff; font-size: 34px; font-weight: 850; box-shadow: 0 14px 30px rgba(239, 138, 111, .4); }
+.gochip svg { width: 50px; height: 50px; }
+
+.ovc.narrow { width: 360px; right: 20px; top: 128px; }
+.ovc.lside { left: 28px; top: 250px; width: 470px; }
+.timerrow { display: flex; align-items: center; gap: 16px; }
+.timerrow div { display: flex; flex-direction: column; }
+.timerrow small { font-size: 20px; font-weight: 700; color: var(--ink-soft); }
+.timerrow b { font-size: 50px; font-weight: 900; letter-spacing: -.03em; line-height: 1.05; color: #d2603f; }
+.promptbox { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 16px; background: #f6f3fd; box-shadow: inset 0 0 0 2px #e6e0f6; }
+.promptbox small { display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 800; color: #7d62c0; }
+.promptbox small svg { width: 26px; height: 26px; }
+.promptbox p { font-size: 22px; font-weight: 750; line-height: 1.4; color: var(--ink); }
+.featgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fchip2 { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: #f8f6fb; box-shadow: inset 0 0 0 2px #ece8f3; font-size: 22px; font-weight: 850; }
+.fchip2.wide { grid-column: 1 / 3; }
+.fdot { display: block; width: 14px; height: 14px; border-radius: 50%; flex: 0 0 auto; }
+.fnum.ok2 { background: #3fa877; padding: 8px; }
+.searchbox { display: flex; align-items: center; gap: 12px; padding: 10px 18px; border-radius: 999px; background: #fff; box-shadow: inset 0 0 0 2px #dadce0, 0 4px 10px rgba(0, 0, 0, .06); font-size: 26px; font-weight: 600; color: #2c2a3d; }
+.searchbox svg { width: 28px; height: 28px; }
+.appbtn { display: flex; align-items: center; gap: 12px; align-self: flex-start; position: relative; padding: 12px 26px 12px 18px; border-radius: 999px; background: #e9eef6; font-size: 30px; font-weight: 800; color: #2c2a3d; }
+.appbtn svg { width: 30px; height: 30px; }
+.appbtn svg:last-child { position: absolute; right: -26px; bottom: -18px; width: 40px; height: 40px; }
+.noteline { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 650; line-height: 1.35; color: var(--ink-soft); }
+.noteline b { color: var(--ink); font-weight: 900; }
+.noteline svg { width: 34px; height: 34px; flex: 0 0 auto; }
+.noteline.warn { padding: 10px 12px; border-radius: 14px; background: #fde8ec; color: #8a3550; }
+.noteline.warn b { color: #8a3550; }
+.tipb { padding: 4px 10px; border-radius: 8px; background: #a8720f; color: #fff; font-size: 18px; font-weight: 900; letter-spacing: .06em; }
+.bubble { position: relative; padding: 14px 18px; border-radius: 18px 18px 18px 4px; background: #ebe6ff; font-size: 25px; font-weight: 850; line-height: 1.35; color: #3c3270; }
+.keyrow { display: flex; align-items: center; gap: 12px; font-size: 23px; font-weight: 650; }
+.keyrow b { font-weight: 900; }
+.kbd { display: inline-block; padding: 5px 12px; border-radius: 10px; background: #fff; box-shadow: inset 0 0 0 2px #c9c3dc, 0 5px 0 #c9c3dc; font-family: Consolas, "Courier New", monospace; font-size: 22px; font-weight: 800; color: #2c2a3d; white-space: nowrap; }
+
+.rstep.big { width: 400px; padding: 40px 24px; gap: 22px; font-size: 40px; font-weight: 650; text-align: center; line-height: 1.3; }
+.rstep.big b { font-weight: 900; }
+.rstep.hot { box-shadow: 0 0 0 10px rgba(239, 138, 111, .35), 0 30px 70px rgba(239, 138, 111, .25); }
+.rstep.hot b { font-size: 54px; color: #d2603f; }
+.tip.short { height: 380px; }
+
+.sumrow { position: absolute; left: 0; right: 0; top: 400px; display: flex; justify-content: center; align-items: center; gap: 26px; }
+.sumc { position: relative; display: flex; align-items: center; gap: 20px; padding: 26px 90px 26px 26px; border-radius: 34px; }
+.sumc b { font-size: 48px; font-weight: 900; }
+.plus { font-size: 54px; font-weight: 900; color: #b4a9d3; }
+
+.stairs { position: absolute; inset: 0; }
+.stair { position: absolute; bottom: 220px; width: 380px; border-radius: 28px 28px 0 0; transform-origin: 50% 100%; display: flex; justify-content: center; padding-top: 28px;
+  box-shadow: 0 20px 40px rgba(80, 60, 70, .16); }
+.stair span { font-size: 40px; font-weight: 900; color: #fff; letter-spacing: -.02em; text-shadow: 0 2px 6px rgba(0, 0, 0, .15); }
+.stairph { position: absolute; left: 1260px; top: 190px; width: 200px; height: auto; filter: drop-shadow(0 16px 20px rgba(80, 60, 90, .25)); }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="219.15" data-width="1920" data-height="1080">
+  <div id="vwrap"><video id="vid" class="clip" src="assets/media/src.mp4" playsinline data-has-audio="true" data-start="0" data-duration="219.15" data-track-index="0"></video></div>
+
+<div id="cov1" class="cover clip" data-start="0.000" data-duration="7.430" data-track-index="2"><div id="cov1-in" class="cov-in"><span id="cov1-bl0" class="blob" style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cov1-bl1" class="blob" style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cov1-bl2" class="blob" style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cov1-bl3" class="blob" style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cov1-bl4" class="blob" style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span><span id="cov1-d0" class="dc dc-dot" style="--c:#ef8a6f;width:18px;height:18px;left:140px;top:140px"></span><span id="cov1-d1" class="dc dc-ring" style="--c:#9a8be6;width:34px;height:34px;left:1740px;top:120px"></span><span id="cov1-d2" class="dc dc-dia" style="--c:#4fb489;width:22px;height:22px;left:1680px;top:820px"></span><span id="cov1-d3" class="dc dc-dot" style="--c:#e7a92c;width:14px;height:14px;left:260px;top:860px"></span><span id="cov1-d4" class="dc dc-ring" style="--c:#e8708f;width:26px;height:26px;left:90px;top:520px"></span><span id="cov1-d5" class="dc dc-dia" style="--c:#6aa3e6;width:18px;height:18px;left:1820px;top:470px"></span><span id="cov1-d6" class="dc dc-dot" style="--c:#4fb489;width:12px;height:12px;left:960px;top:60px"></span></div></div>
+<div id="cov2" class="cover clip" data-start="63.130" data-duration="14.080" data-track-index="2"><div id="cov2-in" class="cov-in" style="opacity:0"><span id="cov2-bl0" class="blob" style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cov2-bl1" class="blob" style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cov2-bl2" class="blob" style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cov2-bl3" class="blob" style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cov2-bl4" class="blob" style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span><span id="cov2-d0" class="dc dc-dot" style="--c:#ef8a6f;width:18px;height:18px;left:140px;top:140px"></span><span id="cov2-d1" class="dc dc-ring" style="--c:#9a8be6;width:34px;height:34px;left:1740px;top:120px"></span><span id="cov2-d2" class="dc dc-dia" style="--c:#4fb489;width:22px;height:22px;left:1680px;top:820px"></span><span id="cov2-d3" class="dc dc-dot" style="--c:#e7a92c;width:14px;height:14px;left:260px;top:860px"></span><span id="cov2-d4" class="dc dc-ring" style="--c:#e8708f;width:26px;height:26px;left:90px;top:520px"></span><span id="cov2-d5" class="dc dc-dia" style="--c:#6aa3e6;width:18px;height:18px;left:1820px;top:470px"></span><span id="cov2-d6" class="dc dc-dot" style="--c:#4fb489;width:12px;height:12px;left:960px;top:60px"></span></div></div>
+<div id="cov3" class="cover clip" data-start="181.000" data-duration="38.150" data-track-index="2"><div id="cov3-in" class="cov-in" style="opacity:0"><span id="cov3-bl0" class="blob" style="width:760px;height:760px;left:-160px;top:-220px;background:#ffd9cb"></span><span id="cov3-bl1" class="blob" style="width:640px;height:640px;left:1380px;top:560px;background:#d8f1e5"></span><span id="cov3-bl2" class="blob" style="width:700px;height:700px;left:1300px;top:-260px;background:#e3dcff"></span><span id="cov3-bl3" class="blob" style="width:520px;height:520px;left:-120px;top:640px;background:#fff0c2"></span><span id="cov3-bl4" class="blob" style="width:420px;height:420px;left:820px;top:760px;background:#ffdbe5"></span><span id="cov3-d0" class="dc dc-dot" style="--c:#ef8a6f;width:18px;height:18px;left:140px;top:140px"></span><span id="cov3-d1" class="dc dc-ring" style="--c:#9a8be6;width:34px;height:34px;left:1740px;top:120px"></span><span id="cov3-d2" class="dc dc-dia" style="--c:#4fb489;width:22px;height:22px;left:1680px;top:820px"></span><span id="cov3-d3" class="dc dc-dot" style="--c:#e7a92c;width:14px;height:14px;left:260px;top:860px"></span><span id="cov3-d4" class="dc dc-ring" style="--c:#e8708f;width:26px;height:26px;left:90px;top:520px"></span><span id="cov3-d5" class="dc dc-dia" style="--c:#6aa3e6;width:18px;height:18px;left:1820px;top:470px"></span><span id="cov3-d6" class="dc dc-dot" style="--c:#4fb489;width:12px;height:12px;left:960px;top:60px"></span></div></div>
+
+<div id="i-title" class="scene full clip" data-start="0.000" data-duration="7.430" data-track-index="3">
+  <div id="i-title-sc" class="sc">
+  <div id="it-ph" class="phwrap"><img id="it-img" class="phimg" src="assets/media/philosophy.png" alt="필로소피 캐릭터"></div>
+  <div id="it-c" class="card titlecard">
+    <div id="it-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>필로소피 AI 교육 · 왕초보 바이브 코딩</span></div>
+    <h1 id="it-h" class="h1 center">왕초보를 위한<br><span class="hl" style="--hlc:var(--hl-y)">나만의 앱 만들기</span></h1>
+    <div id="it-s" class="subrow">
+      <span id="it-s0" class="mini"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg>말로 설명하면</span>
+      <svg id="it-a0" class="arrow arrow-sm" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+      <span id="it-s1" class="mini"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="20" width="40" height="30" rx="8"/><circle cx="24" cy="34" r="4" fill="#4fb489"/><circle cx="40" cy="34" r="4" fill="#4fb489"/><path d="M32 20v-8M28 12h8M26 44h12"/></svg>AI가 만들어요</span>
+    </div>
+    <div id="it-go" class="gochip"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><path d="M27 22l15 10-15 10z" fill="#ffffff"/></svg><span>결과물부터 먼저 볼게요</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-made" class="scene ov clip" data-start="7.530" data-duration="13.000" data-track-index="4">
+  <div id="p-made-sc" class="sc">
+  <div id="pmd-c" class="ovc side">
+    <div id="pmd-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#ef8a6f"></span><span>결과물 먼저 보기</span></div>
+    <div id="pmd-t" class="timerrow"><div id="pmd-ti" class="ico xs" style="background:#ef8a6f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="36" r="20"/><path d="M32 36V25M26 8h12M32 8v8M48 18l4-4"/></svg></div><div><small>구글 AI 스튜디오로</small><b>7분 57초</b><small>만에 만든 앱</small></div></div>
+    <div id="pmd-p" class="promptbox"><small><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg>입력한 프롬프트는 이것뿐!</small>
+      <p id="pmd-pt">“하루 일과를 기록하고 분석하고<br>조언을 해주는 앱을 만들어주세요”</p></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-site" class="scene ov clip" data-start="20.630" data-duration="8.450" data-track-index="4">
+  <div id="p-site-sc" class="sc">
+  <div id="pst-c" class="ovc side">
+    <div id="pst-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#4fb489"></span><span>이런 앱이 생겼어요</span></div>
+    <div class="featgrid"><div id="pst-0" class="fchip2"><span class="fdot" style="background:#6aa3e6"></span>총 기록 시간</div><div id="pst-1" class="fchip2"><span class="fdot" style="background:#9a8be6"></span>집중 업무</div><div id="pst-2" class="fchip2"><span class="fdot" style="background:#e7a92c"></span>평균 에너지</div><div id="pst-3" class="fchip2"><span class="fdot" style="background:#4fb489"></span>휴식·건강</div><div id="pst-4" class="fchip2 wide"><span class="fdot" style="background:#ef8a6f"></span>시간대별 하루 흐름</div></div>
+    <div id="pst-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>이 정도로 디테일하게!</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-ideas" class="scene ov clip" data-start="44.350" data-duration="7.360" data-track-index="4">
+  <div id="p-ideas-sc" class="sc">
+  <div id="pid-c" class="ovc side">
+    <div id="pid-k" class="pill pill-soft pill-sm"><span class="pdot" style="background:#9a8be6"></span><span>나에게 필요한 앱을 만들어요</span></div>
+    <div id="pid-0" class="flow"><span class="fnum ok2"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span><b>하루 일과</b> 기록 앱</span></div>
+    <div id="pid-1" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="20" width="48" height="32" rx="4"/><path d="M24 20v-6h16v6M8 32h48"/></svg></span><span><b>업무</b>에 필요한 앱</span></div>
+    <div id="pid-2" class="flow"><span class="fnum"><svg viewBox="0 0 64 64" fill="none" stroke="#7d62c0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h16a6 6 0 0 1 6 6v36a5 5 0 0 0-5-5H10z"/><path d="M54 12H38a6 6 0 0 0-6 6v36a5 5 0 0 1 5-5h17z"/></svg></span><span><b>학습</b>에 필요한 앱</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-ai" class="scene ov clip" data-start="55.400" data-duration="7.580" data-track-index="4">
+  <div id="p-ai-sc" class="sc">
+  <div id="pai-c" class="ovc side">
+    <div class="ovhead"><div id="pai-i" class="ico xxs" style="background:#9a8be6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#ffffff" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#ffffff" stroke-width="1.5"/></svg></div><span class="stept">AI 맞춤 조언</span></div>
+    <div id="pai-0" class="flow"><span class="fnum">1</span><span>내 <b>일과 기록</b></span></div>
+    <div id="pai-1" class="flow"><span class="fnum">2</span><span>AI가 <b>분석</b></span></div>
+    <div id="pai-2" class="flow"><span class="fnum">3</span><span><b>조언</b>까지 척척</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="c-recap" class="scene full clip" data-start="63.130" data-duration="4.740" data-track-index="3">
+  <div id="c-recap-sc" class="sc">
+  <div class="center-col" style="top:140px">
+    <h2 id="cr-h" class="h2">아주 짧은 시간 안에</h2>
+  </div>
+  <div class="route" style="top:360px">
+    <div id="cr-0" class="card rstep big"><div id="cr-i0" class="ico sm" style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><span>프롬프트 <b>한 줄</b></span></div>
+    <svg id="cr-a1" class="arrow arrow-lg" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="cr-1" class="card rstep big hot"><div id="cr-i1" class="ico sm" style="background:#ef8a6f"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="36" r="20"/><path d="M32 36V25M26 8h12M32 8v8M48 18l4-4"/></svg></div><span><b>7분 57초</b></span></div>
+    <svg id="cr-a2" class="arrow arrow-lg" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="cr-2" class="card rstep big"><div id="cr-i2" class="ico sm" style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="6" width="28" height="52" rx="6"/><path d="M28 50h8M24 18h16M24 26h16M24 34h10"/></svg></div><span>나만의 <b>앱 완성</b></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="c-what" class="scene full clip" data-start="67.870" data-duration="4.660" data-track-index="3">
+  <div id="c-what-sc" class="sc">
+  <div class="center-col" style="top:110px">
+    <div id="cw-k" class="pill pill-soft"><span class="pdot" style="background:#ef8a6f"></span><span>그걸 어떻게 하는지 알려드릴게요</span></div>
+    <h2 id="cw-h" class="h2"><span class="hl" style="--hlc:var(--hl-y)">바이브 코딩</span>이란?</h2>
+  </div>
+  <div class="route" style="top:420px">
+    <div id="cw-0" class="card rstep big"><div id="cw-i0" class="ico sm" style="background:#9a8be6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><span>만들고 싶은 걸<br><b>말로 설명</b></span></div>
+    <svg id="cw-a1" class="arrow arrow-lg" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="cw-1" class="card rstep big"><div id="cw-i1" class="ico sm" style="background:#6aa3e6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 18L8 32l14 14M42 18l14 14-14 14M36 12l-8 40"/></svg></div><span>코드는<br><b>AI가 작성</b></span></div>
+    <svg id="cw-a2" class="arrow arrow-lg" viewBox="0 0 120 24" fill="none" stroke="#5b5873" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path pathLength="1" d="M4 12h108M98 2l14 10-14 10"/></svg>
+    <div id="cw-2" class="card rstep big"><div id="cw-i2" class="ico sm" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="18" y="6" width="28" height="52" rx="6"/><path d="M28 50h8M24 18h16M24 26h16M24 34h10"/></svg></div><span>나는<br><b>앱을 받기만</b></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="c-road" class="scene full clip" data-start="72.530" data-duration="4.680" data-track-index="3">
+  <div id="c-road-sc" class="sc">
+  <div class="center-col" style="top:90px">
+    <h2 id="cd-h" class="h2">왕초보를 위한 <span class="hl" style="--hlc:var(--hl-m)">가장 쉬운 방법</span></h2>
+  </div>
+  <div class="tips" style="top:270px"><div id="cd-0" class="card tip short"><span class="tnum">1</span><div id="cd-i0" class="ico " style="background:#e2eeff"><svg viewBox="0 0 64 64" fill="none" stroke="#6aa3e6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><path d="M8 32h48M32 8c9 8 9 40 0 48M32 8c-9 8-9 40 0 48"/></svg></div><div class="tt">구글 AI 스튜디오<br><b>접속하기</b></div></div><div id="cd-1" class="card tip short"><span class="tnum">2</span><div id="cd-i1" class="ico " style="background:#ebe6ff"><svg viewBox="0 0 64 64" fill="none" stroke="#9a8be6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><div class="tt">만들고 싶은 앱<br><b>설명하기</b></div></div><div id="cd-2" class="card tip short"><span class="tnum">3</span><div id="cd-i2" class="ico " style="background:#dcf3e8"><svg viewBox="0 0 64 64" fill="none" stroke="#4fb489" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6c12 8 16 22 12 36H20C16 28 20 14 32 6z"/><circle cx="32" cy="26" r="5"/><path d="M20 42l-8 10h12M44 42l8 10H40M30 48v8M34 48v8"/></svg></div><div class="tt">공유 · 배포<br><b>하기</b></div></div></div>
+  <div id="cd-end" class="endrib" style="top:690px"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#ffffff"/></svg><span>부담 없이, 이대로만 해 보세요</span></div>
+  </div>
+</div>
+
+<div id="p-s1" class="scene ov clip" data-start="77.360" data-duration="9.570" data-track-index="4">
+  <div id="p-s1-sc" class="sc">
+  <div id="ps1-c" class="ovc side" style="top:175px">
+    <div class="stephead"><span class="stepn">STEP 1</span><span class="stept">AI 스튜디오 접속</span></div>
+    <div id="ps1-0" class="flow"><span class="fnum">1</span><span>구글에서 검색</span></div>
+    <div id="ps1-q" class="searchbox"><svg viewBox="0 0 64 64" fill="none" stroke="#6b6880" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="27" cy="27" r="16"/><path d="M39 39l15 15"/></svg><span>google ai studio</span></div>
+    <div id="ps1-1" class="flow"><span class="fnum">2</span><span>이 사이트를 클릭</span></div>
+    <div id="ps1-u" class="urlbox" style="font-size:25px">aistudio.google.com</div>
+  </div>
+  </div>
+</div>
+
+<div id="p-new" class="scene ov clip" data-start="87.230" data-duration="10.360" data-track-index="4">
+  <div id="p-new-sc" class="sc">
+  <div id="pnw-c" class="ovc side narrow">
+    <div class="stephead"><span class="stepn">STEP 1</span><span class="stept sm">New app 누르기</span></div>
+    <div id="pnw-b" class="appbtn"><svg viewBox="0 0 64 64" fill="none" stroke="#2c2a3d" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M32 12v40M12 32h40"/></svg><span>New app</span><svg viewBox="0 0 64 64" fill="none" stroke="#e0607f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8l34 22-15 4 9 17-7 4-9-17-12 10z" fill="#e0607f" stroke-width="2"/></svg></div>
+    <div id="pnw-l" class="noteline"><svg viewBox="0 0 64 64" fill="none" stroke="#b8923a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="20" cy="40" r="10"/><path d="M27 33l22-22M41 19l6 6M35 25l5 5"/></svg><span><b>구글 아이디</b>로 로그인 먼저!</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-gal" class="scene ov clip" data-start="102.960" data-duration="21.950" data-track-index="4">
+  <div id="p-gal-sc" class="sc">
+  <div id="pgl-c" class="ovc side">
+    <div class="ovhead"><div id="pgl-i" class="ico xxs" style="background:#e7a92c"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="20" width="52" height="28" rx="14"/><path d="M18 34h10M23 29v10"/><circle cx="42" cy="31" r="2.5" fill="#ffffff"/><circle cx="48" cy="37" r="2.5" fill="#ffffff"/></svg></div><span class="tipb">TIP</span><span class="stept sm">남이 만든 앱 리믹스</span></div>
+    <div id="pgl-0" class="flow"><span class="fnum">1</span><span>앱 갤러리 열기</span></div><div id="pgl-1" class="flow"><span class="fnum">2</span><span>마음에 드는 앱 고르기</span></div><div id="pgl-2" class="flow"><span class="fnum">3</span><span><span class="kbd">Remix</span> → <span class="kbd">Apply</span></span></div><div id="pgl-3" class="flow"><span class="fnum">4</span><span>원하는 기능 추가</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-s2a" class="scene ov clip" data-start="126.700" data-duration="14.890" data-track-index="4">
+  <div id="p-s2a-sc" class="sc">
+  <div id="ps2-c" class="ovc side narrow">
+    <div class="stephead"><span class="stepn">STEP 2</span><span class="stept sm">앱 설명하기</span></div>
+    <div id="ps2-t" class="noteline"><svg viewBox="0 0 64 64" fill="none" stroke="#b8923a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 40c-6-4-9-10-9-16a19 19 0 0 1 38 0c0 6-3 12-9 16v6H22z"/><path d="M24 52h16M27 58h10"/></svg><span>처음엔 <b>아주 간단하게</b></span></div>
+    <div id="ps2-p" class="bubble">“영어 단어 학습 앱을<br>만들어 주세요”</div>
+  </div>
+  </div>
+</div>
+
+<div id="p-s2b" class="scene ov clip" data-start="141.790" data-duration="9.130" data-track-index="4">
+  <div id="p-s2b-sc" class="sc">
+  <div id="ps2b-c" class="ovc side narrow">
+    <div class="stephead"><span class="stepn">STEP 2</span><span class="stept sm">이렇게 보내요</span></div>
+    <div id="ps2b-0" class="keyrow"><span class="kbd">Tab ↹</span><span>AI <b>추천 프롬프트</b> 받기</span></div>
+    <div id="ps2b-1" class="keyrow"><span class="kbd">Enter ⏎</span><span><b>Send Prompt</b></span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-wait" class="scene ov clip" data-start="151.120" data-duration="5.600" data-track-index="4">
+  <div id="p-wait-sc" class="sc">
+  <div id="pwt-c" class="ovc side narrow">
+    <div class="ovhead"><div id="pwt-i" class="ico xxs" style="background:#6aa3e6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8h32M16 56h32M20 8c0 14 24 16 24 24S20 42 20 56M44 8c0 14-24 16-24 24s24 10 24 24"/></svg></div><span class="stept sm">앱 만드는 중…</span></div>
+    <div id="pwt-s" class="ovs2"><b>몇 분</b>만 기다리면<br>앱이 생겨요</div>
+  </div>
+  </div>
+</div>
+
+<div id="p-wow" class="scene pop clip" data-start="156.820" data-duration="3.160" data-track-index="5">
+  <div id="p-wow-sc" class="sc">
+  <div id="pww-c" class="card impact">
+    <div id="pww-i" class="imico" style="background:#6aa3e6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 18L8 32l14 14M42 18l14 14-14 14M36 12l-8 40"/></svg></div>
+    <div class="imtx"><small>와..! 이 많은 코드를</small><b><span class="grn">AI가</span> 순식간에</b></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-s3" class="scene ov clip" data-start="161.730" data-duration="12.910" data-track-index="4">
+  <div id="p-s3-sc" class="sc">
+  <div id="ps3-c" class="ovc lside">
+    <div class="stephead"><span class="stepn">STEP 3</span><span class="stept">공유 · 배포</span></div>
+    <div id="ps3-0" class="keyrow"><span class="kbd">Share</span><span>링크로 <b>공유</b></span></div>
+    <div id="ps3-1" class="keyrow"><span class="kbd">Publish</span><span>인터넷에 <b>배포</b></span></div>
+    <div id="ps3-w" class="noteline warn"><svg viewBox="0 0 64 64" fill="none" stroke="#c4486c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="52" height="36" rx="5"/><path d="M6 26h52M14 40h12"/></svg><span>배포하려면 <b>결제 카드가 연결된<br>프로젝트</b>가 필요해요</span></div>
+    <div id="ps3-ok" class="okpill ok-xs"><span class="okc"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span><span>배포 완료 → 내 사이트 주소!</span></div>
+  </div>
+  </div>
+</div>
+
+<div id="p-done" class="scene pop clip" data-start="177.330" data-duration="3.570" data-track-index="5">
+  <div id="p-done-sc" class="sc">
+  <div id="pdn-c" class="card impact">
+    <div id="pdn-i" class="imico" style="background:#3fa877"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6c12 8 16 22 12 36H20C16 28 20 14 32 6z"/><circle cx="32" cy="26" r="5"/><path d="M20 42l-8 10h12M44 42l8 10H40M30 48v8M34 48v8"/></svg></div>
+    <div class="imtx"><small>아주 간단하게</small><b>배포까지 <span class="grn">끝!</span></b></div>
+  </div>
+  </div>
+</div>
+
+<div id="o-sum" class="scene full clip" data-start="181.000" data-duration="11.530" data-track-index="3">
+  <div id="o-sum-sc" class="sc">
+  <div class="center-col" style="top:110px">
+    <div id="os-k" class="pill pill-soft"><span class="pdot" style="background:#6aa3e6"></span><span>구글 AI 스튜디오 · Gemini</span></div>
+    <h1 id="os-h" class="h1 center">가장 <span class="hl" style="--hlc:var(--hl-y)">간단한</span> 바이브 코딩</h1>
+  </div>
+  <div class="sumrow"><div id="os-0" class="card sumc"><div id="os-i0" class="ico xs" style="background:#6aa3e6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><path d="M8 32h48M32 8c9 8 9 40 0 48M32 8c-9 8-9 40 0 48"/></svg></div><b>접속</b><span id="os-t0" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><span id="os-p1" class="plus">→</span><div id="os-1" class="card sumc"><div id="os-i1" class="ico xs" style="background:#9a8be6"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14h44v28H30l-12 10V42h-8z"/><path d="M20 26h24M20 33h14"/></svg></div><b>설명</b><span id="os-t1" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div><span id="os-p2" class="plus">→</span><div id="os-2" class="card sumc"><div id="os-i2" class="ico xs" style="background:#4fb489"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M32 6c12 8 16 22 12 36H20C16 28 20 14 32 6z"/><circle cx="32" cy="26" r="5"/><path d="M20 42l-8 10h12M44 42l8 10H40M30 48v8M34 48v8"/></svg></div><b>배포</b><span id="os-t2" class="tick"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 33l9 9 19-20"/></svg></span></div></div>
+  <div id="os-go" class="endrib" style="top:720px;left:610px;width:700px"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8c2 12 6 16 18 18-12 2-16 6-18 18-2-12-6-16-18-18 12-2 16-6 18-18z" fill="#ffffff" stroke-width="2"/><path d="M50 40c1 5 3 7 8 8-5 1-7 3-8 8-1-5-3-7-8-8 5-1 7-3 8-8z" fill="#ffffff" stroke-width="1.5"/></svg><span>꼭 한번 시도해 보세요!</span></div>
+  </div>
+</div>
+
+<div id="o-grow" class="scene full clip" data-start="192.530" data-duration="10.200" data-track-index="3">
+  <div id="o-grow-sc" class="sc">
+  <div class="center-col" style="top:100px">
+    <h2 id="og-h" class="h2">AI로 인해 <span class="hl" style="--hlc:var(--hl-p)">많은 것들이 바뀌고</span> 있어요</h2>
+  </div>
+  <div class="stairs"><div id="og-0" class="stair" style="left:330px;height:170px;background:#9a8be6"><span>직면하기</span></div><div id="og-1" class="stair" style="left:750px;height:290px;background:#6aa3e6"><span>계속 공부하기</span></div><div id="og-2" class="stair" style="left:1170px;height:410px;background:#4fb489"><span>한 걸음씩 나아가기</span></div>
+    <img id="og-ph" class="stairph" src="assets/media/philosophy.png" alt="필로소피 캐릭터">
+  </div>
+  </div>
+</div>
+
+<div id="o-end" class="scene full clip" data-start="202.730" data-duration="16.420" data-track-index="3">
+  <div id="o-end-sc" class="sc">
+  <div id="oe-ph" class="phwrap" style="top:190px"><img class="phimg" src="assets/media/philosophy.png" alt="필로소피 캐릭터"></div>
+  <div id="oe-c" class="card titlecard" style="top:170px">
+    <div id="oe-k" class="pill pill-soft"><span class="pdot" style="background:#9a8be6"></span><span>필로소피 AI 교육 · 왕초보 바이브 코딩</span></div>
+    <div id="oe-h" class="h1 center" style="font-size:96px"><span class="hl" style="--hlc:var(--hl-y)">함께</span> 공부해요</div>
+    <div class="endbtns">
+      <div id="oe-l" class="ebtn like"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 28v26H10V28zM20 28l10-20c5 0 7 4 6 8l-2 10h16a5 5 0 0 1 5 6l-4 16a6 6 0 0 1-6 6H20"/></svg><span>좋아요</span></div>
+      <div id="oe-s" class="ebtn sub"><svg viewBox="0 0 64 64" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 44V30a14 14 0 0 1 28 0v14l4 6H14z"/><path d="M27 54a5 5 0 0 0 10 0"/></svg><span>구독</span></div>
+    </div>
+    <div id="oe-t" class="thanks">감사합니다 <svg viewBox="0 0 64 64" fill="none" stroke="#e8708f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M32 52C18 42 10 34 10 24c0-7 5-12 11-12 5 0 8 3 11 7 3-4 6-7 11-7 6 0 11 5 11 12 0 10-8 18-22 28z" fill="#e8708f"/></svg></div>
+  </div>
+  </div>
+</div>
+<div id="cap0" class="cap clip" data-start="0.000" data-duration="1.130" data-track-index="8"><span>안녕하세요 필로소피입니다 :)</span></div>
+<div id="cap1" class="cap clip" data-start="1.130" data-duration="3.120" data-track-index="8"><span>왕초보분들을 위한 나만의 앱 만들기 방법을</span></div>
+<div id="cap2" class="cap clip" data-start="4.250" data-duration="0.930" data-track-index="8"><span>좀 알려드리려고 하는데요</span></div>
+<div id="cap3" class="cap clip" data-start="5.180" data-duration="2.250" data-track-index="8"><span>우선 결과물부터 보여드리도록 하겠습니다</span></div>
+<div id="cap35" class="cap clip" data-start="63.130" data-duration="2.610" data-track-index="8"><span>이러한 사이트를 아주 짧은 시간 안에</span></div>
+<div id="cap36" class="cap clip" data-start="65.740" data-duration="2.130" data-track-index="8"><span>7분 57초 만에 만들어줬습니다</span></div>
+<div id="cap37" class="cap clip" data-start="67.870" data-duration="1.550" data-track-index="8"><span>그걸 어떻게 하는지 알려드리겠습니다</span></div>
+<div id="cap38" class="cap clip" data-start="69.420" data-duration="2.080" data-track-index="8"><span>여러 바이브 코딩 방법이 있지만</span></div>
+<div id="cap39" class="cap clip" data-start="71.500" data-duration="1.030" data-track-index="8"><span>간단한 방법</span></div>
+<div id="cap40" class="cap clip" data-start="72.530" data-duration="2.160" data-track-index="8"><span>왕초보 분들을 위한 방법 알려드리겠습니다</span></div>
+<div id="cap41" class="cap clip" data-start="74.690" data-duration="1.700" data-track-index="8"><span>시작하기 너무 부담스러우셨던 분들</span></div>
+<div id="cap42" class="cap clip" data-start="76.390" data-duration="0.820" data-track-index="8"><span>이대로만 해보세요</span></div>
+<div id="cap106" class="cap clip" data-start="181.000" data-duration="2.000" data-track-index="8"><span>이 제미나이를 활용해서</span></div>
+<div id="cap107" class="cap clip" data-start="183.000" data-duration="2.490" data-track-index="8"><span>이렇게 간단하게 바이브 코딩을 할 수 있게 해줍니다</span></div>
+<div id="cap108" class="cap clip" data-start="185.490" data-duration="1.790" data-track-index="8"><span>바이브 코딩하는 여러 방법이 있지만</span></div>
+<div id="cap109" class="cap clip" data-start="187.280" data-duration="2.470" data-track-index="8"><span>이 구글 AI 스튜디오는 정말 간단합니다</span></div>
+<div id="cap110" class="cap clip" data-start="189.750" data-duration="2.780" data-track-index="8"><span>그래서 꼭 한번 시도해 보셨으면 좋겠습니다</span></div>
+<div id="cap111" class="cap clip" data-start="192.530" data-duration="1.040" data-track-index="8"><span>AI로 인해서</span></div>
+<div id="cap112" class="cap clip" data-start="193.570" data-duration="1.200" data-track-index="8"><span>많은 것들이 바뀌고 있습니다</span></div>
+<div id="cap113" class="cap clip" data-start="194.770" data-duration="1.250" data-track-index="8"><span>그래서 우리가 정말</span></div>
+<div id="cap114" class="cap clip" data-start="196.020" data-duration="2.110" data-track-index="8"><span>이 상황을 직면하고</span></div>
+<div id="cap115" class="cap clip" data-start="198.130" data-duration="1.270" data-track-index="8"><span>계속 공부를 해 나가야</span></div>
+<div id="cap116" class="cap clip" data-start="199.400" data-duration="1.760" data-track-index="8"><span>우리도 변화에 맞춰</span></div>
+<div id="cap117" class="cap clip" data-start="201.160" data-duration="1.570" data-track-index="8"><span>한 걸음씩 나아갈 수 있다고 생각합니다</span></div>
+<div id="cap118" class="cap clip" data-start="202.730" data-duration="2.530" data-track-index="8"><span>그래서 함께 공부하실 수 있으면 좋을 것 같습니다</span></div>
+<div id="cap119" class="cap clip" data-start="205.260" data-duration="0.890" data-track-index="8"><span>감사합니다</span></div>
+  <div id="endfade"></div>
+</div>
+<script>
+(function () {
+  const tl = gsap.timeline({ paused: true });
+  const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, scale: .6 }, { opacity: 1, scale: 1, duration: .5, ease: 'back.out(1.8)' }, t);
+  const up = (sel, t, dy = 30) => tl.fromTo(sel, { opacity: 0, y: dy }, { opacity: 1, y: 0, duration: .55, ease: 'power3.out' }, t);
+  const rise = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 60, scale: .97 }, { opacity: 1, y: 0, scale: 1, duration: .6, ease: 'expo.out' }, t);
+  const slide = (sel, t, dx = 60) => tl.fromTo(sel, { opacity: 0, x: dx }, { opacity: 1, x: 0, duration: .5, ease: 'power3.out' }, t);
+  const sweep = (sel, t) => tl.fromTo(sel, { backgroundSize: '0% 38%' }, { backgroundSize: '100% 38%', duration: .7, ease: 'power2.inOut', immediateRender: false }, t);
+  const draw = (sel, t, d) => tl.fromTo(sel, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: d, ease: 'power2.out' }, t);
+  const fill = (sel, t, pct) => tl.fromTo(sel, { width: '0%' }, { width: pct + '%', duration: 1.0, ease: 'power3.out' }, t);
+  const typeIn = (sel, t, d) => tl.fromTo(sel, { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: d, ease: 'none' }, t);
+  const confetti = (pre, t) => {
+    const host = (document.getElementById(pre + '-c') || document.getElementById(pre)); const cols = ['#ef8a6f', '#e7a92c', '#4fb489', '#9a8be6', '#e8708f', '#6aa3e6'];
+    for (let i = 0; i < 22; i++) {
+      const p = document.createElement('span'); p.className = 'cf'; p.style.background = cols[i % 6];
+      p.style.left = '50%'; p.style.top = '50%'; host.appendChild(p);
+      const a = (i / 22) * Math.PI * 2, r = 260 + (i % 4) * 60;
+      tl.fromTo(p, { opacity: 1, x: 0, y: 0, rotation: 0 }, { opacity: 0, x: Math.cos(a) * r, y: Math.sin(a) * r * .6, rotation: 200 + i * 20, duration: 1.3, ease: 'power3.out', immediateRender: false }, t);
+    }
+  };
+
+  // cover backgrounds
+  
+  
+  tl.to('#cov1-in', {opacity:0, duration:0.45, ease:'power2.in'}, 6.98);
+  tl.fromTo('#cov1-bl0', {x:0, y:0}, {x:60, y:40, duration:7, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-bl1', {x:0, y:0}, {x:-70, y:-50, duration:7, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-bl2', {x:0, y:0}, {x:-50, y:60, duration:7, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-bl3', {x:0, y:0}, {x:70, y:-40, duration:7, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-bl4', {x:0, y:0}, {x:40, y:-60, duration:7, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-d0', {y:0, rotation:0}, {y:-22, rotation:-40, duration:3.5, ease:'sine.inOut', yoyo:true, repeat:1}, 0.00);
+  tl.fromTo('#cov1-d1', {y:0, rotation:0}, {y:22, rotation:40, duration:3.8, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-d2', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.1, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-d3', {y:0, rotation:0}, {y:22, rotation:40, duration:4.4, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-d4', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.7, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-d5', {y:0, rotation:0}, {y:22, rotation:40, duration:5, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov1-d6', {y:0, rotation:0}, {y:-22, rotation:-40, duration:5.3, ease:'sine.inOut', yoyo:true, repeat:0}, 0.00);
+  tl.fromTo('#cov2-in', {opacity:0}, {opacity:1, duration:0.45, ease:'power2.out'}, 63.13);
+  tl.to('#cov2-in', {opacity:0, duration:0.45, ease:'power2.in'}, 76.76);
+  tl.fromTo('#cov2-bl0', {x:0, y:0}, {x:60, y:40, duration:7, ease:'sine.inOut', yoyo:true, repeat:1}, 63.13);
+  tl.fromTo('#cov2-bl1', {x:0, y:0}, {x:-70, y:-50, duration:7, ease:'sine.inOut', yoyo:true, repeat:1}, 63.13);
+  tl.fromTo('#cov2-bl2', {x:0, y:0}, {x:-50, y:60, duration:7, ease:'sine.inOut', yoyo:true, repeat:1}, 63.13);
+  tl.fromTo('#cov2-bl3', {x:0, y:0}, {x:70, y:-40, duration:7, ease:'sine.inOut', yoyo:true, repeat:1}, 63.13);
+  tl.fromTo('#cov2-bl4', {x:0, y:0}, {x:40, y:-60, duration:7, ease:'sine.inOut', yoyo:true, repeat:1}, 63.13);
+  tl.fromTo('#cov2-d0', {y:0, rotation:0}, {y:-22, rotation:-40, duration:3.5, ease:'sine.inOut', yoyo:true, repeat:3}, 63.13);
+  tl.fromTo('#cov2-d1', {y:0, rotation:0}, {y:22, rotation:40, duration:3.8, ease:'sine.inOut', yoyo:true, repeat:2}, 63.13);
+  tl.fromTo('#cov2-d2', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.1, ease:'sine.inOut', yoyo:true, repeat:2}, 63.13);
+  tl.fromTo('#cov2-d3', {y:0, rotation:0}, {y:22, rotation:40, duration:4.4, ease:'sine.inOut', yoyo:true, repeat:2}, 63.13);
+  tl.fromTo('#cov2-d4', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.7, ease:'sine.inOut', yoyo:true, repeat:1}, 63.13);
+  tl.fromTo('#cov2-d5', {y:0, rotation:0}, {y:22, rotation:40, duration:5, ease:'sine.inOut', yoyo:true, repeat:1}, 63.13);
+  tl.fromTo('#cov2-d6', {y:0, rotation:0}, {y:-22, rotation:-40, duration:5.3, ease:'sine.inOut', yoyo:true, repeat:1}, 63.13);
+  tl.fromTo('#cov3-in', {opacity:0}, {opacity:1, duration:0.45, ease:'power2.out'}, 181.00);
+  
+  tl.fromTo('#cov3-bl0', {x:0, y:0}, {x:60, y:40, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 181.00);
+  tl.fromTo('#cov3-bl1', {x:0, y:0}, {x:-70, y:-50, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 181.00);
+  tl.fromTo('#cov3-bl2', {x:0, y:0}, {x:-50, y:60, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 181.00);
+  tl.fromTo('#cov3-bl3', {x:0, y:0}, {x:70, y:-40, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 181.00);
+  tl.fromTo('#cov3-bl4', {x:0, y:0}, {x:40, y:-60, duration:7, ease:'sine.inOut', yoyo:true, repeat:4}, 181.00);
+  tl.fromTo('#cov3-d0', {y:0, rotation:0}, {y:-22, rotation:-40, duration:3.5, ease:'sine.inOut', yoyo:true, repeat:9}, 181.00);
+  tl.fromTo('#cov3-d1', {y:0, rotation:0}, {y:22, rotation:40, duration:3.8, ease:'sine.inOut', yoyo:true, repeat:9}, 181.00);
+  tl.fromTo('#cov3-d2', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.1, ease:'sine.inOut', yoyo:true, repeat:8}, 181.00);
+  tl.fromTo('#cov3-d3', {y:0, rotation:0}, {y:22, rotation:40, duration:4.4, ease:'sine.inOut', yoyo:true, repeat:7}, 181.00);
+  tl.fromTo('#cov3-d4', {y:0, rotation:0}, {y:-22, rotation:-40, duration:4.7, ease:'sine.inOut', yoyo:true, repeat:7}, 181.00);
+  tl.fromTo('#cov3-d5', {y:0, rotation:0}, {y:22, rotation:40, duration:5, ease:'sine.inOut', yoyo:true, repeat:6}, 181.00);
+  tl.fromTo('#cov3-d6', {y:0, rotation:0}, {y:-22, rotation:-40, duration:5.3, ease:'sine.inOut', yoyo:true, repeat:6}, 181.00);
+
+  // graphics
+
+  // i-title
+  tl.fromTo('#i-title-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 0.00);
+  tl.to('#i-title-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 7.110);
+  tl.fromTo('#it-ph', {opacity:0, y:220}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, .1);
+  rise('#it-c', .25); up('#it-k', .45, 16); up('#it-h', 1.13, 34); sweep('#it-h .hl', 1.83);
+  pop('#it-s0', 4.25); draw('#it-a0 path', 4.65, .3); pop('#it-s1', 4.95);
+  pop('#it-go', 5.48);
+
+  // p-made
+  tl.fromTo('#p-made-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 7.53);
+  tl.to('#p-made-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 20.160);
+  rise('#pmd-c', 7.63); up('#pmd-k', 7.83, 12);
+  up('#pmd-t', 8.33, 14); pop('#pmd-ti', 9.16);
+  tl.fromTo('#pmd-ti', {rotation:0}, {rotation:14, duration:.14, ease:'sine.inOut', yoyo:true, repeat:5, immediateRender:false}, 9.76);
+  up('#pmd-p', 12.01, 14); typeIn('#pmd-pt', 14.66, 2.0);
+
+  // p-site
+  tl.fromTo('#p-site-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 20.63);
+  tl.to('#p-site-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 28.710);
+  rise('#pst-c', 20.73); up('#pst-k', 20.93, 12);
+  pop('#pst-0', 21.13); pop('#pst-1', 21.92); pop('#pst-2', 22.71); pop('#pst-3', 23.93); pop('#pst-4', 25.76); pop('#pst-ok', 26.95);
+
+  // p-ideas
+  tl.fromTo('#p-ideas-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 44.35);
+  tl.to('#p-ideas-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 51.340);
+  rise('#pid-c', 44.45); up('#pid-k', 44.65, 12);
+  slide('#pid-0', 44.85, 30); slide('#pid-1', 47.67, 30); slide('#pid-2', 48.97, 30);
+
+  // p-ai
+  tl.fromTo('#p-ai-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 55.40);
+  tl.to('#p-ai-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 62.610);
+  rise('#pai-c', 55.50); pop('#pai-i', 55.80);
+  slide('#pai-0', 56.20, 30); slide('#pai-1', 59.40, 30); slide('#pai-2', 62.17, 30);
+
+  // c-recap
+  tl.fromTo('#c-recap-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 63.13);
+  tl.to('#c-recap-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 67.550);
+  up('#cr-h', 63.43, 28);
+  rise('#cr-0', 63.73); draw('#cr-a1 path', 64.53, .35); rise('#cr-1', 65.74); pop('#cr-i1', 66.04);
+  draw('#cr-a2 path', 66.74, .35); rise('#cr-2', 67.04); confetti('cr-2', 67.44);
+
+  // c-what
+  tl.fromTo('#c-what-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 67.87);
+  tl.to('#c-what-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 72.210);
+  up('#cw-k', 68.07, 14); up('#cw-h', 68.47, 30); sweep('#cw-h .hl', 69.42);
+  rise('#cw-0', 69.82); draw('#cw-a1 path', 70.42, .3); rise('#cw-1', 70.72);
+  draw('#cw-a2 path', 71.50, .3); rise('#cw-2', 71.80);
+
+  // c-road
+  tl.fromTo('#c-road-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 72.53);
+  tl.to('#c-road-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 76.890);
+  up('#cd-h', 72.73, 28); sweep('#cd-h .hl', 73.43);
+  rise('#cd-0', 74.09); pop('#cd-i0', 74.29); rise('#cd-1', 74.54); pop('#cd-i1', 74.74); rise('#cd-2', 74.99); pop('#cd-i2', 75.19);
+  pop('#cd-end', 76.69);
+
+  // p-s1
+  tl.fromTo('#p-s1-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 77.36);
+  tl.to('#p-s1-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 86.560);
+  rise('#ps1-c', 77.46);
+  slide('#ps1-0', 77.81, 30); pop('#ps1-q', 78.21);
+  slide('#ps1-1', 80.63, 30); pop('#ps1-u', 80.93);
+  tl.to('#ps1-u', {scale:1.06, duration:.25, ease:'power2.out', yoyo:true, repeat:1}, 83.95);
+
+  // p-new
+  tl.fromTo('#p-new-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 87.23);
+  tl.to('#p-new-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 97.220);
+  rise('#pnw-c', 87.33); pop('#pnw-b', 89.29);
+  tl.to('#pnw-b', {scale:1.08, duration:.2, ease:'power2.out', yoyo:true, repeat:1}, 90.00);
+  up('#pnw-l', 91.18, 10);
+
+  // p-gal
+  tl.fromTo('#p-gal-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 102.96);
+  tl.to('#p-gal-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 124.540);
+  rise('#pgl-c', 103.06); pop('#pgl-i', 103.36);
+  slide('#pgl-0', 103.06, 30); slide('#pgl-1', 109.73, 30); slide('#pgl-2', 110.73, 30); slide('#pgl-3', 119.98, 30);
+
+  // p-s2a
+  tl.fromTo('#p-s2a-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 126.70);
+  tl.to('#p-s2a-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 141.220);
+  rise('#ps2-c', 126.80); up('#ps2-t', 128.68, 10); pop('#ps2-p', 131.44);
+
+  // p-s2b
+  tl.fromTo('#p-s2b-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 141.79);
+  tl.to('#p-s2b-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 150.550);
+  rise('#ps2b-c', 141.89); slide('#ps2b-0', 142.19, 30); slide('#ps2b-1', 145.29, 30);
+  tl.to('#ps2b-1 .kbd', {y:4, boxShadow:'0 1px 0 #c9c3dc', duration:.12, ease:'power2.out', yoyo:true, repeat:1}, 147.08);
+
+  // p-wait
+  tl.fromTo('#p-wait-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 151.12);
+  tl.to('#p-wait-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 156.350);
+  rise('#pwt-c', 151.22); up('#pwt-s', 153.58, 10);
+  tl.fromTo('#pwt-i svg', {rotation:0}, {rotation:180, duration:.6, ease:'power2.inOut', immediateRender:false}, 154.28);
+
+  // p-wow
+  tl.fromTo('#p-wow-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 156.82);
+  tl.to('#p-wow-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 159.610);
+  tl.fromTo('#pww-c', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.55, ease:'back.out(1.8)'}, 156.87); confetti('pww', 157.72);
+
+  // p-s3
+  tl.fromTo('#p-s3-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 161.73);
+  tl.to('#p-s3-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 174.270);
+  rise('#ps3-c', 161.83); slide('#ps3-0', 162.23, -30); slide('#ps3-1', 164.97, -30);
+  up('#ps3-w', 168.11, 10); pop('#ps3-ok', 171.91);
+
+  // p-done
+  tl.fromTo('#p-done-sc', {opacity:0}, {opacity:1, duration:0.4, ease:'power2.out'}, 177.33);
+  tl.to('#p-done-sc', {opacity:0, duration:0.35, ease:'power2.in'}, 180.530);
+  tl.fromTo('#pdn-c', {opacity:0, scale:.5}, {opacity:1, scale:1, duration:.55, ease:'back.out(1.8)'}, 177.38); confetti('pdn', 177.83);
+  tl.fromTo('#pdn-i svg', {y:0}, {y:-10, duration:.2, ease:'sine.inOut', yoyo:true, repeat:3, immediateRender:false}, 179.06);
+
+  // o-sum
+  tl.fromTo('#o-sum-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 181.00);
+  tl.to('#o-sum-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 192.210);
+  up('#os-k', 181.20, 14); up('#os-h', 183.00, 30); sweep('#os-h .hl', 187.28);
+   rise('#os-0', 183.50); pop('#os-t0', 187.48); pop('#os-p1', 183.80); rise('#os-1', 184.00); pop('#os-t1', 187.73); pop('#os-p2', 184.30); rise('#os-2', 184.50); pop('#os-t2', 187.98);
+  pop('#os-go', 189.95);
+
+  // o-grow
+  tl.fromTo('#o-grow-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 192.53);
+  tl.to('#o-grow-sc', {opacity:0, duration:0.3, ease:'power2.in'}, 202.410);
+  up('#og-h', 192.73, 28); sweep('#og-h .hl', 193.87);
+  tl.fromTo('#og-0', {opacity:0, scaleY:0}, {opacity:1, scaleY:1, duration:.6, ease:'back.out(1.4)'}, 196.12); tl.fromTo('#og-1', {opacity:0, scaleY:0}, {opacity:1, scaleY:1, duration:.6, ease:'back.out(1.4)'}, 198.23); tl.fromTo('#og-2', {opacity:0, scaleY:0}, {opacity:1, scaleY:1, duration:.6, ease:'back.out(1.4)'}, 201.26);
+  tl.fromTo('#og-ph', {opacity:0, x:-840, y:240}, {opacity:1, x:-840, y:240, duration:.4}, 196.42);
+  tl.to('#og-ph', {x:-420, y:120, duration:.6, ease:'power2.out'}, 198.63);
+  tl.to('#og-ph', {x:0, y:0, duration:.6, ease:'power2.out'}, 201.56);
+
+  // o-end
+  tl.fromTo('#o-end-sc', {opacity:0}, {opacity:1, duration:0.35, ease:'power2.out'}, 202.73);
+  
+  tl.fromTo('#oe-ph', {opacity:0, y:200}, {opacity:1, y:0, duration:.8, ease:'back.out(1.4)'}, 202.83);
+  rise('#oe-c', 202.93); up('#oe-k', 203.13, 14); up('#oe-h', 203.33, 28); sweep('#oe-h .hl', 204.03);
+  pop('#oe-t', 205.26); pop('#oe-l', 206.46); pop('#oe-s', 207.06);
+  tl.to('#oe-l', {scale:1.12, duration:.25, ease:'power2.out', yoyo:true, repeat:1}, 208.26);
+  tl.to('#oe-s', {scale:1.12, duration:.25, ease:'power2.out', yoyo:true, repeat:1}, 208.86);
+
+  tl.fromTo('#endfade', { opacity: 0 }, { opacity: 1, duration: 1.0, ease: 'power1.in' }, 218.150);
+
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+})();
+</script>
+</body>
+</html>
