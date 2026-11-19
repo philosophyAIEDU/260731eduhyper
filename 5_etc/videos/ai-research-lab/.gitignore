@@ -1,0 +1,9 @@
+# 원본·중간 산출물 (용량 큼) — 저장소에는 코드와 자막만
+edit/*.wav
+edit/t*.json
+edit/t*.txt
+edit/cues.txt
+assets/media/src.mp4
+out/
+snapshots/
+.hyperframes/
