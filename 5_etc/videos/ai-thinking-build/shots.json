@@ -1,0 +1,326 @@
+{
+  "style": "Photorealistic documentary photograph, shot on a 35mm full-frame camera, natural available light, realistic textures, muted warm tones, shallow depth of field. Not an illustration, not a 3D render.",
+  "shots": [
+    {
+      "id": "s01",
+      "from": 1,
+      "kind": "pixabay-image",
+      "query": "person thinking window light",
+      "pick": 1477601
+    },
+    {
+      "id": "s02",
+      "from": 5,
+      "kind": "pixabay-image",
+      "query": "chess board thinking",
+      "pick": 1080536
+    },
+    {
+      "id": "s03",
+      "from": 7,
+      "kind": "pixabay-image",
+      "query": "puzzle pieces hands",
+      "pick": 2777620
+    },
+    {
+      "id": "s04",
+      "from": 10,
+      "kind": "pixabay-video",
+      "query": "crowd walking city street",
+      "pick": 3630
+    },
+    {
+      "id": "s05",
+      "from": 13,
+      "kind": "pixabay-image",
+      "query": "exam test paper pencil",
+      "pick": 3653385
+    },
+    {
+      "id": "s06",
+      "from": 15,
+      "kind": "pixabay-image",
+      "query": "pensive man silhouette window",
+      "pick": 2590616
+    },
+    {
+      "id": "s07",
+      "from": 19,
+      "kind": "pixabay-video",
+      "query": "artificial intelligence digital network",
+      "pick": 43022
+    },
+    {
+      "id": "m-time",
+      "from": 22,
+      "kind": "motion"
+    },
+    {
+      "id": "s08",
+      "from": 25,
+      "kind": "pixabay-image",
+      "query": "laptop office work desk",
+      "pick": 849825
+    },
+    {
+      "id": "s09",
+      "from": 28,
+      "kind": "pixabay-video",
+      "query": "car driving navigation",
+      "pick": 133699
+    },
+    {
+      "id": "s10",
+      "from": 34,
+      "kind": "pixabay-image",
+      "query": "robot hand human hand",
+      "pick": 3389904
+    },
+    {
+      "id": "s11",
+      "from": 39,
+      "kind": "pixabay-image",
+      "query": "students library books",
+      "pick": 3205452
+    },
+    {
+      "id": "s12",
+      "from": 43,
+      "kind": "pixabay-image",
+      "query": "child using tablet",
+      "pick": 820272
+    },
+    {
+      "id": "s13",
+      "from": 49,
+      "kind": "pixabay-video",
+      "query": "child smartphone",
+      "pick": 204527
+    },
+    {
+      "id": "s14",
+      "from": 50,
+      "kind": "pixabay-image",
+      "query": "digital drawing tablet creative",
+      "pick": 2228403
+    },
+    {
+      "id": "s15",
+      "from": 55,
+      "kind": "pixabay-image",
+      "query": "lonely person fog",
+      "pick": 3397210
+    },
+    {
+      "id": "m-sub",
+      "from": 57,
+      "kind": "motion"
+    },
+    {
+      "id": "s16",
+      "from": 62,
+      "kind": "pixabay-image",
+      "query": "office worker stressed computer",
+      "pick": 849804
+    },
+    {
+      "id": "s17",
+      "from": 65,
+      "kind": "pixabay-image",
+      "query": "man shrugging doubt",
+      "pick": 1897828
+    },
+    {
+      "id": "s18",
+      "from": 68,
+      "kind": "pixabay-image",
+      "query": "compass old map",
+      "pick": 2946959
+    },
+    {
+      "id": "s19",
+      "from": 70,
+      "kind": "pixabay-image",
+      "query": "climbing mountain summit",
+      "pick": 3610255
+    },
+    {
+      "id": "s20",
+      "from": 76,
+      "kind": "pixabay-video",
+      "query": "gym workout weights",
+      "pick": 148204
+    },
+    {
+      "id": "s21",
+      "from": 79,
+      "kind": "pixabay-video",
+      "query": "running jogging sunrise",
+      "pick": 139362
+    },
+    {
+      "id": "s22",
+      "from": 81,
+      "kind": "pixabay-image",
+      "query": "happy team office",
+      "pick": 2569234
+    },
+    {
+      "id": "s23",
+      "from": 84,
+      "kind": "pixabay-image",
+      "query": "woman working laptop confident",
+      "pick": 593357
+    },
+    {
+      "id": "m-cmp",
+      "from": 88,
+      "kind": "motion"
+    },
+    {
+      "id": "s24",
+      "from": 98,
+      "kind": "pixabay-image",
+      "query": "light bulb idea",
+      "pick": 2287759
+    },
+    {
+      "id": "s25",
+      "from": 100,
+      "kind": "pixabay-image",
+      "query": "question mark",
+      "pick": 3707306
+    },
+    {
+      "id": "s26",
+      "from": 103,
+      "kind": "pixabay-image",
+      "query": "man thinking desk night",
+      "pick": 1868728
+    },
+    {
+      "id": "s27",
+      "from": 109,
+      "kind": "pixabay-image",
+      "query": "smartphone chat typing",
+      "pick": 5551318
+    },
+    {
+      "id": "m-build",
+      "from": 118,
+      "kind": "motion"
+    },
+    {
+      "id": "s28",
+      "from": 123,
+      "kind": "pixabay-image",
+      "query": "english dictionary",
+      "pick": 4620781
+    },
+    {
+      "id": "s29",
+      "from": 128,
+      "kind": "pixabay-image",
+      "query": "student studying laptop",
+      "pick": 2562325
+    },
+    {
+      "id": "s30",
+      "from": 133,
+      "kind": "pixabay-image",
+      "query": "sticky notes ideas wall",
+      "pick": 1284667
+    },
+    {
+      "id": "s31",
+      "from": 139,
+      "kind": "pixabay-image",
+      "query": "app design smartphone sketch",
+      "pick": 788002
+    },
+    {
+      "id": "s32",
+      "from": 143,
+      "kind": "pixabay-video",
+      "query": "coding programming screen",
+      "pick": 1625
+    },
+    {
+      "id": "s33",
+      "from": 148,
+      "kind": "pixabay-image",
+      "query": "wireframe app design",
+      "pick": 10102262
+    },
+    {
+      "id": "m-machine",
+      "from": 150,
+      "kind": "motion"
+    },
+    {
+      "id": "s34",
+      "from": 158,
+      "kind": "pixabay-image",
+      "query": "children toys",
+      "pick": 4163734
+    },
+    {
+      "id": "s35",
+      "from": 160,
+      "kind": "pixabay-video",
+      "query": "clay hands",
+      "pick": 41391
+    },
+    {
+      "id": "s36",
+      "from": 166,
+      "kind": "gemini",
+      "prompt": "Close-up of a young child's hands on a wooden table shaping colorful modeling clay into small figures: a little house, a tiny car, a flower and a small person figure. Warm window light, cozy home atmosphere, the child's face is not visible."
+    },
+    {
+      "id": "s37",
+      "from": 171,
+      "kind": "pixabay-video",
+      "query": "children playground sand",
+      "pick": 73847
+    },
+    {
+      "id": "s38",
+      "from": 178,
+      "kind": "pixabay-image",
+      "query": "sand castle",
+      "pick": 2548132
+    },
+    {
+      "id": "s39",
+      "from": 181,
+      "kind": "pixabay-image",
+      "query": "hands crafting workshop",
+      "pick": 1139098
+    },
+    {
+      "id": "m-loop",
+      "from": 184,
+      "kind": "motion"
+    },
+    {
+      "id": "s40",
+      "from": 190,
+      "kind": "pixabay-image",
+      "query": "sunrise person silhouette",
+      "pick": 8561676
+    },
+    {
+      "id": "s41",
+      "from": 193,
+      "kind": "pixabay-video",
+      "query": "writing notebook desk",
+      "pick": 43869
+    },
+    {
+      "id": "end",
+      "from": 198,
+      "kind": "motion"
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { Composition } from 'remotion';
 import './kit/fonts';
 import './kit/pastel.css';
 import './kit/pro.css';
+import { AiThinkingBuild, calculateMetadata as thinkMeta, DUR as THINK_DUR } from './videos/ai-thinking-build';
 import { AiEraAssignment, calculateMetadata as aiEraMeta, DUR as AI_ERA_DUR } from './videos/ai-era-assignment';
 import { AiEraAssignmentPractice, calculateMetadata as practiceMeta, DUR as PRACTICE_DUR } from './videos/ai-era-assignment-practice';
 
@@ -28,6 +29,16 @@ export const RemotionRoot: React.FC = () => (
       height={1080}
       defaultProps={{ cues: [], sfx: true }}
       calculateMetadata={practiceMeta}
+    />
+    <Composition
+      id="ai-thinking-build"
+      component={AiThinkingBuild}
+      durationInFrames={THINK_DUR * 30}
+      fps={30}
+      width={1920}
+      height={1080}
+      defaultProps={{ cues: [], sfx: true }}
+      calculateMetadata={thinkMeta}
     />
   </>
 );
