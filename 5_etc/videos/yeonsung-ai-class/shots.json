@@ -1,0 +1,239 @@
+{
+  "style": "Photorealistic documentary photograph, shot on a 35mm full-frame camera, natural available light, realistic textures, muted warm tones, shallow depth of field. Not an illustration, not a 3D render.",
+  "shots": [
+    {
+      "id": "u01",
+      "from": 1,
+      "kind": "user",
+      "file": "1.jpg"
+    },
+    {
+      "id": "u02",
+      "from": 2,
+      "kind": "user",
+      "file": "2.jpg"
+    },
+    {
+      "id": "u03",
+      "from": 4,
+      "kind": "user",
+      "file": "3.jpg"
+    },
+    {
+      "id": "u13",
+      "from": 5,
+      "kind": "user",
+      "file": "13.jpg"
+    },
+    {
+      "id": "u04",
+      "from": 7,
+      "kind": "user",
+      "file": "4.jpg"
+    },
+    {
+      "id": "x01",
+      "from": 8,
+      "kind": "pixabay-image",
+      "query": "exam hall desks test",
+      "pick": 5422856
+    },
+    {
+      "id": "x02",
+      "from": 12,
+      "kind": "pixabay-video",
+      "query": "writing exam pencil",
+      "pick": 8256
+    },
+    {
+      "id": "x03",
+      "from": 14,
+      "kind": "pixabay-video",
+      "query": "students walking campus",
+      "pick": 6387
+    },
+    {
+      "id": "m-crumble",
+      "from": 15,
+      "kind": "motion"
+    },
+    {
+      "id": "x04",
+      "from": 19,
+      "kind": "pixabay-image",
+      "query": "graduation caps thrown",
+      "pick": 995042
+    },
+    {
+      "id": "x05",
+      "from": 22,
+      "kind": "pixabay-image",
+      "query": "closed door dark hallway",
+      "pick": 1587023
+    },
+    {
+      "id": "m-doors",
+      "from": 24,
+      "kind": "motion"
+    },
+    {
+      "id": "x06",
+      "from": 26,
+      "kind": "pixabay-video",
+      "query": "door opening light",
+      "pick": 20263
+    },
+    {
+      "id": "u05",
+      "from": 29,
+      "kind": "user",
+      "file": "5.jpg"
+    },
+    {
+      "id": "u06",
+      "from": 31,
+      "kind": "user",
+      "file": "6.jpg"
+    },
+    {
+      "id": "u07",
+      "from": 33,
+      "kind": "user",
+      "file": "7.jpg"
+    },
+    {
+      "id": "u08",
+      "from": 35,
+      "kind": "user",
+      "file": "8.jpg"
+    },
+    {
+      "id": "u09",
+      "from": 38,
+      "kind": "user",
+      "file": "9.jpg"
+    },
+    {
+      "id": "u10",
+      "from": 41,
+      "kind": "user",
+      "file": "10.jpg"
+    },
+    {
+      "id": "u14",
+      "from": 44,
+      "kind": "user",
+      "file": "14.jpg"
+    },
+    {
+      "id": "u15",
+      "from": 46,
+      "kind": "user",
+      "file": "15.jpg"
+    },
+    {
+      "id": "x07",
+      "from": 50,
+      "kind": "pixabay-video",
+      "query": "sparkler sparks",
+      "pick": 30846
+    },
+    {
+      "id": "m-app",
+      "from": 54,
+      "kind": "motion"
+    },
+    {
+      "id": "x08",
+      "from": 60,
+      "kind": "pixabay-image",
+      "query": "starry night sky",
+      "pick": 1837306
+    },
+    {
+      "id": "u11",
+      "from": 63,
+      "kind": "user",
+      "file": "11.jpg"
+    },
+    {
+      "id": "m-newdoor",
+      "from": 68,
+      "kind": "motion"
+    },
+    {
+      "id": "x09",
+      "from": 71,
+      "kind": "pixabay-image",
+      "query": "laptop notebook desk coffee",
+      "pick": 2838921
+    },
+    {
+      "id": "x10",
+      "from": 74,
+      "kind": "pixabay-image",
+      "query": "calculator tax documents",
+      "pick": 4097292
+    },
+    {
+      "id": "x11",
+      "from": 78,
+      "kind": "pixabay-video",
+      "query": "laptop night desk lamp",
+      "pick": 31392
+    },
+    {
+      "id": "u12",
+      "from": 81,
+      "kind": "user",
+      "file": "12.jpg"
+    },
+    {
+      "id": "m-anyone",
+      "from": 84,
+      "kind": "motion"
+    },
+    {
+      "id": "x12",
+      "from": 87,
+      "kind": "pixabay-image",
+      "query": "seedling growing plant",
+      "pick": 1838659
+    },
+    {
+      "id": "x13",
+      "from": 89,
+      "kind": "pixabay-video",
+      "query": "team working startup office",
+      "pick": 69952
+    },
+    {
+      "id": "u17",
+      "from": 91,
+      "kind": "user",
+      "file": "17.jpg"
+    },
+    {
+      "id": "x14",
+      "from": 94,
+      "kind": "pixabay-video",
+      "query": "city timelapse night",
+      "pick": 344181
+    },
+    {
+      "id": "m-build",
+      "from": 97,
+      "kind": "motion"
+    },
+    {
+      "id": "m-wrap",
+      "from": 101,
+      "kind": "motion"
+    },
+    {
+      "id": "end",
+      "from": 105,
+      "kind": "motion"
+    }
+  ]
+}

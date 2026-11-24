@@ -1,0 +1,107 @@
+{
+  "x01": {
+    "sig": "5422856",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "fruper",
+    "page": "https://pixabay.com/photos/students-test-study-classroom-5422856/"
+  },
+  "x02": {
+    "sig": "8256",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "Coverr-Free-Footage",
+    "page": "https://pixabay.com/videos/id-8256/",
+    "duration": 14.733333
+  },
+  "x03": {
+    "sig": "6387",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "Coverr-Free-Footage",
+    "page": "https://pixabay.com/videos/id-6387/",
+    "duration": 13.633008
+  },
+  "x04": {
+    "sig": "995042",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "greymatters",
+    "page": "https://pixabay.com/photos/graduation-teen-high-school-student-995042/"
+  },
+  "x05": {
+    "sig": "1587023",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "qimono",
+    "page": "https://pixabay.com/photos/door-bad-luck-13-thirteen-unlucky-1587023/"
+  },
+  "x06": {
+    "sig": "20263",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "Matthias_Groeneveld",
+    "page": "https://pixabay.com/videos/id-20263/",
+    "duration": 19.066667
+  },
+  "x07": {
+    "sig": "30846",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "TheMarcKnight",
+    "page": "https://pixabay.com/videos/id-30846/",
+    "duration": 38.666667
+  },
+  "x08": {
+    "sig": "1837306",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "Pexels",
+    "page": "https://pixabay.com/photos/stars-sky-night-starry-sky-1837306/"
+  },
+  "x09": {
+    "sig": "2838921",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "lukasbieri",
+    "page": "https://pixabay.com/photos/laptop-mockup-graphics-tablet-2838921/"
+  },
+  "x10": {
+    "sig": "4097292",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "stevepb",
+    "page": "https://pixabay.com/photos/income-tax-calculator-accounting-4097292/"
+  },
+  "x11": {
+    "sig": "31392",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "HolgersFotografie",
+    "page": "https://pixabay.com/videos/id-31392/",
+    "duration": 69.733333
+  },
+  "x12": {
+    "sig": "1838659",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "Pexels",
+    "page": "https://pixabay.com/photos/hands-plant-soil-grow-growing-1838659/"
+  },
+  "x13": {
+    "sig": "69952",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "zameenaasman172",
+    "page": "https://pixabay.com/videos/id-69952/",
+    "duration": 14.6
+  },
+  "x14": {
+    "sig": "344181",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "YounStudios",
+    "page": "https://pixabay.com/videos/id-344181/",
+    "duration": 8.333333
+  }
+}
