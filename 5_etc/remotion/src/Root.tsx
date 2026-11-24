@@ -4,6 +4,7 @@ import './kit/fonts';
 import './kit/pastel.css';
 import './kit/pro.css';
 import { AiThinkingBuild, calculateMetadata as thinkMeta, DUR as THINK_DUR } from './videos/ai-thinking-build';
+import { calculateMetadata as v2Meta, DUR as V2_DUR, Volunteer2Talk2 } from './videos/volunteer2-talk2';
 import { AiEraAssignment, calculateMetadata as aiEraMeta, DUR as AI_ERA_DUR } from './videos/ai-era-assignment';
 import { YeonsungAiClass, calculateMetadata as yeonsungMeta, DUR as YEONSUNG_DUR } from './videos/yeonsung-ai-class';
 import { AiEraAssignmentPractice, calculateMetadata as practiceMeta, DUR as PRACTICE_DUR } from './videos/ai-era-assignment-practice';
@@ -50,6 +51,16 @@ export const RemotionRoot: React.FC = () => (
       height={1080}
       defaultProps={{ cues: [], sfx: true }}
       calculateMetadata={yeonsungMeta}
+    />
+    <Composition
+      id="volunteer2-talk2"
+      component={Volunteer2Talk2}
+      durationInFrames={V2_DUR * 30}
+      fps={30}
+      width={1920}
+      height={1080}
+      defaultProps={{ cues: [], sfx: true }}
+      calculateMetadata={v2Meta}
     />
   </>
 );

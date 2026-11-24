@@ -1,0 +1,113 @@
+{
+  "p01": {
+    "sig": "31392",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "HolgersFotografie",
+    "page": "https://pixabay.com/videos/id-31392/",
+    "duration": 69.733333
+  },
+  "p02": {
+    "sig": "2626052",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "StockSnap",
+    "page": "https://pixabay.com/photos/business-conference-presentation-2626052/"
+  },
+  "p03": {
+    "sig": "1850613",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "Pexels",
+    "page": "https://pixabay.com/photos/notebook-typing-coffee-computer-1850613/"
+  },
+  "p04": {
+    "sig": "3653346",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "F1Digitals",
+    "page": "https://pixabay.com/photos/man-men-hand-person-people-male-3653346/"
+  },
+  "p05": {
+    "sig": "3576",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "Pexels",
+    "page": "https://pixabay.com/videos/id-3576/",
+    "duration": 37
+  },
+  "p06": {
+    "sig": "88223",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "Digital_Expert",
+    "page": "https://pixabay.com/videos/id-88223/",
+    "duration": 20.466016
+  },
+  "p07": {
+    "sig": "7408106",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "wal_172619",
+    "page": "https://pixabay.com/photos/library-books-reading-knowledge-7408106/"
+  },
+  "p08": {
+    "sig": "184734",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "santosjesus90",
+    "page": "https://pixabay.com/videos/id-184734/",
+    "duration": 10.633008
+  },
+  "p09": {
+    "sig": "2bd02e160a5e8066",
+    "kind": "gemini",
+    "source": "gemini",
+    "model": "gemini-3.1-flash-lite-image",
+    "promptHash": "2bd02e160a5e8066"
+  },
+  "p10": {
+    "sig": "142363",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "31963655",
+    "page": "https://pixabay.com/videos/id-142363/",
+    "duration": 26
+  },
+  "p11": {
+    "sig": "41263",
+    "kind": "pixabay-video",
+    "source": "pixabay",
+    "user": "viarami",
+    "page": "https://pixabay.com/videos/id-41263/",
+    "duration": 63.166016
+  },
+  "p12": {
+    "sig": "1860909",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "Peggy_Marco",
+    "page": "https://pixabay.com/photos/closed-door-sign-to-lettering-1860909/"
+  },
+  "p13": {
+    "sig": "5551641",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "16692474",
+    "page": "https://pixabay.com/photos/stairway-spiral-stairs-architecture-5551641/"
+  },
+  "p14": {
+    "sig": "1516329",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "Jo_Johnston",
+    "page": "https://pixabay.com/photos/office-boardroom-meeting-table-1516329/"
+  },
+  "p15": {
+    "sig": "704255",
+    "kind": "pixabay-image",
+    "source": "pixabay",
+    "user": "fill",
+    "page": "https://pixabay.com/photos/microphone-active-to-speak-704255/"
+  }
+}

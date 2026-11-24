@@ -1,0 +1,109 @@
+{
+  "style": "Photorealistic documentary photograph, shot on a 35mm full-frame camera, natural available light, realistic textures, muted warm tones, shallow depth of field. Not an illustration, not a 3D render.",
+  "shots": [
+    {
+      "id": "p01",
+      "from": 1,
+      "kind": "pixabay-video",
+      "query": "laptop video call screen",
+      "pick": 31392
+    },
+    {
+      "id": "p02",
+      "from": 6,
+      "kind": "pixabay-image",
+      "query": "conference hall audience seats",
+      "pick": 2626052
+    },
+    {
+      "id": "p03",
+      "from": 13,
+      "kind": "pixabay-image",
+      "query": "child hands laptop keyboard",
+      "pick": 1850613
+    },
+    {
+      "id": "p04",
+      "from": 58,
+      "kind": "pixabay-image",
+      "query": "exam students writing test",
+      "pick": 3653346
+    },
+    {
+      "id": "p05",
+      "from": 179,
+      "kind": "pixabay-video",
+      "query": "startup office laptop working",
+      "pick": 3576
+    },
+    {
+      "id": "p06",
+      "from": 219,
+      "kind": "pixabay-video",
+      "query": "robot arm factory automation",
+      "pick": 88223
+    },
+    {
+      "id": "p07",
+      "from": 248,
+      "kind": "pixabay-image",
+      "query": "library books research desk",
+      "pick": 7408106
+    },
+    {
+      "id": "p08",
+      "from": 296,
+      "kind": "pixabay-video",
+      "query": "self driving car road",
+      "pick": 184734
+    },
+    {
+      "id": "p09",
+      "from": 316,
+      "kind": "gemini",
+      "prompt": "A dark military operations room seen from behind, rows of glowing green radar and map screens on the wall, silhouettes of operators out of focus, no visible faces, cold blue and green light, cinematic and tense."
+    },
+    {
+      "id": "p10",
+      "from": 328,
+      "kind": "pixabay-video",
+      "query": "digital padlock security",
+      "pick": 142363
+    },
+    {
+      "id": "p11",
+      "from": 390,
+      "kind": "pixabay-video",
+      "query": "hacker keyboard dark code",
+      "pick": 41263
+    },
+    {
+      "id": "p12",
+      "from": 454,
+      "kind": "pixabay-image",
+      "query": "closed sign door shop",
+      "pick": 1860909
+    },
+    {
+      "id": "p13",
+      "from": 474,
+      "kind": "pixabay-image",
+      "query": "spiral staircase",
+      "pick": 5551641
+    },
+    {
+      "id": "p14",
+      "from": 738,
+      "kind": "pixabay-image",
+      "query": "meeting room table documents",
+      "pick": 1516329
+    },
+    {
+      "id": "p15",
+      "from": 825,
+      "kind": "pixabay-image",
+      "query": "business presentation boardroom",
+      "pick": 704255
+    }
+  ]
+}
